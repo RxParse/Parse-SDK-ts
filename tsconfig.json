@@ -1,13 +1,19 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "lib": ["es5", "dom"],
+    "lib": [
+      "es5",
+      "dom"
+    ],
     "module": "commonjs",
     "declaration": true,
     "moduleResolution": "node",
     "outDir": "out",
     "target": "es5",
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "types": [
+      "core-js"
+    ]
   },
   "formatCodeOptions": {
     "indentSize": 4,
@@ -26,10 +32,10 @@
   "atom": {
     "formatOnSave": true
   },
-  "files": [
-    "node_modules/typescript/lib/lib.es6.d.ts",
-    "node_modules/axios/index.d.ts",
-    "node_modules/rxjs/Rx.d.ts"
+  "include": [
+    "src/**/*",
+    "node_modules/axios/*.ts",
+    "node_modules/rxjs/*.ts"
   ],
   "exclude": [
   ]

@@ -10,6 +10,7 @@
   "author": "Wu Jun",
   "license": "MIP",
   "devDependencies": {
+    "@types/core-js": "^0.9.35",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
     "gulp-typescript": "^3.1.3",
