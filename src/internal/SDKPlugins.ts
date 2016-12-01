@@ -7,15 +7,18 @@ export /**
  * SDKPlugins
  */
     class SDKPlugins {
+    private _version = 1;
     private _HttpClient: iRxHttpClient;
     private _ObjectController: iObjectController;
+    private static _sdkPluginsInstance: SDKPlugins;
 
-    constructor() {
+    constructor(version?: number) {
+        this._version = version;
     }
-    
+
     get HttpClient() {
         if (this._HttpClient == null) {
-            this._HttpClient = new RxHttpClient();
+            this._HttpClient = new RxHttpClient(this._version);
         }
         return this._HttpClient;
     }
@@ -26,9 +29,18 @@ export /**
         }
         return this._ObjectController;
     }
+
+    static get instance(): SDKPlugins {
+        if (SDKPlugins._sdkPluginsInstance == null)
+            SDKPlugins._sdkPluginsInstance = new SDKPlugins(1);
+        return SDKPlugins._sdkPluginsInstance;
+    }
+
+    static set version(version: number) {
+        SDKPlugins._sdkPluginsInstance = new SDKPlugins(version);
+    }
 }
 
-export var SDKPluginsInstance: SDKPlugins = new SDKPlugins();
 
 
 

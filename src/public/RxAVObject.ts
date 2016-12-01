@@ -1,5 +1,6 @@
-import { SDKPluginsInstance } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/SDKPlugins';
 import { iObjectState } from '../internal/object/state/iObjectState';
+import { Observable } from 'rxjs/Observable';
 
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 export const has = function (obj: any, prop: any) {
@@ -11,8 +12,7 @@ export class RxAVObject implements iObjectState {
     objectId: string;
     updatedAt: Date;
     createdAt: Date;
-
-    protected dictionary: { [key: string]: any };
+    dictionary: { [key: string]: any };
 
     containsKey(key: string): boolean {
         return has(this.dictionary, key);
@@ -30,12 +30,12 @@ export class RxAVObject implements iObjectState {
         this.className = className;
         this.dictionary = {};
     }
-    save() {
+    save(): Observable<boolean> {
         for (let key in this.dictionary) {
             let x = this.dictionary[key]; // x: boolean
             console.log(key, x);
         }
-        return SDKPluginsInstance.ObjectControllerInstance.save(this, this.dictionary, '').map(project => {
+        return SDKPlugins.instance.ObjectControllerInstance.save(this, this.dictionary, '').map(project => {
             return this.objectId != null;
         });
     }

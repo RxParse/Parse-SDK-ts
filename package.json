@@ -20,6 +20,7 @@
     "@types/superagent": "^2.0.36",
     "axios": "^0.15.3",
     "rxjs": "^5.0.0-beta.12",
+    "superagent": "^3.1.0",
     "typescript": "^2.0.0",
     "typings": "^2.0.0"
   },

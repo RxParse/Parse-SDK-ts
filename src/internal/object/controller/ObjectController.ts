@@ -1,6 +1,7 @@
 import { iObjectState } from '../state/iObjectState';
 import { iObjectController } from './iObjectController';
-import { SDKPluginsInstance } from '../../SDKPlugins';
+import { AVEncoder } from '../../encoding/AVEncoder';
+import { SDKPlugins } from '../../SDKPlugins';
 import { Observable } from 'rxjs';
 import { HttpRequest } from '../../httpClient/HttpRequest';
 import { RxAVClient } from '../../../public/RxAVClient';
@@ -9,11 +10,14 @@ export class ObjectController implements iObjectController {
     save(state: iObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<iObjectState> {
         let request: HttpRequest = new HttpRequest();
         request.method = 'POST';
-        request.data = dictionary;
+
+        let encodeData = AVEncoder.encode(dictionary);
+        request.data = encodeData;
         request.url = RxAVClient.serverUrl() + "/classes/" + state.className;
         request.headers = RxAVClient.headers();
 
-        return SDKPluginsInstance.HttpClient.execute(request).map(tuple => {
+
+        return SDKPlugins.instance.HttpClient.execute(request).map(tuple => {
             console.log('tuple', tuple);
             if (tuple[0] == 201) {
                 if (tuple[1].createdAt) {

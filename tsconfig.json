@@ -33,10 +33,11 @@
     "formatOnSave": true
   },
   "include": [
-    "src/**/*",
-    "node_modules/axios/*.ts",
-    "node_modules/rxjs/*.ts"
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "typings/index.d.ts"
   ],
   "exclude": [
+    "node_modules"
   ]
 }
