@@ -1,0 +1,36 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "lib": ["es5", "dom"],
+    "module": "commonjs",
+    "declaration": true,
+    "moduleResolution": "node",
+    "outDir": "out",
+    "target": "es5",
+    "noImplicitAny": true
+  },
+  "formatCodeOptions": {
+    "indentSize": 4,
+    "tabSize": 2,
+    "newLineCharacter": "\r\n",
+    "convertTabsToSpaces": true,
+    "insertSpaceAfterCommaDelimiter": true,
+    "insertSpaceAfterSemicolonInForStatements": true,
+    "insertSpaceBeforeAndAfterBinaryOperators": true,
+    "insertSpaceAfterKeywordsInControlFlowStatements": true,
+    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+    "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+    "placeOpenBraceOnNewLineForFunctions": false,
+    "placeOpenBraceOnNewLineForControlBlocks": false
+  },
+  "atom": {
+    "formatOnSave": true
+  },
+  "files": [
+    "node_modules/typescript/lib/lib.es6.d.ts",
+    "node_modules/axios/index.d.ts",
+    "node_modules/rxjs/Rx.d.ts"
+  ],
+  "exclude": [
+  ]
+}

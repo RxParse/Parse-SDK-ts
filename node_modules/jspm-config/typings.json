@@ -1,0 +1,14 @@
+{
+  "globalDevDependencies": {
+    "node": "registry:env/node#6.0.0+20160918225031"
+  },
+  "dependencies": {
+    "graceful-fs": "registry:npm/graceful-fs#4.0.0+20160723033700",
+    "object.pick": "registry:npm/object.pick#1.0.0+20160723033700",
+    "parse-json": "registry:npm/parse-json#2.0.0+20160723033700",
+    "strip-bom": "registry:npm/strip-bom#2.0.0+20160723033700",
+    "thenify": "registry:npm/thenify#3.1.0+20160723033700",
+    "throat": "registry:npm/throat#2.0.0+20160723033700",
+    "xtend": "registry:npm/xtend#4.0.0+20160723033700"
+  }
+}
