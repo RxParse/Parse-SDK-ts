@@ -32,8 +32,8 @@
     "formatOnSave": true
   },
   "include": [
-    "src/**/*.ts",
-    "test/**/*.ts",
+    "src/**/*",
+    "test/**/*",
     "typings/index.d.ts"
   ],
   "exclude": [
