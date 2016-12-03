@@ -4,6 +4,7 @@ var currentConfig: {
     applicationId?: string,
     applicationKey?: string,
     serverUrl?: string,
+    region?: string,
     isNode?: boolean,
     sdkVersion?: string,
     log?: boolean,
@@ -13,6 +14,7 @@ export class RxAVClient {
     static init(config: {
         appId: string,
         appKey: string,
+        region?: string,
         serverUrl?: string,
         log?: boolean,
         pluginVersion?: number
@@ -21,7 +23,14 @@ export class RxAVClient {
         currentConfig.applicationKey = config.appKey;
         currentConfig.log = config.log;
 
+        currentConfig.region = config.region;
+        if (currentConfig.region.toLowerCase() == 'us') {
+            currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
+        }
         currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : 'https://api.leancloud.cn/1.1';
+
+
+
 
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             currentConfig.isNode = true;
