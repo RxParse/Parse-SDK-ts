@@ -8,6 +8,11 @@ var RxAVClient = (function () {
         currentConfig.applicationId = config.appId;
         currentConfig.applicationKey = config.appKey;
         currentConfig.log = config.log;
+        currentConfig.region = config.region;
+        if (currentConfig.region != null)
+            if (currentConfig.region.toLowerCase() == 'us') {
+                currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
+            }
         currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : 'https://api.leancloud.cn/1.1';
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             currentConfig.isNode = true;

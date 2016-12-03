@@ -24,9 +24,10 @@ export class RxAVClient {
         currentConfig.log = config.log;
 
         currentConfig.region = config.region;
-        if (currentConfig.region.toLowerCase() == 'us') {
-            currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
-        }
+        if (currentConfig.region != null)
+            if (currentConfig.region.toLowerCase() == 'us') {
+                currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
+            }
         currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : 'https://api.leancloud.cn/1.1';
 
 
