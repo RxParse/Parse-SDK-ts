@@ -1,42 +1,94 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { iObjectState } from '../internal/object/state/iObjectState';
+import { IObjectState } from '../internal/object/state/IObjectState';
+import { iObjectController } from '../internal/object/controller/iObjectController';
+import { MutableObjectState } from '../internal/object/state/MutableObjectState';
+import { RxAVUser } from '../RxLeanCloud';
 import { Observable } from 'rxjs/Observable';
 
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
-export const has = function (obj: any, prop: any) {
-    return _hasOwnProperty.call(obj, prop);
-};
-export class RxAVObject implements iObjectState {
+export class RxAVObject {
     isNew: boolean;
     className: string;
-    objectId: string;
-    updatedAt: Date;
-    createdAt: Date;
-    dictionary: { [key: string]: any };
+    estimatedData: { [key: string]: any };
+    state: MutableObjectState;
+    private _isDirty: boolean;
 
-    containsKey(key: string): boolean {
-        return has(this.dictionary, key);
+    /**
+     * RxAVObject 类，代表一个结构化存储的对象.
+     * @constructor
+     * @param {string} className - className:对象在云端数据库对应的表名.
+     */
+    constructor(className: string) {
+        this.className = className;
+        this.estimatedData = {};
+        this.state = new MutableObjectState({ className: className });
+    }
+
+    protected get ObjectController() {
+        return SDKPlugins.instance.ObjectControllerInstance;
+    }
+
+    get objectId() {
+        return this.state.objectId;
+    }
+    set objectId(id: string) {
+        this._isDirty = true;
+        this.state.objectId = id;
+    }
+    get isDirty() {
+        return this._isDirty;
+    }
+    set isDirty(v: boolean) {
+        this._isDirty = v;
+    }
+
+    get createdAt() {
+        return this.state.createdAt;
+    }
+
+    get updatedAt() {
+        return this.state.updatedAt;
     }
 
     set(key: string, value: any) {
-        this.dictionary[key] = value;
+        this.estimatedData[key] = value;
     }
 
     get(key: string) {
-        return this.dictionary[key];
+        return this.estimatedData[key];
     }
 
-    constructor(className: string) {
-        this.className = className;
-        this.dictionary = {};
-    }
-    save(): Observable<boolean> {
-        for (let key in this.dictionary) {
-            let x = this.dictionary[key]; // x: boolean
-            console.log(key, x);
+    /**
+     * 将当前对象保存到云端.
+     * 如果对象的 objectId 为空云端会根据现有的数据结构新建一个对象并返回一个新的 objectId.
+     * @returns {Observable<boolean>}
+     * 
+     * @memberOf RxAVObject
+     */
+    save(): Observable<void> {
+        for (let key in this.estimatedData) {
+            let x = this.estimatedData[key];
         }
-        return SDKPlugins.instance.ObjectControllerInstance.save(this, this.dictionary, '').map(project => {
-            return this.objectId != null;
+        return this.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
+            this.handlerSave(serverState);
         });
     }
+
+    protected handlerSave(serverState: IObjectState) {
+        this.state.apply(serverState);
+    }
+
+    protected mergeFromServer(serverState: IObjectState) {
+        if (serverState.objectId != null) {
+
+        }
+    }
+
+    protected getProperty(propertyName: string) {
+        if (this.state != null) {
+            if (this.state.containsKey(propertyName))
+                return this.state.serverData[propertyName];
+        }
+        return null;
+    }
+
 }

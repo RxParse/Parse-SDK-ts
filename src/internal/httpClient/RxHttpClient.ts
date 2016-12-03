@@ -1,36 +1,54 @@
 import { Observable } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
-import { iRxHttpClient } from './iRxHttpClient';
+import { HttpResponse } from './HttpResponse';
+import { IRxHttpClient } from './iRxHttpClient';
 import axios, { AxiosRequestConfig, AxiosPromise } from 'axios';
 import * as superagent from 'superagent';
 import { RxAVClient } from '../../public/RxAVClient';
 
-export class RxHttpClient implements iRxHttpClient {
+export class RxHttpClient implements IRxHttpClient {
     version: number;
     constructor(version?: number) {
         this.version = version;
     }
 
-    execute(httpRequest: HttpRequest): Observable<[number, any]> {
+    execute(httpRequest: HttpRequest): Observable<HttpResponse> {
+        let tuple: [number, any] = [200, ''];
+        let errMsg = {
+            statusCode: -1,
+            error: { code: 0, error: 'Server error' }
+        };
+        let response = new HttpResponse(tuple);
+        RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
         if (RxAVClient.isNode() && this.version == 1)
             return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
                 RxAVClient.printLog('http client:axios');
-                let rtn: [number, any] = [200, ''];
-                rtn[0] = res.status;
-                rtn[1] = res.data;
-                return rtn;
+                tuple[0] = res.status;
+                tuple[1] = res.data;
+                return new HttpResponse(tuple);
+            }).catch((err: any) => {
+                if (err) {
+                    errMsg.statusCode = err.response.status;
+                    errMsg.error = err.response.data;
+                }
+                return Observable.throw(errMsg);
             });
         else return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
             RxAVClient.printLog('http client:superagent');
-            let rtn: [number, any] = [200, ''];
-            rtn[0] = res.status;
-            rtn[1] = res.body;
-            return rtn;
+            RxAVClient.printLog('Response:', res.body);
+
+            tuple[0] = res.status;
+            tuple[1] = res.body;
+            return new HttpResponse(tuple);
+        }).catch((err: any) => {
+            if (err) {
+                errMsg.statusCode = err.status;
+                errMsg.error = JSON.parse(err.response.text);
+            }
+            return Observable.throw(errMsg);
         });
-        //return this.RxExecuteSuperAgent(httpRequest);
     }
     RxExecuteAxios(httpRequest: HttpRequest): AxiosPromise {
-        console.log('RxExecuteAxios');
         let method = httpRequest.method.toUpperCase();
         let useData = false;
         if (method == 'PUT' || 'POST') {

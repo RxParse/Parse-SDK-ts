@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
+import { HttpResponse } from './HttpResponse';
 
-export interface iRxHttpClient {
-    execute(httpRequest: HttpRequest): Observable<[number, any]>;
+export interface IRxHttpClient {
+    execute(httpRequest: HttpRequest): Observable<HttpResponse>;
 }

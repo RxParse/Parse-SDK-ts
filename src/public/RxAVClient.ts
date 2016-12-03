@@ -41,7 +41,7 @@ export class RxAVClient {
                 'X-LC-Id': currentConfig.applicationId,
                 'X-LC-Key': currentConfig.applicationKey,
                 'Content-Type': 'application/json',
-                'User-Agent': 'ts-sdk/' + currentConfig.sdkVersion,
+                'User-Agent': 'ts-sdk/' + currentConfig.sdkVersion
             }
         return RxAVClient._headers;
     }

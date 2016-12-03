@@ -4,8 +4,8 @@
   "description": "leancloud-typescript-rx-sdk",
   "main": "index.js",
   "scripts": {
-    "pretest": "tsc && node out/sample/init.js",
-    "test": "mocha $(find out -name '*.js')"
+    "pretest": "tsc",
+    "test": "mocha $(find out/test -name '*.js')"
   },
   "author": "Wu Jun",
   "license": "MIP",

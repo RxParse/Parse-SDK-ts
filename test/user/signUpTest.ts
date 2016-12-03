@@ -1,9 +1,12 @@
 /// <reference path="../../typings/index.d.ts" />
 
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject } from '../../src/RxLeanCloud';
+import * as random from "../utils/random";
+import { RxAVClient, RxAVUser } from '../../src/RxLeanCloud';
 
-describe('RxObject', function() {
+let randomUsername = '';
+
+describe('RxAVUser', function () {
     before(() => {
         RxAVClient.init({
             appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
@@ -11,18 +14,17 @@ describe('RxObject', function() {
             log: true,
             pluginVersion: 1
         });
+        randomUsername = random.randomString(8);
     });
-    it('RxAVObject#save', function(done) {
-        let todo: RxAVObject = new RxAVObject('RxTodo');
+    it('RxAVUser#signUp', function (done) {
+        let user: RxAVUser = new RxAVUser();
+        user.username = randomUsername;
+        user.password = 'leancloud';
+        user.set('title', 'CEO');
 
-        todo.set('title', '开会');
-        todo.set('time', '2016-12-03');
-        todo.set('reminder', new Date());
-
-        todo.save().subscribe(() => {
-            console.log(todo.objectId);
-            console.log(todo.createdAt);
-            console.log(todo.updatedAt);
+        user.signUp().subscribe(() => {
+            console.log(user.objectId);
+            console.log(user.sesstionToken);
             done();
         }, error => {
             /** error 的格式如下：
