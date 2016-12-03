@@ -4,7 +4,7 @@
   "description": "leancloud-typescript-rx-sdk",
   "main": "index.js",
   "scripts": {
-    "pretest": "tsc",
+    "pretest": "tsc -p ./tsconfig.json",
     "test": "mocha $(find out/test -name '*.js')"
   },
   "author": "Wu Jun",
