@@ -6,7 +6,6 @@
       "dom"
     ],
     "module": "commonjs",
-    "declaration": true,
     "moduleResolution": "node",
     "outDir": "out",
     "target": "es5",
