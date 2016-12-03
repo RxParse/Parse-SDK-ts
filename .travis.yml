@@ -3,6 +3,7 @@ node_js:
   - "6.4"
 sudo: required
 install:
+  - npm i -g typescript typings
   - npm install
   - typings install
 script:

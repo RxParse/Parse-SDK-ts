@@ -25,7 +25,7 @@ export /**
         });
         return this._commandRunner.runRxCommand(cmd).map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
-            serverState = serverState.mutatedClone(s => {
+            serverState = serverState.mutatedClone((s: IObjectState) => {
                 s.isNew = true;
             });
             return serverState;
