@@ -5,7 +5,5 @@ node_modules/
 .idea
 typings/
 release/
-out/
 test/*.js
-dist/
 **/.leancloud

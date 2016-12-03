@@ -66,6 +66,5 @@ export class RxAVUser extends RxAVObject {
     handlerSignUp(userState: IObjectState) {
         super.handlerSave(userState);
         this.state.serverData = userState.serverData;
-        console.log(this.state);
     }
 }
