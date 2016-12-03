@@ -25,6 +25,6 @@
     "typings": "^2.0.0"
   },
   "engines": {
-    "node": "6.x"
+    "node": "6.9.1"
   }
 }
