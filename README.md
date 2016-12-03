@@ -5,7 +5,8 @@
 
 ## 目前支持的模块
 
-
+- [x] Object#save
+- [x] User#signUp
 
 ### 性感的语法
 
