@@ -9,6 +9,11 @@ describe('RxLeanEngine', function () {
         randomUsername = random.randomString(8);
     });
     it('RxLeanEngine#callFunction', function (done) {
+        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+            done();
+            console.log('Hello,LeanEngine in US.');
+            return;
+        }
         RxLeanCloud_1.RxLeanEngine.callFunction('testDic').subscribe(function (data) {
             done();
         }, function (error) {

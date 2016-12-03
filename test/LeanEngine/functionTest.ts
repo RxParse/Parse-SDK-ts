@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import * as random from "../utils/random";
-import { RxLeanEngine } from '../../src/RxLeanCloud';
+import { RxAVClient, RxLeanEngine } from '../../src/RxLeanCloud';
 
 let randomUsername = '';
 
@@ -11,6 +11,11 @@ describe('RxLeanEngine', function () {
         randomUsername = random.randomString(8);
     });
     it('RxLeanEngine#callFunction', function (done) {
+        if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+            done();
+            console.log('Hello,LeanEngine in US.');
+            return;
+        }
 
         RxLeanEngine.callFunction('testDic').subscribe(data => {
             done();

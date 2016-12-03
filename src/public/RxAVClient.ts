@@ -22,16 +22,17 @@ export class RxAVClient {
         currentConfig.applicationId = config.appId;
         currentConfig.applicationKey = config.appKey;
         currentConfig.log = config.log;
+        currentConfig.region = 'cn';
+        currentConfig.serverUrl = 'https://api.leancloud.cn/1.1';
 
-        currentConfig.region = config.region;
-        if (currentConfig.region != null)
+        if (config.region != null) {
+            currentConfig.region = config.region;
             if (currentConfig.region.toLowerCase() == 'us') {
                 currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
             }
-        currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : 'https://api.leancloud.cn/1.1';
+        }
 
-
-
+        currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : currentConfig.serverUrl;
 
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             currentConfig.isNode = true;
@@ -75,6 +76,8 @@ export class RxAVClient {
         RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
         RxAVClient.printLog(`pluginVersion:${currentConfig.pluginVersion}`);
         RxAVClient.printLog(`environment:node?${currentConfig.isNode}`);
+        RxAVClient.printLog(`region:${currentConfig.region}`);
+        RxAVClient.printLog(`server url:${currentConfig.serverUrl}`);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     }
 }
