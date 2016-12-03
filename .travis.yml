@@ -1,8 +1,9 @@
 language: node_js
 node_js:
   - "6"
-sudo: false
+sudo: required
 install:
+  - sudo npm install -g typescript
   - npm install
   - typings install
 script:
