@@ -8,6 +8,7 @@ import {
 RxAVClient.init({
     appId: APP_ID,
     appKey: APP_KEY,
+    region: REGION,
     log: true,
     pluginVersion: 1
 });
