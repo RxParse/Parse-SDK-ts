@@ -8,3 +8,4 @@ release/
 out/
 test/*.js
 dist/
+**/.leancloud

@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - "6"
+sudo: false
+install:
+  - npm install
+  - typings install
+script:
+  - npm test
+notifications:
+  webhooks: https://hook.bearychat.com/=bw52Y/travis/0ce0c78a1e423b087df137fcbfbf619f
