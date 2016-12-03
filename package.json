@@ -4,7 +4,8 @@
   "description": "leancloud-typescript-rx-sdk",
   "main": "index.js",
   "scripts": {
-    "pretest": "tsc",
+    "ready":"tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js')",
+    "pretest": "node out/test/utils/init.js",
     "test": "mocha $(find out/test -name '*.js')"
   },
   "author": "Wu Jun",
@@ -24,7 +25,8 @@
     "typescript": "^2.0.0",
     "typings": "^2.0.0"
   },
+  "typings": "./dist/RxLeanCloud.d.ts",
   "engines": {
-    "node": "6.9.1"
+    "node": "6.x"
   }
 }

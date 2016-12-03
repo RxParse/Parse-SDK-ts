@@ -25,26 +25,30 @@ export class RxHttpClient implements IRxHttpClient {
                 RxAVClient.printLog('http client:axios');
                 tuple[0] = res.status;
                 tuple[1] = res.data;
-                return new HttpResponse(tuple);
+                let response = new HttpResponse(tuple);
+                RxAVClient.printLog('Response:', JSON.stringify(response));
+                return response;
             }).catch((err: any) => {
                 if (err) {
                     errMsg.statusCode = err.response.status;
                     errMsg.error = err.response.data;
                 }
+                RxAVClient.printLog('Error:', JSON.stringify(errMsg));
                 return Observable.throw(errMsg);
             });
         else return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
             RxAVClient.printLog('http client:superagent');
-            RxAVClient.printLog('Response:', res.body);
-
             tuple[0] = res.status;
             tuple[1] = res.body;
-            return new HttpResponse(tuple);
+            let response = new HttpResponse(tuple);
+            RxAVClient.printLog('Response:', JSON.stringify(response));
+            return response;
         }).catch((err: any) => {
             if (err) {
                 errMsg.statusCode = err.status;
                 errMsg.error = JSON.parse(err.response.text);
             }
+            RxAVClient.printLog('Error:', JSON.stringify(errMsg));
             return Observable.throw(errMsg);
         });
     }
