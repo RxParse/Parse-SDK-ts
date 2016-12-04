@@ -32,10 +32,37 @@ export /**
         });
     }
     logIn(username: string, password: string): Observable<IObjectState> {
-        return null;
+        let data = {
+            "username": username,
+            "password": password
+        };
+        let cmd = new AVCommand({
+            relativeUrl: "/login",
+            method: 'POST',
+            data: data
+        });
+        
+        return this._commandRunner.runRxCommand(cmd).map(res => {
+            let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
+            return serverState;
+        });
     }
     logInWithParamters(relativeUrl: string, data: { [key: string]: any }): Observable<IObjectState> {
-        return null;
+        let encoded = SDKPlugins.instance.Encoder.encode(data);
+
+        let cmd = new AVCommand({
+            relativeUrl: relativeUrl,
+            method: 'POST',
+            data: data
+        });
+
+        return this._commandRunner.runRxCommand(cmd).map(res => {
+            let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
+            serverState = serverState.mutatedClone((s: IObjectState) => {
+                s.isNew = res.satusCode == 201;
+            });
+            return serverState;
+        });
     }
     getUser(sessionToken: string): Observable<IObjectState> {
         return null;

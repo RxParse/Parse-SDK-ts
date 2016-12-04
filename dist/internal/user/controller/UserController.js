@@ -21,10 +21,34 @@ var UserController = (function () {
         });
     };
     UserController.prototype.logIn = function (username, password) {
-        return null;
+        var data = {
+            "username": username,
+            "password": password
+        };
+        var cmd = new AVCommand_1.AVCommand({
+            relativeUrl: "/login",
+            method: 'POST',
+            data: data
+        });
+        return this._commandRunner.runRxCommand(cmd).map(function (res) {
+            var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
+            return serverState;
+        });
     };
     UserController.prototype.logInWithParamters = function (relativeUrl, data) {
-        return null;
+        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(data);
+        var cmd = new AVCommand_1.AVCommand({
+            relativeUrl: relativeUrl,
+            method: 'POST',
+            data: data
+        });
+        return this._commandRunner.runRxCommand(cmd).map(function (res) {
+            var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
+            serverState = serverState.mutatedClone(function (s) {
+                s.isNew = res.satusCode == 201;
+            });
+            return serverState;
+        });
     };
     UserController.prototype.getUser = function (sessionToken) {
         return null;
