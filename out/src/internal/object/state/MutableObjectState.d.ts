@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 import { IObjectState } from './IObjectState';
 export declare const has: (obj: any, prop: any) => any;
 export declare class MutableObjectState implements IObjectState {
