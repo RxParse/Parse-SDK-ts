@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 export interface IObjectState {
     isNew: boolean;
     className: string;

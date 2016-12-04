@@ -1,4 +1,4 @@
-/// <reference types="core-js" />
+/// <reference types="superagent" />
 import { Observable } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';

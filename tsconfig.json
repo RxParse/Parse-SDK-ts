@@ -1,43 +1,25 @@
 {
-  "compileOnSave": true,
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "lib": [
-      "es5",
-      "dom"
+      "dom",
+      "es2015"
     ],
+    "outDir": "out",
     "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "out",
-    "target": "es5",
-    "noImplicitAny": true,
-    "types": [
-      "core-js"
-    ]
-  },
-  "formatCodeOptions": {
-    "indentSize": 4,
-    "tabSize": 2,
-    "newLineCharacter": "\r\n",
-    "convertTabsToSpaces": true,
-    "insertSpaceAfterCommaDelimiter": true,
-    "insertSpaceAfterSemicolonInForStatements": true,
-    "insertSpaceBeforeAndAfterBinaryOperators": true,
-    "insertSpaceAfterKeywordsInControlFlowStatements": true,
-    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
-    "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
-    "placeOpenBraceOnNewLineForFunctions": false,
-    "placeOpenBraceOnNewLineForControlBlocks": false
-  },
-  "atom": {
-    "formatOnSave": true
+    "target": "es5"
   },
   "include": [
     "src/**/*",
-    "test/**/*",
-    "typings/index.d.ts"
+    "test/**/*"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": [],
+  "compileOnSave": false,
+  "atom": {
+    "rewriteTsconfig": false
+  }
 }

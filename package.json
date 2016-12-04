@@ -2,16 +2,16 @@
   "name": "leancloud-typescript-rx-sdk",
   "version": "0.0.1",
   "description": "leancloud-typescript-rx-sdk",
-  "main": "index.js",
+  "main": "./dist/RxLeanCloud.js",
   "scripts": {
-    "ready": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js')",
+    "bingo": "",
+    "ready": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js') && gulp",
     "pretest": "node out/test/utils/init.js",
     "test": "mocha --timeout 30000 $(find out/test -name '*.js')"
   },
   "author": "Wu Jun",
   "license": "MIP",
   "devDependencies": {
-    "@types/core-js": "^0.9.35",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
     "gulp-typescript": "^3.1.3",
