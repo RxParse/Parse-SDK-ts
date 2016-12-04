@@ -73,7 +73,17 @@ export class RxAVObject {
         });
     }
 
+    public static createWithoutData(classnName: string, objectId: string) {
+        let rtn = new RxAVObject(classnName);
+        rtn.objectId = objectId;
+        return rtn;
+    }
+
     protected handlerSave(serverState: IObjectState) {
+        this.state.apply(serverState);
+    }
+
+    protected handleFetchResult(serverState: IObjectState){
         this.state.apply(serverState);
     }
 

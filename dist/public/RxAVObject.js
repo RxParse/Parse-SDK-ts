@@ -77,7 +77,15 @@ var RxAVObject = (function () {
             _this.handlerSave(serverState);
         });
     };
+    RxAVObject.createWithoutData = function (classnName, objectId) {
+        var rtn = new RxAVObject(classnName);
+        rtn.objectId = objectId;
+        return rtn;
+    };
     RxAVObject.prototype.handlerSave = function (serverState) {
+        this.state.apply(serverState);
+    };
+    RxAVObject.prototype.handleFetchResult = function (serverState) {
         this.state.apply(serverState);
     };
     RxAVObject.prototype.mergeFromServer = function (serverState) {

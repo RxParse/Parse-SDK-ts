@@ -32,4 +32,27 @@ describe('RxAVUser', function () {
             }
         });
     });
+
+    it('RxAVUser#requestShortcode', done => {
+        done();
+        RxAVUser.sendSignUpShortcode('18612438929').subscribe(success => {
+            done();
+        }, error => {
+            console.log(error);
+            //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
+            //{ statusCode: 400, error: { code: 601, error: '发送短信过快，请稍后重试。' } }
+            chai.assert.isNull(error);
+        });
+    });
+
+    it('RxAVUser#signUpOrLoginByMobilephone', done => {
+        done();
+        RxAVUser.signUpByMobilephone('18612438929', '064241').subscribe(s => {
+            done();
+        }, error => {
+            console.log(error);
+            //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
+            chai.assert.isNull(error);
+        });
+    });
 });

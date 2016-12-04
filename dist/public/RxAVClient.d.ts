@@ -1,3 +1,5 @@
+import { AVCommand } from '../internal/command/AVCommand';
+import { Observable } from 'rxjs';
 export declare class RxAVClient {
     static init(config: {
         appId: string;
@@ -25,6 +27,14 @@ export declare class RxAVClient {
         pluginVersion?: number;
     };
     static isNode(): boolean;
+    protected static printWelcome(): void;
     static printLog(message?: any, ...optionalParams: any[]): void;
-    static printWelcome(): void;
+    protected static generateAVCommand(relativeUrl: string, method: string, data: {
+        [key: string]: any;
+    }): AVCommand;
+    static request(relativeUrl: string, method: string, data: {
+        [key: string]: any;
+    }): Observable<{
+        [key: string]: any;
+    }>;
 }

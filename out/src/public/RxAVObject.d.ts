@@ -31,7 +31,9 @@ export declare class RxAVObject {
      * @memberOf RxAVObject
      */
     save(): Observable<void>;
+    static createWithoutData(classnName: string, objectId: string): RxAVObject;
     protected handlerSave(serverState: IObjectState): void;
+    protected handleFetchResult(serverState: IObjectState): void;
     protected mergeFromServer(serverState: IObjectState): void;
     protected getProperty(propertyName: string): any;
 }

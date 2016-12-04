@@ -29,6 +29,7 @@ export class RxHttpClient implements IRxHttpClient {
                 RxAVClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch((err: any) => {
+                RxAVClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.response.status;
                     errMsg.error = err.response.data;
@@ -44,6 +45,7 @@ export class RxHttpClient implements IRxHttpClient {
             RxAVClient.printLog('Response:', JSON.stringify(response));
             return response;
         }).catch((err: any) => {
+            RxAVClient.printLog('Meta Error:', JSON.stringify(err));
             if (err) {
                 errMsg.statusCode = err.status;
                 errMsg.error = JSON.parse(err.response.text);

@@ -25,6 +25,7 @@ var RxHttpClient = (function () {
                 RxAVClient_1.RxAVClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch(function (err) {
+                RxAVClient_1.RxAVClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.response.status;
                     errMsg.error = err.response.data;
@@ -41,6 +42,7 @@ var RxHttpClient = (function () {
                 RxAVClient_1.RxAVClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch(function (err) {
+                RxAVClient_1.RxAVClient.printLog('Meta Error:', JSON.stringify(err));
                 if (err) {
                     errMsg.statusCode = err.status;
                     errMsg.error = JSON.parse(err.response.text);

@@ -102,6 +102,7 @@ export /**
         }
         return this._objectdecoder;
     }
+    
     get LeanEngineDecoder(){
         if (this._LeanEngineDecoder == null) {
             this._LeanEngineDecoder = new LeanEngineDecoder(this.Decoder,this.ObjectDecoder);
@@ -119,5 +120,3 @@ export /**
         SDKPlugins._sdkPluginsInstance = new SDKPlugins(version);
     }
 }
-
-

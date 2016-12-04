@@ -1,5 +1,6 @@
 "use strict";
 var SDKPlugins_1 = require('../internal/SDKPlugins');
+var AVCommand_1 = require('../internal/command/AVCommand');
 var currentConfig = {};
 var RxAVClient = (function () {
     function RxAVClient() {
@@ -27,12 +28,13 @@ var RxAVClient = (function () {
         RxAVClient.printWelcome();
     };
     RxAVClient.headers = function () {
+        var config = RxAVClient.currentConfig();
         if (RxAVClient._headers == null)
             RxAVClient._headers = {
-                'X-LC-Id': currentConfig.applicationId,
-                'X-LC-Key': currentConfig.applicationKey,
+                'X-LC-Id': config.applicationId,
+                'X-LC-Key': config.applicationKey,
                 'Content-Type': 'application/json',
-                'User-Agent': 'ts-sdk/' + currentConfig.sdkVersion
+                'User-Agent': 'ts-sdk/' + config.sdkVersion
             };
         return RxAVClient._headers;
     };
@@ -40,10 +42,21 @@ var RxAVClient = (function () {
         return currentConfig.serverUrl;
     };
     RxAVClient.currentConfig = function () {
+        if (currentConfig.serverUrl == null)
+            throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
         return currentConfig;
     };
     RxAVClient.isNode = function () {
         return RxAVClient.currentConfig().isNode;
+    };
+    RxAVClient.printWelcome = function () {
+        RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
+        RxAVClient.printLog("version:" + currentConfig.sdkVersion);
+        RxAVClient.printLog("pluginVersion:" + currentConfig.pluginVersion);
+        RxAVClient.printLog("environment:node?" + currentConfig.isNode);
+        RxAVClient.printLog("region:" + currentConfig.region);
+        RxAVClient.printLog("server url:" + currentConfig.serverUrl);
+        RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     };
     RxAVClient.printLog = function (message) {
         var optionalParams = [];
@@ -56,14 +69,19 @@ var RxAVClient = (function () {
             else
                 console.log(message);
     };
-    RxAVClient.printWelcome = function () {
-        RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        RxAVClient.printLog("version:" + currentConfig.sdkVersion);
-        RxAVClient.printLog("pluginVersion:" + currentConfig.pluginVersion);
-        RxAVClient.printLog("environment:node?" + currentConfig.isNode);
-        RxAVClient.printLog("region:" + currentConfig.region);
-        RxAVClient.printLog("server url:" + currentConfig.serverUrl);
-        RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
+    RxAVClient.generateAVCommand = function (relativeUrl, method, data) {
+        var cmd = new AVCommand_1.AVCommand({
+            relativeUrl: relativeUrl,
+            method: method,
+            data: data
+        });
+        return cmd;
+    };
+    RxAVClient.request = function (relativeUrl, method, data) {
+        var cmd = RxAVClient.generateAVCommand(relativeUrl, method, data);
+        return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(function (res) {
+            return res.body;
+        });
     };
     return RxAVClient;
 }());
