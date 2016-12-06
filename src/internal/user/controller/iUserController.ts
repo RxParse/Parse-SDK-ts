@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 
 export /**

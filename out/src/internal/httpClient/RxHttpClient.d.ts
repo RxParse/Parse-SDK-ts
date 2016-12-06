@@ -1,5 +1,5 @@
 /// <reference types="superagent" />
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './iRxHttpClient';
@@ -9,6 +9,7 @@ export declare class RxHttpClient implements IRxHttpClient {
     version: number;
     constructor(version?: number);
     execute(httpRequest: HttpRequest): Observable<HttpResponse>;
+    batchExecute(): void;
     RxExecuteAxios(httpRequest: HttpRequest): AxiosPromise;
     RxExecuteSuperagent(httpRequest: HttpRequest): Promise<superagent.Response>;
 }

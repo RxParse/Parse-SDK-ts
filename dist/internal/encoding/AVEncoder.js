@@ -1,4 +1,5 @@
 "use strict";
+var RxLeanCloud_1 = require('../../RxLeanCloud');
 var AVEncoder = (function () {
     function AVEncoder() {
     }
@@ -14,6 +15,14 @@ var AVEncoder = (function () {
         var _this = this;
         if (item instanceof Date) {
             return { '__type': 'Date', 'iso': item.toJSON() };
+        }
+        if (item instanceof RxLeanCloud_1.RxAVObject) {
+            console.log('item.state', item.state);
+            return {
+                __type: "Pointer",
+                className: item.className,
+                objectId: item.objectId
+            };
         }
         if (item instanceof Array) {
             return item.map(function (v, i, a) {

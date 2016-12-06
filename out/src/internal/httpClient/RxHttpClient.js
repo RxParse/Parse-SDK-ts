@@ -1,5 +1,5 @@
 "use strict";
-var rxjs_1 = require('rxjs');
+var rxjs_1 = require('@reactivex/rxjs');
 var HttpResponse_1 = require('./HttpResponse');
 var axios_1 = require('axios');
 var superagent = require('superagent');
@@ -50,6 +50,8 @@ var RxHttpClient = (function () {
                 RxAVClient_1.RxAVClient.printLog('Error:', JSON.stringify(errMsg));
                 return rxjs_1.Observable.throw(errMsg);
             });
+    };
+    RxHttpClient.prototype.batchExecute = function () {
     };
     RxHttpClient.prototype.RxExecuteAxios = function (httpRequest) {
         var method = httpRequest.method.toUpperCase();

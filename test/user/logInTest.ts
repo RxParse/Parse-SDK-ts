@@ -8,8 +8,15 @@ describe('RxAVUser', function () {
     before(() => {
     });
     it('RxAVUser#logIn', function (done) {
-        RxAVUser.login('junwu', 'leancloud').subscribe(() => {
-            done();
+        RxAVUser.login('junwu', 'leancloud').subscribe(user => {
+            console.log(user.username);
+            console.log(user.state);
+            chai.assert.isNotNull(user.username);
+            user.isAuthenticated().subscribe(s => {
+                console.log('user.isAuthenticated()', s);
+                chai.assert.isTrue(s);
+                done();
+            });
         }, error => {
             /** error 的格式如下：
              * {statusCode: -1,error: { code: 0, error: 'Server error' }}

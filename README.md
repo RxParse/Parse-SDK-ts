@@ -6,15 +6,17 @@
 ## 目前支持的模块
 
 - [x] Object#save
+- [x] Object.saveAll
 - [x] User#signUp
+- [x] LeanEngine#callFunction 
 
-### 性感的语法
+### 性感的订阅语法
 
 ```ts
 let todo: RxAVObject = new RxAVObject('RxTodo');
 todo.set('title', '开会');
 todo.set('time', '2016-12-03');
-todo.set('rd', new Date());
+todo.set('reminder', new Date());
 todo.save().subscribe(success => {
     if (success) console.log(todo.objectId);
 });

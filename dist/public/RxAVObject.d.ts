@@ -1,7 +1,7 @@
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { iObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from '@reactivex/rxjs';
 export declare class RxAVObject {
     isNew: boolean;
     className: string;
@@ -16,7 +16,7 @@ export declare class RxAVObject {
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
     constructor(className: string);
-    protected readonly ObjectController: iObjectController;
+    protected static readonly ObjectController: iObjectController;
     objectId: string;
     isDirty: boolean;
     readonly createdAt: Date;
@@ -30,10 +30,33 @@ export declare class RxAVObject {
      *
      * @memberOf RxAVObject
      */
-    save(): Observable<void>;
+    save(): Observable<boolean>;
+    /**
+     * 根据 className 和 objectId 构建一个对象
+     *
+     * @static
+     * @param {string} classnName 表名称
+     * @param {string} objectId objectId
+     * @returns
+     *
+     * @memberOf RxAVObject
+     */
     static createWithoutData(classnName: string, objectId: string): RxAVObject;
+    /**
+     * 批量保存 RxAVObject
+     *
+     * @static
+     * @param {Array<RxAVObject>} objects 需要批量保存的 RxAVObject 数组
+     *
+     * @memberOf RxAVObject
+     */
+    static saveAll(objects: Array<RxAVObject>): Observable<boolean>;
+    protected static batchSave(): void;
+    protected static deepSave(obj: RxAVObject): Observable<boolean>;
+    protected collectDirtyChildren(): RxAVObject[];
     protected handlerSave(serverState: IObjectState): void;
     protected handleFetchResult(serverState: IObjectState): void;
     protected mergeFromServer(serverState: IObjectState): void;
+    protected setProperty(propertyName: string, value: any): void;
     protected getProperty(propertyName: string): any;
 }

@@ -1,5 +1,5 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from '@reactivex/rxjs';
 import { ILeanEngineController } from '../internal/LeanEngine/controller/ILeanEngineController';
 import { RxAVUser } from '../RxLeanCloud';
 

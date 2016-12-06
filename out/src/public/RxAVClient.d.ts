@@ -1,5 +1,5 @@
 import { AVCommand } from '../internal/command/AVCommand';
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 export declare class RxAVClient {
     static init(config: {
         appId: string;
@@ -29,12 +29,12 @@ export declare class RxAVClient {
     static isNode(): boolean;
     protected static printWelcome(): void;
     static printLog(message?: any, ...optionalParams: any[]): void;
-    protected static generateAVCommand(relativeUrl: string, method: string, data: {
+    protected static generateAVCommand(relativeUrl: string, method: string, data?: {
         [key: string]: any;
-    }): AVCommand;
-    static request(relativeUrl: string, method: string, data: {
+    }, sessionToken?: string): AVCommand;
+    static request(relativeUrl: string, method: string, data?: {
         [key: string]: any;
-    }): Observable<{
+    }, sessionToken?: string): Observable<{
         [key: string]: any;
     }>;
 }

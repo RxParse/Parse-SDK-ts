@@ -29,13 +29,16 @@ var RxAVClient = (function () {
     };
     RxAVClient.headers = function () {
         var config = RxAVClient.currentConfig();
-        if (RxAVClient._headers == null)
+        if (RxAVClient._headers == null) {
             RxAVClient._headers = {
                 'X-LC-Id': config.applicationId,
                 'X-LC-Key': config.applicationKey,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ts-sdk/' + config.sdkVersion
+                'Content-Type': 'application/json'
             };
+            if (RxAVClient.isNode()) {
+                RxAVClient._headers['User-Agent'] = 'ts-sdk/' + config.sdkVersion;
+            }
+        }
         return RxAVClient._headers;
     };
     RxAVClient.serverUrl = function () {
@@ -69,16 +72,17 @@ var RxAVClient = (function () {
             else
                 console.log(message);
     };
-    RxAVClient.generateAVCommand = function (relativeUrl, method, data) {
+    RxAVClient.generateAVCommand = function (relativeUrl, method, data, sessionToken) {
         var cmd = new AVCommand_1.AVCommand({
             relativeUrl: relativeUrl,
             method: method,
-            data: data
+            data: data,
+            sessionToken: sessionToken
         });
         return cmd;
     };
-    RxAVClient.request = function (relativeUrl, method, data) {
-        var cmd = RxAVClient.generateAVCommand(relativeUrl, method, data);
+    RxAVClient.request = function (relativeUrl, method, data, sessionToken) {
+        var cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
         return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(function (res) {
             return res.body;
         });

@@ -3,7 +3,7 @@ import { IObjectState } from '../internal/object/state/IObjectState';
 import { iObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { RxAVUser } from '../RxLeanCloud';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from '@reactivex/rxjs';
 
 export class RxAVObject {
     isNew: boolean;
@@ -20,10 +20,11 @@ export class RxAVObject {
     constructor(className: string) {
         this.className = className;
         this.estimatedData = {};
+        this._isDirty = true;
         this.state = new MutableObjectState({ className: className });
     }
 
-    protected get ObjectController() {
+    protected static get ObjectController() {
         return SDKPlugins.instance.ObjectControllerInstance;
     }
 
@@ -50,6 +51,7 @@ export class RxAVObject {
     }
 
     set(key: string, value: any) {
+
         this.estimatedData[key] = value;
     }
 
@@ -64,32 +66,143 @@ export class RxAVObject {
      * 
      * @memberOf RxAVObject
      */
-    save(): Observable<void> {
-        for (let key in this.estimatedData) {
-            let x = this.estimatedData[key];
+    public save() {
+        let dirtyChildren = this.collectDirtyChildren();
+        if (dirtyChildren.length == 0) {
+            let y = RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
+                console.log('this.handlerSave(serverState);');
+                this.handlerSave(serverState);
+                return true;
+            });
+            return y;
+        } else {
+            let states = dirtyChildren.map(c => c.state);
+            let ds = dirtyChildren.map(c => c.estimatedData);
+
+            let x = RxAVObject.ObjectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
+                dirtyChildren.forEach((dc, i, a) => {
+                    dc.isDirty = false;
+                    dc.handlerSave(serverStateArray[i]);
+                });
+                return dirtyChildren;
+            }).flatMap((sss, i) => {
+                return RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
+                    console.log('father');
+                    this.handlerSave(serverState);
+                    return true;
+                });
+            });
+            return x;
         }
-        return this.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-            this.handlerSave(serverState);
-        });
+
+        // let y = RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
+        //     console.log('this.handlerSave(serverState);');
+        //     this.handlerSave(serverState);
+        //     return true;
+        // });
+
+        // return Observable.concat(x, y);
+
+        // return RxAVObject.deepSave(this).map(success => {
+        //     return RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
+        //         console.log('this.handlerSave(serverState);');
+        //         this.handlerSave(serverState);
+        //     });
+        // });
     }
 
+    /**
+     * 根据 className 和 objectId 构建一个对象
+     * 
+     * @static
+     * @param {string} classnName 表名称
+     * @param {string} objectId objectId
+     * @returns
+     * 
+     * @memberOf RxAVObject
+     */
     public static createWithoutData(classnName: string, objectId: string) {
         let rtn = new RxAVObject(classnName);
         rtn.objectId = objectId;
         return rtn;
     }
 
+
+    /**
+     * 批量保存 RxAVObject
+     * 
+     * @static
+     * @param {Array<RxAVObject>} objects 需要批量保存的 RxAVObject 数组
+     * 
+     * @memberOf RxAVObject
+     */
+    public static saveAll(objects: Array<RxAVObject>) {
+        let r: Observable<boolean>;
+        objects.map(obj => {
+            let y = obj.save();
+            r = Observable.concat(y);
+        });
+        return r;
+        // let dictionaries = objects.map(obj => obj.estimatedData);
+        // let states = objects.map(obj => obj.state);
+        // return RxAVObject.ObjectController.saveAll(states, dictionaries, RxAVUser.currentSessionToken).map(next => {
+
+        // });
+    }
+
+    protected static batchSave() {
+
+    }
+
+    protected static deepSave(obj: RxAVObject) {
+        let dirtyChildren: Array<RxAVObject> = [];
+        for (let key in obj.estimatedData) {
+            let value = obj.estimatedData[key];
+            if (value instanceof RxAVObject) {
+                if (value.isDirty) {
+                    dirtyChildren.push(value);
+                }
+            }
+        }
+        console.log('dirtyChildren.length', dirtyChildren.length);
+        if (dirtyChildren.length == 0) return Observable.from([true]);
+        return RxAVObject.saveAll(dirtyChildren);
+
+        // return RxAVObject.saveAll(dirtyChildren).do(children => { 
+        //      return obj.save();
+        // });
+    }
+
+    protected collectDirtyChildren() {
+        let dirtyChildren: Array<RxAVObject> = [];
+        for (let key in this.estimatedData) {
+            let value = this.estimatedData[key];
+            if (value instanceof RxAVObject) {
+                if (value.isDirty) {
+                    dirtyChildren.push(value);
+                }
+            }
+        }
+        return dirtyChildren;
+    }
+
     protected handlerSave(serverState: IObjectState) {
         this.state.apply(serverState);
     }
 
-    protected handleFetchResult(serverState: IObjectState){
+    protected handleFetchResult(serverState: IObjectState) {
         this.state.apply(serverState);
     }
 
     protected mergeFromServer(serverState: IObjectState) {
         if (serverState.objectId != null) {
 
+        }
+    }
+
+    protected setProperty(propertyName: string, value: any) {
+        if (this.state != null) {
+            this.state.serverData[propertyName] = value;
         }
     }
 
