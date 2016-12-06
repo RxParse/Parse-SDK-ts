@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 import { AVCommand } from './AVCommand';
 import { AVCommandResponse } from './AVCommandResponse';
 import { HttpResponse } from '../httpClient/HttpResponse';

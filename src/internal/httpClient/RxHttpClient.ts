@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './iRxHttpClient';
@@ -54,6 +54,12 @@ export class RxHttpClient implements IRxHttpClient {
             return Observable.throw(errMsg);
         });
     }
+
+    batchExecute() {
+
+    }
+
+
     RxExecuteAxios(httpRequest: HttpRequest): AxiosPromise {
         let method = httpRequest.method.toUpperCase();
         let useData = false;

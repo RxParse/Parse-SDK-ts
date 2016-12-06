@@ -3,7 +3,7 @@ import { AVCommand } from '../internal/command/AVCommand';
 import { AVCommandResponse } from '../internal/command/AVCommandResponse';
 import { IAVCommandRunner } from '../internal/command/IAVCommandRunner';
 import { AVCommandRunner } from '../internal/command/AVCommandRunner';
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 
 var currentConfig: {
     applicationId?: string,
@@ -53,13 +53,17 @@ export class RxAVClient {
     protected static _headers: { [key: string]: any };
     public static headers() {
         let config = RxAVClient.currentConfig();
-        if (RxAVClient._headers == null)
+        if (RxAVClient._headers == null) {
             RxAVClient._headers = {
                 'X-LC-Id': config.applicationId,
                 'X-LC-Key': config.applicationKey,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ts-sdk/' + config.sdkVersion
+                'Content-Type': 'application/json'
             }
+            if (RxAVClient.isNode()) {
+                RxAVClient._headers['User-Agent'] = 'ts-sdk/' + config.sdkVersion;
+            }
+        }
+
         return RxAVClient._headers;
     }
     public static serverUrl() {
@@ -88,17 +92,18 @@ export class RxAVClient {
             else console.log(message);
     }
 
-    protected static generateAVCommand(relativeUrl: string, method: string, data: { [key: string]: any }): AVCommand {
+    protected static generateAVCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): AVCommand {
         let cmd = new AVCommand({
             relativeUrl: relativeUrl,
             method: method,
-            data: data
+            data: data,
+            sessionToken: sessionToken
         });
         return cmd;
     }
 
-    public static request(relativeUrl: string, method: string, data: { [key: string]: any }): Observable<{ [key: string]: any }> {
-        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data);
+    public static request(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): Observable<{ [key: string]: any }> {
+        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data,sessionToken);
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });

@@ -1,7 +1,7 @@
 import { HttpResponse } from '../../httpClient/HttpResponse';
 import { AVCommand } from '../../command/AVCommand';
 import { RxAVClient } from '../../../public/RxAVClient';
-import { Observable } from 'rxjs';
+import { Observable } from '@reactivex/rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 import { IUserController } from './iUserController';
 import { SDKPlugins } from '../../SDKPlugins';

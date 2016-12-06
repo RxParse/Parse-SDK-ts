@@ -1,4 +1,4 @@
-import { RxAVClient } from '../../public/RxAVClient';
+import { RxAVClient, RxAVObject } from '../../RxLeanCloud';
 import { IAVEncoder } from './IAVEncoder';
 export /**
  *  AVEncoder
@@ -20,6 +20,14 @@ export /**
     encodeItem(item: any): any {
         if (item instanceof Date) {
             return { '__type': 'Date', 'iso': item.toJSON() };
+        }
+        if (item instanceof RxAVObject) {
+            console.log('item.state', item.state);
+            return {
+                __type: "Pointer",
+                className: item.className,
+                objectId: item.objectId
+            };
         }
         if (item instanceof Array) {
             return item.map((v, i, a) => {

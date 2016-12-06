@@ -10,5 +10,5 @@ RxAVClient.init({
     appKey: APP_KEY,
     region: REGION,
     log: true,
-    pluginVersion: 1
+    pluginVersion: 2
 });

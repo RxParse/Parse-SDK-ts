@@ -6,8 +6,15 @@ describe('RxAVUser', function () {
     before(function () {
     });
     it('RxAVUser#logIn', function (done) {
-        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').subscribe(function () {
-            done();
+        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').subscribe(function (user) {
+            console.log(user.username);
+            console.log(user.state);
+            chai.assert.isNotNull(user.username);
+            user.isAuthenticated().subscribe(function (s) {
+                console.log('user.isAuthenticated()', s);
+                chai.assert.isTrue(s);
+                done();
+            });
         }, function (error) {
             /** error 的格式如下：
              * {statusCode: -1,error: { code: 0, error: 'Server error' }}

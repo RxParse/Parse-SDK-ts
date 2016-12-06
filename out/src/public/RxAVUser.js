@@ -6,6 +6,14 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var SDKPlugins_1 = require('../internal/SDKPlugins');
 var RxLeanCloud_1 = require('../RxLeanCloud');
+var rxjs_1 = require('@reactivex/rxjs');
+/**
+ * 用户
+ *
+ * @export
+ * @class RxAVUser 一个用户对应的是 _User 的一个对象，它的查询权限是关闭的，默认是不可以通过 RxAVQuery 查询用户的
+ * @extends {RxAVObject}
+ */
 var RxAVUser = (function (_super) {
     __extends(RxAVUser, _super);
     function RxAVUser() {
@@ -39,17 +47,41 @@ var RxAVUser = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVUser.prototype, "username", {
+        /**
+         * 获取用户名
+         *
+         *
+         * @memberOf RxAVUser
+         */
         get: function () {
+            this._username = this.getProperty('username');
             return this._username;
         },
+        /**
+         * 新用户设置用户名，已注册用户调用这个接口会抛出异常
+         *
+         *
+         * @memberOf RxAVUser
+         */
         set: function (username) {
-            this._username = username;
-            this.set('username', this._username);
+            if (this.sesstionToken == null) {
+                this._username = username;
+                this.set('username', this._username);
+            }
+            else {
+                throw new Error('can not reset username.');
+            }
         },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(RxAVUser.prototype, "password", {
+        /**
+         * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
+         *
+         *
+         * @memberOf RxAVUser
+         */
         set: function (password) {
             if (this.sesstionToken == null)
                 this.set('password', password);
@@ -61,12 +93,36 @@ var RxAVUser = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVUser.prototype, "sesstionToken", {
+        /**
+         * 用户的鉴权信息
+         *
+         * @readonly
+         *
+         * @memberOf RxAVUser
+         */
         get: function () {
             return this.getProperty('sessionToken');
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * 判断当前用户的鉴权信息是否有效
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.prototype.isAuthenticated = function () {
+        try {
+            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.request('/users/me', 'GET', null, this.sesstionToken).map(function (body) {
+                return true;
+            });
+        }
+        catch (error) {
+            return rxjs_1.Observable.from([error.error.code == 211]);
+        }
+    };
     /**
      * 使用当前用户的信息注册到 LeanCloud _User 表中
      *
@@ -80,6 +136,15 @@ var RxAVUser = (function (_super) {
             _this.handlerSignUp(userState);
         });
     };
+    /**
+     * 发送注册用户时需要的验证码
+     *
+     * @static
+     * @param {string} mobilephone 手机号
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
     RxAVUser.sendSignUpShortcode = function (mobilephone) {
         var data = {
             mobilePhoneNumber: mobilephone
@@ -88,6 +153,15 @@ var RxAVUser = (function (_super) {
             return true;
         });
     };
+    /**
+     * 发送登录时需要的验证码
+     *
+     * @static
+     * @param {string} mobilephone 手机号
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
     RxAVUser.sendLogInShortcode = function (mobilephone) {
         var data = {
             mobilePhoneNumber: mobilephone

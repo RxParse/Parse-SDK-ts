@@ -6,5 +6,5 @@ RxLeanCloud_1.RxAVClient.init({
     appKey: config_1.APP_KEY,
     region: config_1.REGION,
     log: true,
-    pluginVersion: 1
+    pluginVersion: 2
 });

@@ -3,8 +3,15 @@ import { RxAVClient, RxAVObject } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IUserController } from '../internal/user/controller/iUserController';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from '@reactivex/rxjs';
 
+/**
+ * 用户
+ * 
+ * @export
+ * @class RxAVUser 一个用户对应的是 _User 的一个对象，它的查询权限是关闭的，默认是不可以通过 RxAVQuery 查询用户的
+ * @extends {RxAVObject}
+ */
 export class RxAVUser extends RxAVObject {
     private _username: string;
     email: string;
@@ -20,6 +27,7 @@ export class RxAVUser extends RxAVObject {
         }
         return null;
     }
+    
     private static _currentUser: RxAVUser;
     protected static saveCurrentUser(user: RxAVUser) {
         RxAVUser._currentUser = user;
@@ -32,14 +40,41 @@ export class RxAVUser extends RxAVObject {
         return SDKPlugins.instance.UserControllerInstance;
     }
 
+
+    /**
+     * 新用户设置用户名，已注册用户调用这个接口会抛出异常
+     * 
+     * 
+     * @memberOf RxAVUser
+     */
     set username(username: string) {
-        this._username = username;
-        this.set('username', this._username);
+        if (this.sesstionToken == null) {
+            this._username = username;
+            this.set('username', this._username);
+        }
+        else {
+            throw new Error('can not reset username.');
+        }
     }
+
+
+    /**
+     * 获取用户名
+     * 
+     * 
+     * @memberOf RxAVUser
+     */
     get username() {
+        this._username = this.getProperty('username');
         return this._username;
     }
 
+    /**
+     * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
+     * 
+     * 
+     * @memberOf RxAVUser
+     */
     set password(password: string) {
         if (this.sesstionToken == null)
             this.set('password', password);
@@ -48,8 +83,32 @@ export class RxAVUser extends RxAVObject {
         }
     }
 
+    /**
+     * 用户的鉴权信息
+     * 
+     * @readonly
+     * 
+     * @memberOf RxAVUser
+     */
     get sesstionToken() {
         return this.getProperty('sessionToken');
+    }
+
+    /**
+     * 判断当前用户的鉴权信息是否有效
+     * 
+     * @returns {Observable<boolean>}
+     * 
+     * @memberOf RxAVUser
+     */
+    public isAuthenticated(): Observable<boolean> {
+        try {
+            return !!this.sesstionToken && RxAVClient.request('/users/me', 'GET', null, this.sesstionToken).map(body => {
+                return true;
+            });
+        } catch (error) {
+            return Observable.from([error.error.code == 211]);
+        }
     }
 
 
@@ -60,12 +119,21 @@ export class RxAVUser extends RxAVObject {
      * 返回一个可订阅的对象，尽管是 void，但是当前 AVUser 实例对象里面的 sessionToken，objectId 都已更新
      * @memberOf RxAVUser
      */
-    signUp(): Observable<void> {
+    public signUp(): Observable<void> {
         return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
             this.handlerSignUp(userState);
         });
     }
 
+    /**
+     * 发送注册用户时需要的验证码
+     * 
+     * @static
+     * @param {string} mobilephone 手机号
+     * @returns {Observable<boolean>}
+     * 
+     * @memberOf RxAVUser
+     */
     public static sendSignUpShortcode(mobilephone: string): Observable<boolean> {
         let data = {
             mobilePhoneNumber: mobilephone
@@ -75,6 +143,15 @@ export class RxAVUser extends RxAVObject {
         });
     }
 
+    /**
+     * 发送登录时需要的验证码
+     * 
+     * @static
+     * @param {string} mobilephone 手机号
+     * @returns {Observable<boolean>}
+     * 
+     * @memberOf RxAVUser
+     */
     public static sendLogInShortcode(mobilephone: string): Observable<boolean> {
         let data = {
             mobilePhoneNumber: mobilephone
