@@ -1,4 +1,4 @@
-## Rx is great,Typescript is wonderful！
+## Rx is great,Typescript is wonderful, Angular2 is awesome!
 
 开发目的：Typescript 跟 C# 一样可爱，Rx 思想一旦接受，就等同于中毒。
 
@@ -8,7 +8,28 @@
 - [x] Object#save
 - [x] Object.saveAll
 - [x] User#signUp
-- [x] LeanEngine#callFunction 
+- [x] Query#equalTo
+- [x] Query#notEqualTo
+- [x] Query#lessThan
+- [x] Query#greaterlTo
+- [x] Query#descending
+- [x] Query#ascending
+- [x] LeanEngine#callFunction
+
+## 未来肯定支持的模块
+- [ ] ACL
+- [ ] 短信
+- [ ] Ionic2 本地存储适配
+- [ ] Angular 本地存储适配
+
+## 未来未必支持的模块
+- [ ] Push
+- [ ] File
+- [ ] Analytic
+
+## 未来说不定就有的模块
+- [ ] 聊天
+
 
 ### 性感的订阅语法
 

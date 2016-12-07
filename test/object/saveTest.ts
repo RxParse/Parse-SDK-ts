@@ -21,6 +21,7 @@ describe('RxObject', function () {
         todo.set('reminder', new Date());
 
         todo.save().subscribe(() => {
+            
             done();
         }, error => {
             /** error 的格式如下：

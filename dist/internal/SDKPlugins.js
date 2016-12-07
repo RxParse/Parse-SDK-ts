@@ -4,6 +4,7 @@ var RxHttpClient_1 = require('./httpClient/RxHttpClient');
 var AVCommandRunner_1 = require('./command/AVCommandRunner');
 var ObjectController_1 = require('./object/controller/ObjectController');
 var UserController_1 = require('./user/controller/UserController');
+var QueryController_1 = require('./query/controller/QueryController');
 var LeanEngineController_1 = require('./LeanEngine/controller/LeanEngineController');
 var AVEncoder_1 = require('./encoding/AVEncoder');
 var AVDecoder_1 = require('./encoding/AVDecoder');
@@ -51,6 +52,16 @@ var SDKPlugins = (function () {
                 this._UserController = new UserController_1.UserController(this.CommandRunner);
             }
             return this._UserController;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "QueryControllerInstance", {
+        get: function () {
+            if (this._QueryController == null) {
+                this._QueryController = new QueryController_1.QueryController(this.CommandRunner);
+            }
+            return this._QueryController;
         },
         enumerable: true,
         configurable: true
