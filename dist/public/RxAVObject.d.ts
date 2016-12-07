@@ -1,7 +1,7 @@
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 export declare class RxAVObject {
     className: string;
     estimatedData: {
@@ -9,7 +9,7 @@ export declare class RxAVObject {
     };
     state: MutableObjectState;
     private _isDirty;
-    private isNew;
+    private _isNew;
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
      * @constructor
@@ -30,7 +30,7 @@ export declare class RxAVObject {
      *
      * @memberOf RxAVObject
      */
-    save(): Observable<boolean>;
+    save(): Observable<any>;
     /**
      * 根据 className 和 objectId 构建一个对象
      *

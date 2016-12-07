@@ -6,7 +6,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var SDKPlugins_1 = require('../internal/SDKPlugins');
 var RxLeanCloud_1 = require('../RxLeanCloud');
-var rxjs_1 = require('@reactivex/rxjs');
+var rxjs_1 = require('rxjs');
 /**
  * 用户
  *
@@ -209,7 +209,7 @@ var RxAVUser = (function (_super) {
     RxAVUser.login = function (username, password) {
         return RxAVUser.UserController.logIn(username, password).map(function (userState) {
             var user = RxAVUser.createWithoutData();
-            user.handleFetchResult(userState);
+            user.handlerLogIn(userState);
             return user;
         });
     };
@@ -218,6 +218,10 @@ var RxAVUser = (function (_super) {
         if (objectId)
             rtn.objectId = objectId;
         return rtn;
+    };
+    RxAVUser.prototype.handlerLogIn = function (userState) {
+        this.handleFetchResult(userState);
+        RxAVUser.saveCurrentUser(this);
     };
     RxAVUser.prototype.handlerSignUp = function (userState) {
         _super.prototype.handlerSave.call(this, userState);

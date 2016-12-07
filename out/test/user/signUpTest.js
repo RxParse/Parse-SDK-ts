@@ -30,7 +30,7 @@ describe('RxAVUser', function () {
         });
     });
     it('RxAVUser#requestShortcode', function (done) {
-        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }
@@ -44,7 +44,7 @@ describe('RxAVUser', function () {
         });
     });
     it('RxAVUser#signUpOrLoginByMobilephone', function (done) {
-        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }

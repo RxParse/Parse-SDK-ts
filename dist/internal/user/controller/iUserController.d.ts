@@ -1,4 +1,4 @@
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 export interface IUserController {
     signUp(state: IObjectState, dictionary: {

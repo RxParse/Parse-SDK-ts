@@ -3,7 +3,7 @@ import { AVCommand } from '../internal/command/AVCommand';
 import { AVCommandResponse } from '../internal/command/AVCommandResponse';
 import { IAVCommandRunner } from '../internal/command/IAVCommandRunner';
 import { AVCommandRunner } from '../internal/command/AVCommandRunner';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 var currentConfig: {
     applicationId?: string,

@@ -4,7 +4,7 @@ import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 import { RxAVQuery } from '../../../RxLeancloud';
 import { SDKPlugins } from '../../SDKPlugins';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 export /**
  * QueryController
@@ -16,11 +16,12 @@ export /**
         this._commandRunner = commandRunner;
     }
 
-    find(query: RxAVQuery, sesstionToken: string): Observable<Array<IObjectState>> {
+    find(query: RxAVQuery, sessionToken: string): Observable<Array<IObjectState>> {
         let qu = this.buildQueryString(query);
         let cmd = new AVCommand({
             relativeUrl: qu,
-            method: 'GET'
+            method: 'GET',
+            sessionToken: sessionToken
         });
         return this._commandRunner.runRxCommand(cmd).map(res => {
             let items = res.body["results"] as Array<Object>;

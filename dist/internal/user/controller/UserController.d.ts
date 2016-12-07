@@ -1,4 +1,4 @@
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 import { IUserController } from './iUserController';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';

@@ -1,5 +1,5 @@
 import { AVCommand } from '../internal/command/AVCommand';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 export declare class RxAVClient {
     static init(config: {
         appId: string;

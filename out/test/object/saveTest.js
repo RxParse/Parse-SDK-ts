@@ -3,6 +3,7 @@
 var chai = require('chai');
 var RxLeanCloud_1 = require('../../src/RxLeanCloud');
 describe('RxObject', function () {
+    var _this = this;
     before(function () {
         RxLeanCloud_1.RxAVClient.init({
             appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
@@ -74,6 +75,20 @@ describe('RxObject', function () {
             done();
         }, function (error) {
             console.log(error);
+        });
+    });
+    it('RxAVObject#saveUnderACL', function (done) {
+        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').subscribe(function (user) {
+            var team = new RxLeanCloud_1.RxAVObject('teams');
+            team.set('name', _this.name);
+            team.set('domain', _this.domain);
+            team.set('owner', RxLeanCloud_1.RxAVUser.currentUser);
+            team.save().subscribe(function () {
+                _this.name = '';
+                _this.domain = '';
+                _this.creating = false;
+                done();
+            });
         });
     });
 });

@@ -3,7 +3,7 @@ import { IQueryController } from '../internal/query/controller/IQueryController'
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 export /**
  * RxAVQuery

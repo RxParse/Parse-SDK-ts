@@ -34,7 +34,7 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#requestShortcode', done => {
-        if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+        if (RxAVClient.currentConfig().region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }
@@ -50,7 +50,7 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#signUpOrLoginByMobilephone', done => {
-        if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+        if (RxAVClient.currentConfig().region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }

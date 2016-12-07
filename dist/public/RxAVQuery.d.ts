@@ -1,7 +1,7 @@
 import { RxAVObject } from '../RxLeanCloud';
 import { IQueryController } from '../internal/query/controller/IQueryController';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 export declare class RxAVQuery {
     constructor(objectClass: string | RxAVObject);
     className: string;

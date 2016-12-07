@@ -2,7 +2,7 @@
 var SDKPlugins_1 = require('../internal/SDKPlugins');
 var MutableObjectState_1 = require('../internal/object/state/MutableObjectState');
 var RxLeanCloud_1 = require('../RxLeanCloud');
-var rxjs_1 = require('@reactivex/rxjs');
+var rxjs_1 = require('rxjs');
 var RxAVObject = (function () {
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
@@ -162,7 +162,7 @@ var RxAVObject = (function () {
     };
     RxAVObject.prototype.handleFetchResult = function (serverState) {
         this.state.apply(serverState);
-        this.isNew = false;
+        this._isNew = false;
         this.isDirty = false;
     };
     RxAVObject.prototype.mergeFromServer = function (serverState) {

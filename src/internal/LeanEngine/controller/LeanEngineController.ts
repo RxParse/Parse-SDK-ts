@@ -1,5 +1,5 @@
 import { ILeanEngineController } from './ILeanEngineController'
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 import { AVCommand } from '../../command/AVCommand';
 import { SDKPlugins } from '../../SDKPlugins';
 import { ILeanEngineDecoder } from '../encoding/ILeanEngineDecoder';

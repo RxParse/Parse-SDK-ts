@@ -1,5 +1,5 @@
 "use strict";
-var rxjs_1 = require('@reactivex/rxjs');
+var rxjs_1 = require('rxjs');
 var HttpResponse_1 = require('./HttpResponse');
 var axios_1 = require('axios');
 var superagent = require('superagent');

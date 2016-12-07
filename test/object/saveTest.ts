@@ -1,7 +1,7 @@
 /// <reference path="../../typings/index.d.ts" />
 
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject } from '../../src/RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVUser } from '../../src/RxLeanCloud';
 
 describe('RxObject', function () {
     before(() => {
@@ -21,7 +21,7 @@ describe('RxObject', function () {
         todo.set('reminder', new Date());
 
         todo.save().subscribe(() => {
-            
+
             done();
         }, error => {
             /** error 的格式如下：
@@ -91,6 +91,23 @@ describe('RxObject', function () {
             done();
         }, error => {
             console.log(error);
+        });
+    });
+
+    it('RxAVObject#saveUnderACL', done => {
+        RxAVUser.login('junwu', 'leancloud').subscribe(user => {
+            let team: RxAVObject = new RxAVObject('teams');
+
+            team.set('name', this.name);
+            team.set('domain', this.domain);
+            team.set('owner', RxAVUser.currentUser);
+
+            team.save().subscribe(() => {
+                this.name = '';
+                this.domain = '';
+                this.creating = false;
+                done();
+            });
         });
     });
 });

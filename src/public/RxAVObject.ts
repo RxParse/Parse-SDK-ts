@@ -3,7 +3,7 @@ import { IObjectState } from '../internal/object/state/IObjectState';
 import { IObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { RxAVUser } from '../RxLeanCloud';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 export class RxAVObject {
 
@@ -11,7 +11,7 @@ export class RxAVObject {
     estimatedData: { [key: string]: any };
     state: MutableObjectState;
     private _isDirty: boolean;
-    private isNew: boolean;
+    private _isNew: boolean;
 
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
@@ -166,7 +166,7 @@ export class RxAVObject {
 
     handleFetchResult(serverState: IObjectState) {
         this.state.apply(serverState);
-        this.isNew = false;
+        this._isNew = false;
         this.isDirty = false;
     }
 
