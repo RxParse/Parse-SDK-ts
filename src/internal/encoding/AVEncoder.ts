@@ -22,7 +22,6 @@ export /**
             return { '__type': 'Date', 'iso': item.toJSON() };
         }
         if (item instanceof RxAVObject) {
-            console.log('item.state', item.state);
             return {
                 __type: "Pointer",
                 className: item.className,

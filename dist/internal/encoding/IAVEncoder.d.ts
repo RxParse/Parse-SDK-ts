@@ -4,4 +4,5 @@ export interface IAVEncoder {
     }): {
         [key: string]: any;
     };
+    encodeItem(item: any): any;
 }

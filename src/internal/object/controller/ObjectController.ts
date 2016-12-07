@@ -1,11 +1,11 @@
 import { IObjectState } from '../state/IObjectState';
-import { iObjectController } from './iObjectController';
+import { IObjectController } from './iObjectController';
 import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 import { SDKPlugins } from '../../SDKPlugins';
 import { Observable } from '@reactivex/rxjs';
 
-export class ObjectController implements iObjectController {
+export class ObjectController implements IObjectController {
     private readonly _commandRunner: IAVCommandRunner;
 
     constructor(commandRunner: IAVCommandRunner) {

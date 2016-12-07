@@ -4,10 +4,12 @@ import { RxHttpClient } from './httpClient/RxHttpClient';
 import { AVCommand } from './command/AVCommand';
 import { IAVCommandRunner } from './command/IAVCommandRunner';
 import { AVCommandRunner } from './command/AVCommandRunner';
-import { iObjectController } from './object/controller/iObjectController';
+import { IObjectController } from './object/controller/iObjectController';
 import { ObjectController } from './object/controller/ObjectController';
 import { IUserController } from './user/controller/iUserController';
 import { UserController } from './user/controller/UserController';
+import { IQueryController } from './query/controller/IQueryController';
+import { QueryController } from './query/controller/QueryController';
 import { ILeanEngineController } from './LeanEngine/controller/ILeanEngineController';
 import { LeanEngineController } from './LeanEngine/controller/LeanEngineController';
 
@@ -29,13 +31,14 @@ export /**
     private _version = 1;
     private _HttpClient: IRxHttpClient;
     private _CommandRunner: IAVCommandRunner;
-    private _ObjectController: iObjectController;
+    private _ObjectController: IObjectController;
+    private _QueryController: IQueryController;
     private _UserController: IUserController;
     private _LeanEngineController: ILeanEngineController;
     private _encoder: IAVEncoder;
     private _decoder: IAVDecoder;
     private _objectdecoder: IAVObjectDecoder;
-    private _LeanEngineDecoder:ILeanEngineDecoder;
+    private _LeanEngineDecoder: ILeanEngineDecoder;
     private static _sdkPluginsInstance: SDKPlugins;
 
     constructor(version?: number) {
@@ -67,6 +70,12 @@ export /**
             this._UserController = new UserController(this.CommandRunner);
         }
         return this._UserController;
+    }
+    get QueryControllerInstance() {
+        if (this._QueryController == null) {
+            this._QueryController = new QueryController(this.CommandRunner);
+        }
+        return this._QueryController;
     }
     get LeanEngineControllerInstance() {
         if (this._LeanEngineController == null) {
@@ -102,10 +111,10 @@ export /**
         }
         return this._objectdecoder;
     }
-    
-    get LeanEngineDecoder(){
+
+    get LeanEngineDecoder() {
         if (this._LeanEngineDecoder == null) {
-            this._LeanEngineDecoder = new LeanEngineDecoder(this.Decoder,this.ObjectDecoder);
+            this._LeanEngineDecoder = new LeanEngineDecoder(this.Decoder, this.ObjectDecoder);
         }
         return this._LeanEngineDecoder;
     }

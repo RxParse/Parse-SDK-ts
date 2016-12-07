@@ -1,8 +1,9 @@
 import { HttpRequest } from './httpClient/HttpRequest';
 import { IRxHttpClient } from './httpClient/iRxHttpClient';
 import { IAVCommandRunner } from './command/IAVCommandRunner';
-import { iObjectController } from './object/controller/iObjectController';
+import { IObjectController } from './object/controller/iObjectController';
 import { IUserController } from './user/controller/iUserController';
+import { IQueryController } from './query/controller/IQueryController';
 import { ILeanEngineController } from './LeanEngine/controller/ILeanEngineController';
 import { IAVEncoder } from './encoding/IAVEncoder';
 import { IAVDecoder } from './encoding/IAVDecoder';
@@ -13,6 +14,7 @@ export declare class SDKPlugins {
     private _HttpClient;
     private _CommandRunner;
     private _ObjectController;
+    private _QueryController;
     private _UserController;
     private _LeanEngineController;
     private _encoder;
@@ -23,8 +25,9 @@ export declare class SDKPlugins {
     constructor(version?: number);
     readonly HttpClient: IRxHttpClient;
     readonly CommandRunner: IAVCommandRunner;
-    readonly ObjectControllerInstance: iObjectController;
+    readonly ObjectControllerInstance: IObjectController;
     readonly UserControllerInstance: IUserController;
+    readonly QueryControllerInstance: IQueryController;
     readonly LeanEngineControllerInstance: ILeanEngineController;
     generateAVCommand(relativeUrl: string, method: string, data: {
         [key: string]: any;

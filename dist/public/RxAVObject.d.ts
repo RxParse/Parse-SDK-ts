@@ -1,22 +1,22 @@
 import { IObjectState } from '../internal/object/state/IObjectState';
-import { iObjectController } from '../internal/object/controller/iObjectController';
+import { IObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { Observable } from '@reactivex/rxjs';
 export declare class RxAVObject {
-    isNew: boolean;
     className: string;
     estimatedData: {
         [key: string]: any;
     };
     state: MutableObjectState;
     private _isDirty;
+    private isNew;
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
      * @constructor
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
     constructor(className: string);
-    protected static readonly ObjectController: iObjectController;
+    protected static readonly _objectController: IObjectController;
     objectId: string;
     isDirty: boolean;
     readonly createdAt: Date;
@@ -55,7 +55,7 @@ export declare class RxAVObject {
     protected static deepSave(obj: RxAVObject): Observable<boolean>;
     protected collectDirtyChildren(): RxAVObject[];
     protected handlerSave(serverState: IObjectState): void;
-    protected handleFetchResult(serverState: IObjectState): void;
+    handleFetchResult(serverState: IObjectState): void;
     protected mergeFromServer(serverState: IObjectState): void;
     protected setProperty(propertyName: string, value: any): void;
     protected getProperty(propertyName: string): any;

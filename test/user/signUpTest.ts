@@ -2,7 +2,7 @@
 
 import * as chai from 'chai';
 import * as random from "../utils/random";
-
+import { RxAVClient } from '../../src/RxLeanCloud';
 import { RxAVUser } from '../../src/RxLeanCloud';
 
 let randomUsername = '';
@@ -34,7 +34,11 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#requestShortcode', done => {
-        done();
+        if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+            done();
+            return;
+        }
+
         RxAVUser.sendSignUpShortcode('18612438929').subscribe(success => {
             done();
         }, error => {
@@ -46,7 +50,10 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#signUpOrLoginByMobilephone', done => {
-        done();
+        if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+            done();
+            return;
+        }
         RxAVUser.signUpByMobilephone('18612438929', '064241').subscribe(s => {
             done();
         }, error => {

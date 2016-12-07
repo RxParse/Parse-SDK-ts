@@ -17,7 +17,6 @@ var AVEncoder = (function () {
             return { '__type': 'Date', 'iso': item.toJSON() };
         }
         if (item instanceof RxLeanCloud_1.RxAVObject) {
-            console.log('item.state', item.state);
             return {
                 __type: "Pointer",
                 className: item.className,

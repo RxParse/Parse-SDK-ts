@@ -1,9 +1,9 @@
 import { IObjectState } from '../state/IObjectState';
-import { iObjectController } from './iObjectController';
+import { IObjectController } from './iObjectController';
 import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 import { Observable } from '@reactivex/rxjs';
-export declare class ObjectController implements iObjectController {
+export declare class ObjectController implements IObjectController {
     private readonly _commandRunner;
     constructor(commandRunner: IAVCommandRunner);
     save(state: IObjectState, dictionary: {

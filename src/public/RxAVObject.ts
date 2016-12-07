@@ -1,16 +1,17 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
-import { iObjectController } from '../internal/object/controller/iObjectController';
+import { IObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { RxAVUser } from '../RxLeanCloud';
 import { Observable } from '@reactivex/rxjs';
 
 export class RxAVObject {
-    isNew: boolean;
+
     className: string;
     estimatedData: { [key: string]: any };
     state: MutableObjectState;
     private _isDirty: boolean;
+    private isNew: boolean;
 
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
@@ -24,7 +25,7 @@ export class RxAVObject {
         this.state = new MutableObjectState({ className: className });
     }
 
-    protected static get ObjectController() {
+    protected static get _objectController() {
         return SDKPlugins.instance.ObjectControllerInstance;
     }
 
@@ -69,8 +70,7 @@ export class RxAVObject {
     public save() {
         let dirtyChildren = this.collectDirtyChildren();
         if (dirtyChildren.length == 0) {
-            let y = RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-                console.log('this.handlerSave(serverState);');
+            let y = RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
                 this.handlerSave(serverState);
                 return true;
             });
@@ -79,36 +79,20 @@ export class RxAVObject {
             let states = dirtyChildren.map(c => c.state);
             let ds = dirtyChildren.map(c => c.estimatedData);
 
-            let x = RxAVObject.ObjectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
+            let x = RxAVObject._objectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
                 dirtyChildren.forEach((dc, i, a) => {
                     dc.isDirty = false;
                     dc.handlerSave(serverStateArray[i]);
                 });
                 return dirtyChildren;
             }).flatMap((sss, i) => {
-                return RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-                    console.log('father');
+                return RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
                     this.handlerSave(serverState);
                     return true;
                 });
             });
             return x;
         }
-
-        // let y = RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-        //     console.log('this.handlerSave(serverState);');
-        //     this.handlerSave(serverState);
-        //     return true;
-        // });
-
-        // return Observable.concat(x, y);
-
-        // return RxAVObject.deepSave(this).map(success => {
-        //     return RxAVObject.ObjectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-        //         console.log('this.handlerSave(serverState);');
-        //         this.handlerSave(serverState);
-        //     });
-        // });
     }
 
     /**
@@ -143,11 +127,6 @@ export class RxAVObject {
             r = Observable.concat(y);
         });
         return r;
-        // let dictionaries = objects.map(obj => obj.estimatedData);
-        // let states = objects.map(obj => obj.state);
-        // return RxAVObject.ObjectController.saveAll(states, dictionaries, RxAVUser.currentSessionToken).map(next => {
-
-        // });
     }
 
     protected static batchSave() {
@@ -164,13 +143,8 @@ export class RxAVObject {
                 }
             }
         }
-        console.log('dirtyChildren.length', dirtyChildren.length);
         if (dirtyChildren.length == 0) return Observable.from([true]);
         return RxAVObject.saveAll(dirtyChildren);
-
-        // return RxAVObject.saveAll(dirtyChildren).do(children => { 
-        //      return obj.save();
-        // });
     }
 
     protected collectDirtyChildren() {
@@ -190,8 +164,10 @@ export class RxAVObject {
         this.state.apply(serverState);
     }
 
-    protected handleFetchResult(serverState: IObjectState) {
+    handleFetchResult(serverState: IObjectState) {
         this.state.apply(serverState);
+        this.isNew = false;
+        this.isDirty = false;
     }
 
     protected mergeFromServer(serverState: IObjectState) {

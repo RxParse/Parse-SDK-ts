@@ -3,13 +3,14 @@
 var chai = require('chai');
 var random = require("../utils/random");
 var RxLeanCloud_1 = require('../../src/RxLeanCloud');
+var RxLeanCloud_2 = require('../../src/RxLeanCloud');
 var randomUsername = '';
 describe('RxAVUser', function () {
     before(function () {
         randomUsername = random.randomString(8);
     });
     it('RxAVUser#signUp', function (done) {
-        var user = new RxLeanCloud_1.RxAVUser();
+        var user = new RxLeanCloud_2.RxAVUser();
         user.username = randomUsername;
         user.password = 'leancloud';
         user.set('title', 'CEO');
@@ -29,8 +30,11 @@ describe('RxAVUser', function () {
         });
     });
     it('RxAVUser#requestShortcode', function (done) {
-        done();
-        RxLeanCloud_1.RxAVUser.sendSignUpShortcode('18612438929').subscribe(function (success) {
+        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+            done();
+            return;
+        }
+        RxLeanCloud_2.RxAVUser.sendSignUpShortcode('18612438929').subscribe(function (success) {
             done();
         }, function (error) {
             console.log(error);
@@ -40,8 +44,11 @@ describe('RxAVUser', function () {
         });
     });
     it('RxAVUser#signUpOrLoginByMobilephone', function (done) {
-        done();
-        RxLeanCloud_1.RxAVUser.signUpByMobilephone('18612438929', '064241').subscribe(function (s) {
+        if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+            done();
+            return;
+        }
+        RxLeanCloud_2.RxAVUser.signUpByMobilephone('18612438929', '064241').subscribe(function (s) {
             done();
         }, function (error) {
             console.log(error);
