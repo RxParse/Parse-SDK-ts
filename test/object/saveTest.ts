@@ -1,7 +1,7 @@
 /// <reference path="../../typings/index.d.ts" />
 
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVUser } from '../../src/RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole } from '../../src/RxLeanCloud';
 
 describe('RxObject', function () {
     before(() => {
@@ -19,9 +19,10 @@ describe('RxObject', function () {
         todo.set('title', '开会');
         todo.set('time', '2016-12-03');
         todo.set('reminder', new Date());
+        todo.set('open', false);
 
         todo.save().subscribe(() => {
-
+            console.log('todo.title', todo.get('title'));
             done();
         }, error => {
             /** error 的格式如下：
@@ -74,6 +75,8 @@ describe('RxObject', function () {
     it('RxAVObject#savePointer', done => {
         let todo1: RxAVObject = new RxAVObject('RxTodo');
         todo1.set('title', 'father');
+        todo1.set('time', '2016-12-07');
+        todo1.set('likes', 9);
 
         let todo2: RxAVObject = new RxAVObject('RxTodo');
         todo2.set('title', 'son');
@@ -97,17 +100,24 @@ describe('RxObject', function () {
     it('RxAVObject#saveUnderACL', done => {
         RxAVUser.login('junwu', 'leancloud').subscribe(user => {
             let team: RxAVObject = new RxAVObject('teams');
+            
+            let teamPrefix = 'hua';
+            let admin = `${teamPrefix}_admin`;
+            
+            let acl = new RxAVACL();
+            acl.setRoleWriteAccess(admin, true);
+            acl.setReadAccess(admin, true);
+            acl.setPublicWriteAccess(false);
+            acl.setPublicReadAccess(false);
 
-            team.set('name', this.name);
-            team.set('domain', this.domain);
+            team.set('name', teamPrefix);
+            team.set('domain', teamPrefix);
             team.set('owner', RxAVUser.currentUser);
 
             team.save().subscribe(() => {
-                this.name = '';
-                this.domain = '';
-                this.creating = false;
                 done();
             });
         });
     });
+
 });

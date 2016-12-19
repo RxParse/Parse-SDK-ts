@@ -161,12 +161,15 @@ export /**
 
     find(): Observable<Array<RxAVObject>> {
         return RxAVQuery._queryController.find(this, RxAVUser.currentSessionToken).map(serverStates => {
-            let x = serverStates.map((serverState, i, a) => {
+            let resultList = serverStates.map((serverState, i, a) => {
                 let rxObject = new RxAVObject(this.className);
                 rxObject.handleFetchResult(serverState);
                 return rxObject;
             });
-            return x;
+            if (resultList == undefined || resultList == null) {
+                resultList = [];
+            }
+            return resultList;
         });
     }
 

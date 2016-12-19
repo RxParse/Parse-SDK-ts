@@ -158,12 +158,15 @@ var RxAVQuery = (function () {
     RxAVQuery.prototype.find = function () {
         var _this = this;
         return RxAVQuery._queryController.find(this, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverStates) {
-            var x = serverStates.map(function (serverState, i, a) {
+            var resultList = serverStates.map(function (serverState, i, a) {
                 var rxObject = new RxLeanCloud_1.RxAVObject(_this.className);
                 rxObject.handleFetchResult(serverState);
                 return rxObject;
             });
-            return x;
+            if (resultList == undefined || resultList == null) {
+                resultList = [];
+            }
+            return resultList;
         });
     };
     RxAVQuery.prototype._addCondition = function (key, condition, value) {

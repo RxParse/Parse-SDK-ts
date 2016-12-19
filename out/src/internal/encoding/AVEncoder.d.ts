@@ -7,4 +7,5 @@ export declare class AVEncoder implements IAVEncoder {
         [key: string]: any;
     };
     encodeItem(item: any): any;
+    private isValidType(value);
 }

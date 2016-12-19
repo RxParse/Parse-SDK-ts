@@ -23,7 +23,7 @@ export class LeanEngineController implements ILeanEngineController {
         });
 
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
-            let result = this._LeanEngineDecoder.decodeDictionary(res.body);
+            let result = this._LeanEngineDecoder.decodeDictionary(res.body.result);
             return result;
         });
     }

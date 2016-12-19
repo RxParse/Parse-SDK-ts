@@ -28,7 +28,17 @@ var AVEncoder = (function () {
                 return _this.encodeItem(v);
             });
         }
+        if (item instanceof RxLeanCloud_1.RxAVACL) {
+            return item.toJSON();
+        }
         return item;
+    };
+    AVEncoder.prototype.isValidType = function (value) {
+        return value == null ||
+            value instanceof String ||
+            value instanceof RxLeanCloud_1.RxAVObject ||
+            value instanceof RxLeanCloud_1.RxAVACL ||
+            value instanceof Date;
     };
     return AVEncoder;
 }());

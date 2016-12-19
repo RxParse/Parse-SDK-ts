@@ -1,12 +1,17 @@
 /// <reference path="../../typings/index.d.ts" />
 "use strict";
 var chai = require('chai');
-var random = require("../utils/random");
 var RxLeanCloud_1 = require('../../src/RxLeanCloud');
 var randomUsername = '';
 describe('RxLeanEngine', function () {
     before(function () {
-        randomUsername = random.randomString(8);
+        RxLeanCloud_1.RxAVClient.init({
+            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
+            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
+            region: 'cn',
+            log: true,
+            pluginVersion: 2
+        });
     });
     it('RxLeanEngine#callFunction', function (done) {
         if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
@@ -15,6 +20,7 @@ describe('RxLeanEngine', function () {
             return;
         }
         RxLeanCloud_1.RxLeanEngine.callFunction('testDic').subscribe(function (data) {
+            console.log('cloud function result', data);
             done();
         }, function (error) {
             /** error 的格式如下：

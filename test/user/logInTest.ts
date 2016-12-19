@@ -32,6 +32,7 @@ describe('RxAVUser', function () {
             }
         });
     });
+    
     it('RxAVUser#logIn->currentUser', function (done) {
         RxAVUser.login('junwu', 'leancloud').subscribe(user => {
             console.log(user.username);

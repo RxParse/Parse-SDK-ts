@@ -57,6 +57,17 @@ var RxAVObject = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(RxAVObject.prototype, "ACL", {
+        get: function () {
+            return this._acl;
+        },
+        set: function (acl) {
+            this._acl = acl;
+            this.set('ACL', this._acl);
+        },
+        enumerable: true,
+        configurable: true
+    });
     RxAVObject.prototype.set = function (key, value) {
         this.estimatedData[key] = value;
     };
@@ -159,15 +170,21 @@ var RxAVObject = (function () {
     };
     RxAVObject.prototype.handlerSave = function (serverState) {
         this.state.apply(serverState);
+        //this.rebuildEstimatedData();
     };
     RxAVObject.prototype.handleFetchResult = function (serverState) {
         this.state.apply(serverState);
+        this.rebuildEstimatedData();
         this._isNew = false;
         this.isDirty = false;
     };
     RxAVObject.prototype.mergeFromServer = function (serverState) {
         if (serverState.objectId != null) {
         }
+    };
+    RxAVObject.prototype.rebuildEstimatedData = function () {
+        this.estimatedData = {};
+        this.estimatedData = this.state.serverData;
     };
     RxAVObject.prototype.setProperty = function (propertyName, value) {
         if (this.state != null) {
