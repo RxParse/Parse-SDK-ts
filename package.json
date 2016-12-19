@@ -1,6 +1,6 @@
 {
   "name": "leancloud-typescript-rx-sdk",
-  "version": "0.0.3-alpha.1",
+  "version": "0.0.5-alpha.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/wujun4code/leancloud-typescript-rx-sdk"
@@ -24,10 +24,9 @@
     "typings": "^2.0.0"
   },
   "dependencies": {
-    "@reactivex/rxjs": "^5.0.0-rc.4",
     "@types/superagent": "^2.0.36",
     "axios": "^0.15.3",
-    "rx": "^4.1.0",
+    "rxjs": "^5.0.0-beta.12",
     "superagent": "^3.1.0"
   },
   "typings": "./dist/RxLeanCloud.d.ts",

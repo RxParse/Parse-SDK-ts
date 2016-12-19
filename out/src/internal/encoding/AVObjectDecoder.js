@@ -5,21 +5,34 @@ var AVObjectDecoder = (function () {
     }
     AVObjectDecoder.prototype.decode = function (serverResult, decoder) {
         var state = new MutableObjectState_1.MutableObjectState();
-        this.handlerCreateResult(state, serverResult, decoder);
+        this.handlerServerResult(state, serverResult, decoder);
         return state;
     };
-    AVObjectDecoder.prototype.handlerCreateResult = function (state, createResult, decoder) {
-        if (createResult.createdAt) {
-            state.createdAt = createResult.createdAt;
-            state.updatedAt = createResult.createdAt;
+    AVObjectDecoder.prototype.handlerServerResult = function (state, serverResult, decoder) {
+        var mutableData = {};
+        if (serverResult.createdAt) {
+            state.createdAt = serverResult.createdAt;
+            state.updatedAt = serverResult.createdAt;
+            delete serverResult.createdAt;
         }
-        if (createResult.updatedAt) {
-            state.updatedAt = createResult.updatedAt;
+        if (serverResult.updatedAt) {
+            state.updatedAt = serverResult.updatedAt;
+            delete serverResult.updatedAt;
         }
-        if (createResult.objectId) {
-            state.objectId = createResult.objectId;
+        if (serverResult.objectId) {
+            state.objectId = serverResult.objectId;
+            delete serverResult.objectId;
         }
-        state.serverData = decoder.decode(createResult);
+        for (var key in serverResult) {
+            var value = serverResult[key];
+            if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
+                mutableData[key] = decoder.decodeItem(value);
+            }
+            else {
+                mutableData[key] = value;
+            }
+        }
+        state.serverData = mutableData;
         state.isNew = true;
         return state;
     };

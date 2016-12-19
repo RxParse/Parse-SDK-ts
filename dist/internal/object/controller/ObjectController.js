@@ -10,7 +10,8 @@ var ObjectController = (function () {
         var cmd = new AVCommand_1.AVCommand({
             relativeUrl: state.objectId == null ? "/classes/" + state.className : "/classes/" + state.className + "/" + state.objectId,
             method: state.objectId == null ? 'POST' : 'PUT',
-            data: encoded
+            data: encoded,
+            sessionToken: sessionToken
         });
         return this._commandRunner.runRxCommand(cmd).map(function (res) {
             var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
@@ -27,7 +28,8 @@ var ObjectController = (function () {
             var cmd = new AVCommand_1.AVCommand({
                 relativeUrl: state.objectId == null ? "/1.1/classes/" + state.className : "/1.1/classes/" + state.className + "/" + state.objectId,
                 method: state.objectId == null ? 'POST' : 'PUT',
-                data: encoded
+                data: encoded,
+                sessionToken: sessionToken
             });
             cmdArray.push(cmd);
         });

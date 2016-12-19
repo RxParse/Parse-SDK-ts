@@ -1,4 +1,4 @@
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 import { ILeanEngineController } from '../internal/LeanEngine/controller/ILeanEngineController';
 export declare class RxLeanEngine {
     protected static readonly LeanEngineController: ILeanEngineController;

@@ -5,5 +5,5 @@ import { IAVDecoder } from './IAVDecoder';
 export declare class AVObjectDecoder implements IAVObjectDecoder {
     constructor();
     decode(serverResult: any, decoder: IAVDecoder): IObjectState;
-    handlerCreateResult(state: MutableObjectState, createResult: any, decoder: IAVDecoder): IObjectState;
+    handlerServerResult(state: MutableObjectState, serverResult: any, decoder: IAVDecoder): IObjectState;
 }

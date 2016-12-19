@@ -12,22 +12,35 @@ export /**
 
     decode(serverResult: any, decoder: IAVDecoder): IObjectState {
         let state = new MutableObjectState();
-        this.handlerCreateResult(state, serverResult, decoder);
+        this.handlerServerResult(state, serverResult, decoder);
         return state;
     }
 
-    handlerCreateResult(state: MutableObjectState, createResult: any, decoder: IAVDecoder): IObjectState {
-        if (createResult.createdAt) {
-            state.createdAt = createResult.createdAt;
-            state.updatedAt = createResult.createdAt;
+    handlerServerResult(state: MutableObjectState, serverResult: any, decoder: IAVDecoder): IObjectState {
+        let mutableData: { [key: string]: any } = {};
+        if (serverResult.createdAt) {
+            state.createdAt = serverResult.createdAt;
+            state.updatedAt = serverResult.createdAt;
+            delete serverResult.createdAt;
         }
-        if (createResult.updatedAt) {
-            state.updatedAt = createResult.updatedAt;
+        if (serverResult.updatedAt) {
+            state.updatedAt = serverResult.updatedAt;
+            delete serverResult.updatedAt;
         }
-        if (createResult.objectId) {
-            state.objectId = createResult.objectId;
+        if (serverResult.objectId) {
+            state.objectId = serverResult.objectId;
+            delete serverResult.objectId;
         }
-        state.serverData = decoder.decode(createResult);
+        
+        for (let key in serverResult) {
+            var value = serverResult[key];
+            if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
+                mutableData[key] = decoder.decodeItem(value);
+            } else {
+                mutableData[key] = value;
+            }
+        }
+        state.serverData = mutableData;
         state.isNew = true;
         return state;
     }

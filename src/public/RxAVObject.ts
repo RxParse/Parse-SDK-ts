@@ -2,8 +2,8 @@ import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IObjectController } from '../internal/object/controller/iObjectController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { RxAVUser } from '../RxLeanCloud';
-import { Observable } from '@reactivex/rxjs';
+import { RxAVUser, RxAVACL } from '../RxLeanCloud';
+import { Observable } from 'rxjs';
 
 export class RxAVObject {
 
@@ -11,7 +11,8 @@ export class RxAVObject {
     estimatedData: { [key: string]: any };
     state: MutableObjectState;
     private _isDirty: boolean;
-    private isNew: boolean;
+    private _isNew: boolean;
+    private _acl: RxAVACL;
 
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
@@ -51,14 +52,22 @@ export class RxAVObject {
         return this.state.updatedAt;
     }
 
-    set(key: string, value: any) {
+    get ACL() {
+        return this._acl;
+    }
+    set ACL(acl: RxAVACL) {
+        this._acl = acl;
+        this.set('ACL', this._acl);
+    }
 
+    set(key: string, value: any) {
         this.estimatedData[key] = value;
     }
 
     get(key: string) {
         return this.estimatedData[key];
     }
+
 
     /**
      * 将当前对象保存到云端.
@@ -85,7 +94,7 @@ export class RxAVObject {
                     dc.handlerSave(serverStateArray[i]);
                 });
                 return dirtyChildren;
-            }).flatMap((sss, i) => {
+            }).flatMap<boolean>((sss, i) => {
                 return RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
                     this.handlerSave(serverState);
                     return true;
@@ -162,11 +171,13 @@ export class RxAVObject {
 
     protected handlerSave(serverState: IObjectState) {
         this.state.apply(serverState);
+        //this.rebuildEstimatedData();
     }
 
     handleFetchResult(serverState: IObjectState) {
         this.state.apply(serverState);
-        this.isNew = false;
+        this.rebuildEstimatedData();
+        this._isNew = false;
         this.isDirty = false;
     }
 
@@ -174,6 +185,11 @@ export class RxAVObject {
         if (serverState.objectId != null) {
 
         }
+    }
+
+    protected rebuildEstimatedData() {
+        this.estimatedData = {};
+        this.estimatedData = this.state.serverData;
     }
 
     protected setProperty(propertyName: string, value: any) {

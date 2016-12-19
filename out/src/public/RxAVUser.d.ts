@@ -1,7 +1,7 @@
 import { RxAVObject } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IUserController } from '../internal/user/controller/iUserController';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 /**
  * 用户
  *
@@ -107,5 +107,6 @@ export declare class RxAVUser extends RxAVObject {
      */
     static login(username: string, password: string): Observable<RxAVUser>;
     static createWithoutData(objectId?: string): RxAVUser;
+    protected handlerLogIn(userState: IObjectState): void;
     protected handlerSignUp(userState: IObjectState): void;
 }

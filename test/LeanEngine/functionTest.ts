@@ -8,9 +8,15 @@ let randomUsername = '';
 
 describe('RxLeanEngine', function () {
     before(() => {
-        randomUsername = random.randomString(8);
+        RxAVClient.init({
+            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
+            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
+            region: 'cn',
+            log: true,
+            pluginVersion: 2
+        });
     });
-    it('RxLeanEngine#callFunction', function (done) {
+    it('RxLeanEngine#callFunction', done => {
         if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
             done();
             console.log('Hello,LeanEngine in US.');
@@ -18,6 +24,7 @@ describe('RxLeanEngine', function () {
         }
 
         RxLeanEngine.callFunction('testDic').subscribe(data => {
+            console.log('cloud function result', data);
             done();
         }, error => {
             /** error 的格式如下：

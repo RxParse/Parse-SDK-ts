@@ -1,16 +1,17 @@
 "use strict";
 var AVCommand_1 = require('../../command/AVCommand');
 var SDKPlugins_1 = require('../../SDKPlugins');
-var rxjs_1 = require('@reactivex/rxjs');
+var rxjs_1 = require('rxjs');
 var QueryController = (function () {
     function QueryController(commandRunner) {
         this._commandRunner = commandRunner;
     }
-    QueryController.prototype.find = function (query, sesstionToken) {
+    QueryController.prototype.find = function (query, sessionToken) {
         var qu = this.buildQueryString(query);
         var cmd = new AVCommand_1.AVCommand({
             relativeUrl: qu,
-            method: 'GET'
+            method: 'GET',
+            sessionToken: sessionToken
         });
         return this._commandRunner.runRxCommand(cmd).map(function (res) {
             var items = res.body["results"];

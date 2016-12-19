@@ -14,7 +14,7 @@ var LeanEngineController = (function () {
             sessionToken: sessionToken
         });
         return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(function (res) {
-            var result = _this._LeanEngineDecoder.decodeDictionary(res.body);
+            var result = _this._LeanEngineDecoder.decodeDictionary(res.body.result);
             return result;
         });
     };

@@ -1,4 +1,4 @@
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 export interface ILeanEngineController {
     callFunction(name: string, parameters?: {
         [key: string]: any;

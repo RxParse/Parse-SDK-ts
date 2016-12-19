@@ -1,5 +1,5 @@
 "use strict";
-var rxjs_1 = require('@reactivex/rxjs');
+var rxjs_1 = require('rxjs');
 var AVCommandResponse_1 = require('./AVCommandResponse');
 var AVCommandRunner = (function () {
     function AVCommandRunner(rxHttpClient) {

@@ -17,7 +17,9 @@ describe('RxObject', function () {
         todo.set('title', '开会');
         todo.set('time', '2016-12-03');
         todo.set('reminder', new Date());
+        todo.set('open', false);
         todo.save().subscribe(function () {
+            console.log('todo.title', todo.get('title'));
             done();
         }, function (error) {
             /** error 的格式如下：
@@ -62,6 +64,8 @@ describe('RxObject', function () {
     it('RxAVObject#savePointer', function (done) {
         var todo1 = new RxLeanCloud_1.RxAVObject('RxTodo');
         todo1.set('title', 'father');
+        todo1.set('time', '2016-12-07');
+        todo1.set('likes', 9);
         var todo2 = new RxLeanCloud_1.RxAVObject('RxTodo');
         todo2.set('title', 'son');
         todo1.set('xx', todo2);
@@ -74,6 +78,24 @@ describe('RxObject', function () {
             done();
         }, function (error) {
             console.log(error);
+        });
+    });
+    it('RxAVObject#saveUnderACL', function (done) {
+        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').subscribe(function (user) {
+            var team = new RxLeanCloud_1.RxAVObject('teams');
+            var teamPrefix = 'hua';
+            var admin = teamPrefix + "_admin";
+            var acl = new RxLeanCloud_1.RxAVACL();
+            acl.setRoleWriteAccess(admin, true);
+            acl.setReadAccess(admin, true);
+            acl.setPublicWriteAccess(false);
+            acl.setPublicReadAccess(false);
+            team.set('name', teamPrefix);
+            team.set('domain', teamPrefix);
+            team.set('owner', RxLeanCloud_1.RxAVUser.currentUser);
+            team.save().subscribe(function () {
+                done();
+            });
         });
     });
 });

@@ -3,7 +3,7 @@ import { RxAVClient, RxAVObject } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IUserController } from '../internal/user/controller/iUserController';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 /**
  * 用户
@@ -27,7 +27,7 @@ export class RxAVUser extends RxAVObject {
         }
         return null;
     }
-    
+
     private static _currentUser: RxAVUser;
     protected static saveCurrentUser(user: RxAVUser) {
         RxAVUser._currentUser = user;
@@ -201,7 +201,7 @@ export class RxAVUser extends RxAVObject {
     public static login(username: string, password: string): Observable<RxAVUser> {
         return RxAVUser.UserController.logIn(username, password).map(userState => {
             let user = RxAVUser.createWithoutData();
-            user.handleFetchResult(userState);
+            user.handlerLogIn(userState);
             return user;
         });
     }
@@ -211,6 +211,11 @@ export class RxAVUser extends RxAVObject {
         if (objectId)
             rtn.objectId = objectId;
         return rtn;
+    }
+
+    protected handlerLogIn(userState: IObjectState) {
+        this.handleFetchResult(userState);
+        RxAVUser.saveCurrentUser(this);
     }
 
     protected handlerSignUp(userState: IObjectState) {

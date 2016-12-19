@@ -1,5 +1,5 @@
 import { ILeanEngineController } from './ILeanEngineController'
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 import { AVCommand } from '../../command/AVCommand';
 import { SDKPlugins } from '../../SDKPlugins';
 import { ILeanEngineDecoder } from '../encoding/ILeanEngineDecoder';
@@ -23,7 +23,7 @@ export class LeanEngineController implements ILeanEngineController {
         });
 
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
-            let result = this._LeanEngineDecoder.decodeDictionary(res.body);
+            let result = this._LeanEngineDecoder.decodeDictionary(res.body.result);
             return result;
         });
     }

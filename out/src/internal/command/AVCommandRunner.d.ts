@@ -1,4 +1,4 @@
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 import { AVCommand } from './AVCommand';
 import { AVCommandResponse } from './AVCommandResponse';
 import { IAVCommandRunner } from './IAVCommandRunner';

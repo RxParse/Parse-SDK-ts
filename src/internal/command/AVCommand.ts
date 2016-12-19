@@ -1,5 +1,5 @@
 import { HttpRequest } from '../httpClient/HttpRequest';
-import { RxAVClient } from '../../public/RxAVClient';
+import { RxAVClient, RxAVUser } from '../../RxLeanCloud';
 
 export class AVCommand extends HttpRequest {
     relativeUrl: string;
@@ -19,6 +19,9 @@ export class AVCommand extends HttpRequest {
                     this.headers[key] = options.headers[key];
                 }
             }
+            // if (RxAVUser.currentSessionToken != null) {
+            //     this.headers['X-LC-Session'] = options.sessionToken;
+            // }
             if (options.sessionToken != null) {
                 this.sessionToken = options.sessionToken;
                 this.headers['X-LC-Session'] = options.sessionToken;

@@ -4,4 +4,5 @@ export interface IAVDecoder {
     }): {
         [key: string]: any;
     };
+    decodeItem(data: any): any;
 }

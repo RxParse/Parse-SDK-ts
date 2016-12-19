@@ -1,5 +1,6 @@
-import { RxAVClient, RxAVObject } from '../../RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVACL } from '../../RxLeanCloud';
 import { IAVEncoder } from './IAVEncoder';
+
 export /**
  *  AVEncoder
  */
@@ -33,6 +34,17 @@ export /**
                 return this.encodeItem(v);
             });
         }
+        if (item instanceof RxAVACL) {
+            return item.toJSON();
+        }
+
         return item;
+    }
+    private isValidType(value: any): boolean {
+        return value == null ||
+            value instanceof String ||
+            value instanceof RxAVObject ||
+            value instanceof RxAVACL ||
+            value instanceof Date;
     }
 }

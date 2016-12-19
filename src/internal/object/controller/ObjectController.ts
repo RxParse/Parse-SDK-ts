@@ -3,7 +3,7 @@ import { IObjectController } from './iObjectController';
 import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 import { SDKPlugins } from '../../SDKPlugins';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 export class ObjectController implements IObjectController {
     private readonly _commandRunner: IAVCommandRunner;
@@ -18,7 +18,8 @@ export class ObjectController implements IObjectController {
         let cmd = new AVCommand({
             relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
             method: state.objectId == null ? 'POST' : 'PUT',
-            data: encoded
+            data: encoded,
+            sessionToken: sessionToken
         });
 
         return this._commandRunner.runRxCommand(cmd).map(res => {
@@ -39,7 +40,8 @@ export class ObjectController implements IObjectController {
             let cmd = new AVCommand({
                 relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
-                data: encoded
+                data: encoded,
+                sessionToken: sessionToken
             });
 
             cmdArray.push(cmd);

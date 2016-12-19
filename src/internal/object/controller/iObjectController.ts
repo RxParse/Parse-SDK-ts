@@ -1,5 +1,5 @@
 import { IObjectState } from '../state/IObjectState';
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from 'rxjs';
 
 export interface IObjectController {
     save(state: IObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<IObjectState>;
