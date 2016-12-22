@@ -9,6 +9,16 @@ export class RxLeanEngine {
         return SDKPlugins.instance.LeanEngineControllerInstance;
     }
 
+    /**
+     * 调用云函数
+     * 
+     * @static
+     * @param {string} name 云函数 name
+     * @param {{ [key: string]: any }} [parameters] 参数字典
+     * @returns
+     * 
+     * @memberOf RxLeanEngine
+     */
     static callFunction(name: string, parameters?: { [key: string]: any }) {
         return RxLeanEngine.LeanEngineController.callFunction(name,parameters,RxAVUser.currentSessionToken);
     }

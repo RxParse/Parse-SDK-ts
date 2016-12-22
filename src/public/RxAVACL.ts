@@ -4,6 +4,12 @@ import { RxAVRole } from './RxAVRole';
 export type PermissionsMap = { [permission: string]: boolean };
 export type ByIdMap = { [userId: string]: PermissionsMap };
 var PUBLIC_KEY = '*';
+/**
+ * 
+ * 基于角色的权限管理
+ * @export
+ * @class RxAVACL
+ */
 export /**
  * RxAVACL
  */
@@ -11,8 +17,38 @@ export /**
 
     private permissionsById: ByIdMap;
 
-    constructor() {
+    constructor(...arg: any[]) {
         this.permissionsById = {};
+        if (arg.length > 0) {
+            arg.forEach(currentItem => {
+                if (currentItem instanceof RxAVUser) {
+                    this.setReadAccess(currentItem, true);
+                    this.setWriteAccess(currentItem, true);
+                } else if (currentItem instanceof RxAVRole) {
+                    this.setReadAccess(currentItem, true);
+                    this.setWriteAccess(currentItem, true);
+                } else if (typeof currentItem === 'string') {
+                    this.setRoleWriteAccess(currentItem, true);
+                    this.setRoleReadAccess(currentItem, true);
+                } else if (currentItem !== undefined) {
+                    throw new TypeError('RxAVACL.constructor need RxAVUser or RxAVRole.');
+                }
+            });
+        } else {
+            if (RxAVUser.currentUser) {
+                if (RxAVUser.currentUser.primaryRole) {
+                    this.setRoleWriteAccess(RxAVUser.currentUser.primaryRole, true);
+                    this.setRoleWriteAccess(RxAVUser.currentUser.primaryRole, true);
+                } else {
+                    this.setReadAccess(RxAVUser.currentUser, true);
+                    this.setWriteAccess(RxAVUser.currentUser, true);
+                }
+            } else {
+                this.setPublicReadAccess(true);
+                this.setPublicWriteAccess(true);
+            }
+        }
+
         // if (arg1 && typeof arg1 === 'object') {
         //     if (arg1 instanceof RxAVUser) {
         //         this.setReadAccess(arg1, true);

@@ -1,4 +1,4 @@
-import { RxAVObject } from '../RxLeanCloud';
+import { RxAVObject, RxAVRole } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IUserController } from '../internal/user/controller/iUserController';
 import { Observable } from 'rxjs';
@@ -11,8 +11,10 @@ import { Observable } from 'rxjs';
  */
 export declare class RxAVUser extends RxAVObject {
     private _username;
+    private _primaryRole;
     email: string;
     mobilephone: string;
+    roles: Array<RxAVRole>;
     constructor();
     static readonly currentSessionToken: any;
     private static _currentUser;
@@ -55,6 +57,22 @@ export declare class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     isAuthenticated(): Observable<boolean>;
+    setPrimaryRole(role: RxAVRole): Observable<boolean>;
+    /**
+     *  获取当前用户的主要角色
+     *
+     *
+     * @memberOf RxAVUser
+     */
+    readonly primaryRole: any;
+    /**
+     * 从服务端获取当前用户所拥有的角色
+     *
+     * @returns {Observable<Array<RxAVRole>>}
+     *
+     * @memberOf RxAVUser
+     */
+    fetchRoles(): Observable<Array<RxAVRole>>;
     /**
      * 使用当前用户的信息注册到 LeanCloud _User 表中
      *
@@ -62,7 +80,7 @@ export declare class RxAVUser extends RxAVObject {
      * 返回一个可订阅的对象，尽管是 void，但是当前 AVUser 实例对象里面的 sessionToken，objectId 都已更新
      * @memberOf RxAVUser
      */
-    signUp(): Observable<void>;
+    signUp(): Observable<boolean>;
     /**
      * 发送注册用户时需要的验证码
      *

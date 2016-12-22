@@ -123,6 +123,53 @@ var RxAVUser = (function (_super) {
             return rxjs_1.Observable.from([error.error.code == 211]);
         }
     };
+    RxAVUser.prototype.setPrimaryRole = function (role) {
+        var _this = this;
+        this.set('primaryRole', role);
+        if (role.isDirty)
+            return role.save().flatMap(function (s1) {
+                return role.assign(_this);
+            }).flatMap(function (s2) {
+                return _this.save();
+            });
+        else
+            return role.assign(this).flatMap(function (s3) {
+                return _this.save();
+            });
+    };
+    Object.defineProperty(RxAVUser.prototype, "primaryRole", {
+        /**
+         *  获取当前用户的主要角色
+         *
+         *
+         * @memberOf RxAVUser
+         */
+        get: function () {
+            return this.get('primaryRole');
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * 从服务端获取当前用户所拥有的角色
+     *
+     * @returns {Observable<Array<RxAVRole>>}
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.prototype.fetchRoles = function () {
+        var _this = this;
+        var query = new RxLeanCloud_1.RxAVQuery('_Role');
+        query.equalTo('users', this);
+        return query.find().map(function (roles) {
+            var fetched = roles.map(function (currentItem) {
+                var role = RxLeanCloud_1.RxAVRole.createWithName(currentItem.get('name'), currentItem.objectId);
+                return role;
+            });
+            _this.roles = fetched;
+            return fetched;
+        });
+    };
     /**
      * 使用当前用户的信息注册到 LeanCloud _User 表中
      *
@@ -134,6 +181,7 @@ var RxAVUser = (function (_super) {
         var _this = this;
         return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(function (userState) {
             _this.handlerSignUp(userState);
+            return true;
         });
     };
     /**

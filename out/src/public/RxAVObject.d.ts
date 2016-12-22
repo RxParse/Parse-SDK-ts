@@ -3,8 +3,13 @@ import { IObjectController } from '../internal/object/controller/iObjectControll
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { RxAVACL } from '../RxLeanCloud';
 import { Observable } from 'rxjs';
+/**
+ * 代表的一个 free-schema 的对象
+ *
+ * @export
+ * @class RxAVObject
+ */
 export declare class RxAVObject {
-    className: string;
     estimatedData: {
         [key: string]: any;
     };
@@ -19,6 +24,7 @@ export declare class RxAVObject {
      */
     constructor(className: string);
     protected static readonly _objectController: IObjectController;
+    className: string;
     objectId: string;
     isDirty: boolean;
     readonly createdAt: Date;
@@ -34,6 +40,7 @@ export declare class RxAVObject {
      * @memberOf RxAVObject
      */
     save(): Observable<boolean>;
+    fetch(): Observable<RxAVObject>;
     /**
      * 根据 className 和 objectId 构建一个对象
      *
@@ -63,4 +70,7 @@ export declare class RxAVObject {
     protected rebuildEstimatedData(): void;
     protected setProperty(propertyName: string, value: any): void;
     protected getProperty(propertyName: string): any;
+    protected buildRelation(op: string, opEntities: Array<RxAVObject>): {
+        [key: string]: any;
+    };
 }

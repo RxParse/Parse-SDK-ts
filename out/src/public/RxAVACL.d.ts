@@ -6,9 +6,15 @@ export declare type PermissionsMap = {
 export declare type ByIdMap = {
     [userId: string]: PermissionsMap;
 };
+/**
+ *
+ * 基于角色的权限管理
+ * @export
+ * @class RxAVACL
+ */
 export declare class RxAVACL {
     private permissionsById;
-    constructor();
+    constructor(...arg: any[]);
     /**
      * Returns a JSON-encoded version of the ACL.
      * @method toJSON

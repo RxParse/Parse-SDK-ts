@@ -12,6 +12,19 @@ export class ObjectController implements IObjectController {
         this._commandRunner = commandRunner;
     }
 
+    fetch(state: IObjectState, sessionToken: string): Observable<IObjectState> {
+        let cmd = new AVCommand({
+            relativeUrl: `/classes/${state.className}/${state.objectId}`,
+            method: 'GET',
+            data: null,
+            sessionToken: sessionToken
+        });
+        return this._commandRunner.runRxCommand(cmd).map(res => {
+            let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
+            return serverState;
+        });
+    }
+
     save(state: IObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<IObjectState> {
         let encoded = SDKPlugins.instance.Encoder.encode(dictionary);
 

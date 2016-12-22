@@ -1,5 +1,11 @@
 import { AVCommand } from '../internal/command/AVCommand';
 import { Observable } from 'rxjs';
+/**
+ * SDK 核心类，包含了基础的功能模块
+ *
+ * @export
+ * @class RxAVClient
+ */
 export declare class RxAVClient {
     static init(config: {
         appId: string;

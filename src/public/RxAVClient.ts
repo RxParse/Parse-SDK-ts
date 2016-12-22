@@ -15,6 +15,12 @@ var currentConfig: {
     log?: boolean,
     pluginVersion?: number
 } = {};
+/**
+ * SDK 核心类，包含了基础的功能模块
+ * 
+ * @export
+ * @class RxAVClient
+ */
 export class RxAVClient {
     static init(config: {
         appId: string,
@@ -42,7 +48,7 @@ export class RxAVClient {
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             currentConfig.isNode = true;
         }
-        currentConfig.sdkVersion = '0.0.1';
+        
         currentConfig.log = config.log;
         currentConfig.pluginVersion = config.pluginVersion;
         SDKPlugins.version = config.pluginVersion;
@@ -78,7 +84,7 @@ export class RxAVClient {
     }
     protected static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
+        // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
         RxAVClient.printLog(`pluginVersion:${currentConfig.pluginVersion}`);
         RxAVClient.printLog(`environment:node?${currentConfig.isNode}`);
         RxAVClient.printLog(`region:${currentConfig.region}`);
@@ -103,7 +109,7 @@ export class RxAVClient {
     }
 
     public static request(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): Observable<{ [key: string]: any }> {
-        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data,sessionToken);
+        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });

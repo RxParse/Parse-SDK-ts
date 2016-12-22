@@ -5,9 +5,14 @@ import { MutableObjectState } from '../internal/object/state/MutableObjectState'
 import { RxAVUser, RxAVACL } from '../RxLeanCloud';
 import { Observable } from 'rxjs';
 
+/**
+ * 代表的一个 free-schema 的对象
+ * 
+ * @export
+ * @class RxAVObject
+ */
 export class RxAVObject {
 
-    className: string;
     estimatedData: { [key: string]: any };
     state: MutableObjectState;
     private _isDirty: boolean;
@@ -20,14 +25,23 @@ export class RxAVObject {
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
     constructor(className: string) {
-        this.className = className;
+
         this.estimatedData = {};
         this._isDirty = true;
         this.state = new MutableObjectState({ className: className });
+        this.className = className;
     }
 
     protected static get _objectController() {
         return SDKPlugins.instance.ObjectControllerInstance;
+    }
+
+    get className() {
+        return this.state.className;
+    }
+
+    set className(className: string) {
+        this.state.className = className;
     }
 
     get objectId() {
@@ -61,6 +75,7 @@ export class RxAVObject {
     }
 
     set(key: string, value: any) {
+        this.isDirty = true;
         this.estimatedData[key] = value;
     }
 
@@ -102,6 +117,14 @@ export class RxAVObject {
             });
             return x;
         }
+    }
+
+    public fetch(): Observable<RxAVObject> {
+        if (this.objectId == null) throw new Error(`Cannot refresh an object that hasn't been saved to the server.`);
+        return RxAVObject._objectController.fetch(this.state, RxAVUser.currentSessionToken).map(serverState => {
+            this.handleFetchResult(serverState);
+            return this;
+        });
     }
 
     /**
@@ -171,6 +194,7 @@ export class RxAVObject {
 
     protected handlerSave(serverState: IObjectState) {
         this.state.apply(serverState);
+        this.isDirty = false;
         //this.rebuildEstimatedData();
     }
 
@@ -204,6 +228,19 @@ export class RxAVObject {
                 return this.state.serverData[propertyName];
         }
         return null;
+    }
+
+    protected buildRelation(op: string, opEntities: Array<RxAVObject>) {
+        if (opEntities) {
+            let action = op == 'add' ? 'AddRelation' : 'RemoveRelation';
+            let body: { [key: string]: any } = {};
+            let encodedEntities = SDKPlugins.instance.Encoder.encodeItem(opEntities);
+            body = {
+                __op: action,
+                'objects': encodedEntities
+            };
+            return body;
+        }
     }
 
 }

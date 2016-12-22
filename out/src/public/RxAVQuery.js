@@ -1,6 +1,12 @@
 "use strict";
 var RxLeanCloud_1 = require('../RxLeanCloud');
 var SDKPlugins_1 = require('../internal/SDKPlugins');
+/**
+ * 针对 RxAVObject 的查询构建类
+ *
+ * @export
+ * @class RxAVQuery
+ */
 var RxAVQuery = (function () {
     function RxAVQuery(objectClass) {
         if (typeof objectClass === 'string') {

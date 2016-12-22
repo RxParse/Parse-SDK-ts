@@ -2,9 +2,55 @@
 var RxAVUser_1 = require('./RxAVUser');
 var RxAVRole_1 = require('./RxAVRole');
 var PUBLIC_KEY = '*';
+/**
+ *
+ * 基于角色的权限管理
+ * @export
+ * @class RxAVACL
+ */
 var RxAVACL = (function () {
     function RxAVACL() {
+        var _this = this;
+        var arg = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            arg[_i - 0] = arguments[_i];
+        }
         this.permissionsById = {};
+        if (arg.length > 0) {
+            arg.forEach(function (currentItem) {
+                if (currentItem instanceof RxAVUser_1.RxAVUser) {
+                    _this.setReadAccess(currentItem, true);
+                    _this.setWriteAccess(currentItem, true);
+                }
+                else if (currentItem instanceof RxAVRole_1.RxAVRole) {
+                    _this.setReadAccess(currentItem, true);
+                    _this.setWriteAccess(currentItem, true);
+                }
+                else if (typeof currentItem === 'string') {
+                    _this.setRoleWriteAccess(currentItem, true);
+                    _this.setRoleReadAccess(currentItem, true);
+                }
+                else if (currentItem !== undefined) {
+                    throw new TypeError('RxAVACL.constructor need RxAVUser or RxAVRole.');
+                }
+            });
+        }
+        else {
+            if (RxAVUser_1.RxAVUser.currentUser) {
+                if (RxAVUser_1.RxAVUser.currentUser.primaryRole) {
+                    this.setRoleWriteAccess(RxAVUser_1.RxAVUser.currentUser.primaryRole, true);
+                    this.setRoleWriteAccess(RxAVUser_1.RxAVUser.currentUser.primaryRole, true);
+                }
+                else {
+                    this.setReadAccess(RxAVUser_1.RxAVUser.currentUser, true);
+                    this.setWriteAccess(RxAVUser_1.RxAVUser.currentUser, true);
+                }
+            }
+            else {
+                this.setPublicReadAccess(true);
+                this.setPublicWriteAccess(true);
+            }
+        }
         // if (arg1 && typeof arg1 === 'object') {
         //     if (arg1 instanceof RxAVUser) {
         //         this.setReadAccess(arg1, true);
