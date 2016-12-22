@@ -3,6 +3,12 @@ var SDKPlugins_1 = require('../internal/SDKPlugins');
 var MutableObjectState_1 = require('../internal/object/state/MutableObjectState');
 var RxLeanCloud_1 = require('../RxLeanCloud');
 var rxjs_1 = require('rxjs');
+/**
+ * 代表的一个 free-schema 的对象
+ *
+ * @export
+ * @class RxAVObject
+ */
 var RxAVObject = (function () {
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
@@ -10,14 +16,24 @@ var RxAVObject = (function () {
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
     function RxAVObject(className) {
-        this.className = className;
         this.estimatedData = {};
         this._isDirty = true;
         this.state = new MutableObjectState_1.MutableObjectState({ className: className });
+        this.className = className;
     }
     Object.defineProperty(RxAVObject, "_objectController", {
         get: function () {
             return SDKPlugins_1.SDKPlugins.instance.ObjectControllerInstance;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RxAVObject.prototype, "className", {
+        get: function () {
+            return this.state.className;
+        },
+        set: function (className) {
+            this.state.className = className;
         },
         enumerable: true,
         configurable: true
@@ -69,6 +85,7 @@ var RxAVObject = (function () {
         configurable: true
     });
     RxAVObject.prototype.set = function (key, value) {
+        this.isDirty = true;
         this.estimatedData[key] = value;
     };
     RxAVObject.prototype.get = function (key) {
@@ -108,6 +125,15 @@ var RxAVObject = (function () {
             });
             return x;
         }
+    };
+    RxAVObject.prototype.fetch = function () {
+        var _this = this;
+        if (this.objectId == null)
+            throw new Error("Cannot refresh an object that hasn't been saved to the server.");
+        return RxAVObject._objectController.fetch(this.state, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverState) {
+            _this.handleFetchResult(serverState);
+            return _this;
+        });
     };
     /**
      * 根据 className 和 objectId 构建一个对象
@@ -170,6 +196,7 @@ var RxAVObject = (function () {
     };
     RxAVObject.prototype.handlerSave = function (serverState) {
         this.state.apply(serverState);
+        this.isDirty = false;
         //this.rebuildEstimatedData();
     };
     RxAVObject.prototype.handleFetchResult = function (serverState) {
@@ -197,6 +224,18 @@ var RxAVObject = (function () {
                 return this.state.serverData[propertyName];
         }
         return null;
+    };
+    RxAVObject.prototype.buildRelation = function (op, opEntities) {
+        if (opEntities) {
+            var action = op == 'add' ? 'AddRelation' : 'RemoveRelation';
+            var body = {};
+            var encodedEntities = SDKPlugins_1.SDKPlugins.instance.Encoder.encodeItem(opEntities);
+            body = {
+                __op: action,
+                'objects': encodedEntities
+            };
+            return body;
+        }
     };
     return RxAVObject;
 }());

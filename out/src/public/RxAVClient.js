@@ -2,6 +2,12 @@
 var SDKPlugins_1 = require('../internal/SDKPlugins');
 var AVCommand_1 = require('../internal/command/AVCommand');
 var currentConfig = {};
+/**
+ * SDK 核心类，包含了基础的功能模块
+ *
+ * @export
+ * @class RxAVClient
+ */
 var RxAVClient = (function () {
     function RxAVClient() {
     }
@@ -21,7 +27,6 @@ var RxAVClient = (function () {
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             currentConfig.isNode = true;
         }
-        currentConfig.sdkVersion = '0.0.1';
         currentConfig.log = config.log;
         currentConfig.pluginVersion = config.pluginVersion;
         SDKPlugins_1.SDKPlugins.version = config.pluginVersion;
@@ -54,7 +59,7 @@ var RxAVClient = (function () {
     };
     RxAVClient.printWelcome = function () {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        RxAVClient.printLog("version:" + currentConfig.sdkVersion);
+        // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
         RxAVClient.printLog("pluginVersion:" + currentConfig.pluginVersion);
         RxAVClient.printLog("environment:node?" + currentConfig.isNode);
         RxAVClient.printLog("region:" + currentConfig.region);

@@ -5,6 +5,12 @@ import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
 import { Observable } from 'rxjs';
 
+/**
+ * 针对 RxAVObject 的查询构建类
+ * 
+ * @export
+ * @class RxAVQuery
+ */
 export /**
  * RxAVQuery
  */

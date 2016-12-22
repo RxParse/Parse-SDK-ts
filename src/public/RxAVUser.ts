@@ -1,5 +1,5 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { RxAVClient, RxAVObject } from '../RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVRole, RxAVQuery } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IUserController } from '../internal/user/controller/iUserController';
@@ -14,8 +14,11 @@ import { Observable } from 'rxjs';
  */
 export class RxAVUser extends RxAVObject {
     private _username: string;
+    private _primaryRole: RxAVRole;
     email: string;
     mobilephone: string;
+    roles: Array<RxAVRole>;
+
 
     constructor() {
         super('_User');
@@ -111,6 +114,49 @@ export class RxAVUser extends RxAVObject {
         }
     }
 
+    public setPrimaryRole(role: RxAVRole) {
+        this.set('primaryRole', role);
+        if (role.isDirty)
+            return role.save().flatMap<boolean>(s1 => {
+                return role.assign(this);
+            }).flatMap<boolean>(s2 => {
+                return this.save();
+            });
+        else return role.assign(this).flatMap<boolean>(s3 => {
+            return this.save();
+        });
+    }
+
+    /**
+     *  获取当前用户的主要角色
+     * 
+     * 
+     * @memberOf RxAVUser
+     */
+    get primaryRole() {
+        return this.get('primaryRole');
+    }
+
+    /**
+     * 从服务端获取当前用户所拥有的角色
+     * 
+     * @returns {Observable<Array<RxAVRole>>}
+     * 
+     * @memberOf RxAVUser
+     */
+    public fetchRoles(): Observable<Array<RxAVRole>> {
+        let query = new RxAVQuery('_Role');
+        query.equalTo('users', this);
+        return query.find().map(roles => {
+            let fetched = roles.map(currentItem => {
+                let role = RxAVRole.createWithName(currentItem.get('name'), currentItem.objectId);
+                return role;
+            });
+            this.roles = fetched;
+            return fetched;
+        });
+    }
+
 
     /**
      * 使用当前用户的信息注册到 LeanCloud _User 表中
@@ -119,9 +165,10 @@ export class RxAVUser extends RxAVObject {
      * 返回一个可订阅的对象，尽管是 void，但是当前 AVUser 实例对象里面的 sessionToken，objectId 都已更新
      * @memberOf RxAVUser
      */
-    public signUp(): Observable<void> {
+    public signUp(): Observable<boolean> {
         return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
             this.handlerSignUp(userState);
+            return true;
         });
     }
 

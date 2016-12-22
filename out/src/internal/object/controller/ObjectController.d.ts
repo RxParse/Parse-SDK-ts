@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 export declare class ObjectController implements IObjectController {
     private readonly _commandRunner;
     constructor(commandRunner: IAVCommandRunner);
+    fetch(state: IObjectState, sessionToken: string): Observable<IObjectState>;
     save(state: IObjectState, dictionary: {
         [key: string]: any;
     }, sessionToken: string): Observable<IObjectState>;

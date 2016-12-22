@@ -7,6 +7,13 @@ var RxLeanCloud_2 = require('../../src/RxLeanCloud');
 var randomUsername = '';
 describe('RxAVUser', function () {
     before(function () {
+        RxLeanCloud_1.RxAVClient.init({
+            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
+            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
+            region: 'cn',
+            log: true,
+            pluginVersion: 2
+        });
         randomUsername = random.randomString(8);
     });
     it('RxAVUser#signUp', function (done) {
@@ -54,6 +61,21 @@ describe('RxAVUser', function () {
             console.log(error);
             //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
             chai.assert.isNull(error);
+        });
+    });
+    it('RxAVUser#signUpWithPrimaryRole', function (done) {
+        var user = new RxLeanCloud_2.RxAVUser();
+        user.username = random.randomString(8);
+        user.password = 'leancloud';
+        user.signUp().flatMap(function (s) {
+            var randomRoleName1 = random.randomHexString(8);
+            var randomRole1 = new RxLeanCloud_2.RxAVRole(randomRoleName1, new RxLeanCloud_2.RxAVACL(user));
+            return user.setPrimaryRole(randomRole1);
+        }).flatMap(function (s3) {
+            return user.fetchRoles();
+        }).subscribe(function (roles) {
+            chai.assert.isTrue(roles.length == 1);
+            done();
         });
     });
 });
