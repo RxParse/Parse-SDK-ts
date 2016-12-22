@@ -58,18 +58,6 @@ describe('RxAVRole', function () {
             });
         });
     });
-    it('RxAVRole#createWithLogInedUser', function (done) {
-        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').map(function (user) {
-            var randomRoleName = random.randomHexString(8);
-            var testRole = new RxLeanCloud_1.RxAVRole(randomRoleName, new RxLeanCloud_1.RxAVACL(randomRoleName, user, 'SA'));
-            return testRole;
-        }).subscribe(function (role) {
-            role.save().subscribe(function (x) {
-                console.log(role.objectId);
-                done();
-            });
-        });
-    });
     it('RxAVRole#createTwoRolesWithACL', function (done) {
         RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').flatMap(function (user) {
             var randomRoleName1 = random.randomHexString(8);

@@ -60,19 +60,6 @@ describe('RxAVRole', () => {
         });
     });
 
-    it('RxAVRole#createWithLogInedUser', done => {
-        RxAVUser.login('junwu', 'leancloud').map(user => {
-            let randomRoleName = random.randomHexString(8);
-            let testRole = new RxAVRole(randomRoleName, new RxAVACL(randomRoleName, user, 'SA'));
-            return testRole;
-        }).subscribe(role => {
-            role.save().subscribe(x => {
-                console.log(role.objectId);
-                done();
-            });
-        });
-    });
-
     it('RxAVRole#createTwoRolesWithACL', done => {
         RxAVUser.login('junwu', 'leancloud').flatMap<RxAVRole>(user => {
             let randomRoleName1 = random.randomHexString(8);
