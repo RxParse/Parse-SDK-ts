@@ -71,11 +71,13 @@ var RxAVClient = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             optionalParams[_i - 1] = arguments[_i];
         }
-        if (RxAVClient.currentConfig().log)
+        if (RxAVClient.currentConfig().log) {
+            console.log('===================================');
             if (optionalParams.length > 0)
                 console.log(message, optionalParams);
             else
                 console.log(message);
+        }
     };
     RxAVClient.generateAVCommand = function (relativeUrl, method, data, sessionToken) {
         var cmd = new AVCommand_1.AVCommand({

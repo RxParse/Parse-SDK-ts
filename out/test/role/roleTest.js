@@ -47,15 +47,13 @@ describe('RxAVRole', function () {
         // let casher = new RxAVRole(`${teamName}_casher`);
     });
     it('RxAVRole#createWithPublicACL', function (done) {
-        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').map(function (user) {
+        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').flatMap(function (user) {
             var randomRoleName = random.randomHexString(8);
             var testRole = new RxLeanCloud_1.RxAVRole(randomRoleName, new RxLeanCloud_1.RxAVACL());
-            return testRole;
-        }).subscribe(function (role) {
-            role.save().subscribe(function (x) {
-                console.log(role.objectId);
-                done();
-            });
+            return testRole.save();
+        }).subscribe(function (s) {
+            chai.assert.isTrue(s);
+            done();
         });
     });
     it('RxAVRole#createTwoRolesWithACL', function (done) {

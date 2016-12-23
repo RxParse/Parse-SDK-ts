@@ -188,6 +188,16 @@ var RxAVRole = (function (_super) {
             rtn.objectId = objectId;
         return rtn;
     };
+    /**
+     * 根据名字以及 objectId 构建 Role
+     *
+     * @static
+     * @param {string} name
+     * @param {string} objectId
+     * @returns
+     *
+     * @memberOf RxAVRole
+     */
     RxAVRole.createWithName = function (name, objectId) {
         var rtn = new RxAVRole();
         rtn.name = name;

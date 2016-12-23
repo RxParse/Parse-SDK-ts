@@ -98,4 +98,35 @@ describe('RxObject', function () {
             });
         });
     });
+    it('RxAVObject#collectChildrenTwoHierarchies', function (done) {
+        var todo = new RxLeanCloud_1.RxAVObject('RxTodo');
+        todo.set('title', 'todo');
+        var todo2 = new RxLeanCloud_1.RxAVObject('RxTodo');
+        todo2.set('title', 'todo2');
+        var todo3 = new RxLeanCloud_1.RxAVObject('RxTodo');
+        todo3.set('title', 'todo3');
+        var todo4 = new RxLeanCloud_1.RxAVObject('RxTodo');
+        todo4.set('title', 'todo4');
+        var todo5 = new RxLeanCloud_1.RxAVObject('RxTodo');
+        todo5.set('title', 'todo5');
+        todo4.set('t', todo5);
+        //todo5.set('t', todo4);
+        todo.set('t2', todo2);
+        todo.set('t3', todo3);
+        todo.set('t4', todo4);
+        // let x = todo.collectAllLeafNodes();
+        // console.log('leafNodes', x);
+        // let warehouse: Array<RxAVObject> = [];
+        // let s: Array<RxAVObject> = [];
+        // let t: Array<RxAVObject> = [];
+        // RxAVObject.recursionCollectDirtyChildren(todo, warehouse, s, t);
+        // console.log('warehouse', warehouse);
+        // console.log('s', s);
+        // console.log('t', t);
+        // done();
+        todo.save().subscribe(function (s) {
+            console.log(s);
+            done();
+        });
+    });
 });

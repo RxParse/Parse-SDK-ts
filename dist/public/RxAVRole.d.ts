@@ -72,5 +72,15 @@ export declare class RxAVRole extends RxAVObject {
      * @memberOf RxAVRole
      */
     static createWithoutData(objectId?: string): RxAVRole;
+    /**
+     * 根据名字以及 objectId 构建 Role
+     *
+     * @static
+     * @param {string} name
+     * @param {string} objectId
+     * @returns
+     *
+     * @memberOf RxAVRole
+     */
     static createWithName(name: string, objectId: string): RxAVRole;
 }

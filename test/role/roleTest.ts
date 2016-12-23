@@ -48,15 +48,13 @@ describe('RxAVRole', () => {
         // let casher = new RxAVRole(`${teamName}_casher`);
     });
     it('RxAVRole#createWithPublicACL', done => {
-        RxAVUser.login('junwu', 'leancloud').map(user => {
+        RxAVUser.login('junwu', 'leancloud').flatMap<boolean>(user => {
             let randomRoleName = random.randomHexString(8);
             let testRole = new RxAVRole(randomRoleName, new RxAVACL());
-            return testRole;
-        }).subscribe(role => {
-            role.save().subscribe(x => {
-                console.log(role.objectId);
-                done();
-            });
+            return testRole.save();
+        }).subscribe(s => {
+            chai.assert.isTrue(s);
+            done();
         });
     });
 

@@ -83,7 +83,6 @@ export class RxAVObject {
         return this.estimatedData[key];
     }
 
-
     /**
      * 将当前对象保存到云端.
      * 如果对象的 objectId 为空云端会根据现有的数据结构新建一个对象并返回一个新的 objectId.
@@ -92,31 +91,21 @@ export class RxAVObject {
      * @memberOf RxAVObject
      */
     public save() {
-        let dirtyChildren = this.collectDirtyChildren();
-        if (dirtyChildren.length == 0) {
-            let y = RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
+        let rtn: Observable<boolean> = Observable.from([true]);
+        if (!this.isDirty) return rtn;
+        RxAVObject.recursionCollectDirtyChildren(this, [], [], []);
+
+        let dirtyChildren = this.collectAllLeafNodes();
+
+        if (dirtyChildren.length > 0) {
+            rtn = RxAVObject.batchSave(dirtyChildren).flatMap<boolean>(sal => this.save());
+        } else {
+            rtn = RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
                 this.handlerSave(serverState);
                 return true;
             });
-            return y;
-        } else {
-            let states = dirtyChildren.map(c => c.state);
-            let ds = dirtyChildren.map(c => c.estimatedData);
-
-            let x = RxAVObject._objectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
-                dirtyChildren.forEach((dc, i, a) => {
-                    dc.isDirty = false;
-                    dc.handlerSave(serverStateArray[i]);
-                });
-                return dirtyChildren;
-            }).flatMap<boolean>((sss, i) => {
-                return RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-                    this.handlerSave(serverState);
-                    return true;
-                });
-            });
-            return x;
         }
+        return rtn;
     }
 
     public fetch(): Observable<RxAVObject> {
@@ -143,7 +132,6 @@ export class RxAVObject {
         return rtn;
     }
 
-
     /**
      * 批量保存 RxAVObject
      * 
@@ -161,8 +149,16 @@ export class RxAVObject {
         return r;
     }
 
-    protected static batchSave() {
-
+    protected static batchSave(objArray: Array<RxAVObject>) {
+        let states = objArray.map(c => c.state);
+        let ds = objArray.map(c => c.estimatedData);
+        return RxAVObject._objectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
+            objArray.forEach((dc, i, a) => {
+                dc.isDirty = false;
+                dc.handlerSave(serverStateArray[i]);
+            });
+            return true;
+        });
     }
 
     protected static deepSave(obj: RxAVObject) {
@@ -190,6 +186,40 @@ export class RxAVObject {
             }
         }
         return dirtyChildren;
+    }
+
+    collectAllLeafNodes() {
+        let leafNodes: Array<RxAVObject> = [];
+        let dirtyChildren = this.collectDirtyChildren();
+        if (dirtyChildren.length == 0) {
+            if (this.isDirty)
+                leafNodes.push(this);
+        } else {
+            dirtyChildren.map(child => {
+                leafNodes = leafNodes.concat(child.collectAllLeafNodes());
+            });
+        }
+        return leafNodes;
+    }
+
+    static recursionCollectDirtyChildren(root: RxAVObject, warehouse: Array<RxAVObject>, seen: Array<RxAVObject>, seenNew: Array<RxAVObject>) {
+
+        let dirtyChildren = root.collectDirtyChildren();
+        dirtyChildren.map(child => {
+            let scopedSeenNew: Array<RxAVObject> = [];
+            if (seenNew.indexOf(child) > -1) {
+                throw new Error('Found a circular dependency while saving');
+            }
+            scopedSeenNew = scopedSeenNew.concat(seenNew);
+            scopedSeenNew.push(child);
+
+            if (seen.indexOf(child) > -1) {
+                return;
+            }
+            seen.push(child);
+            RxAVObject.recursionCollectDirtyChildren(child, warehouse, seen, scopedSeenNew);
+            warehouse.push(child);
+        });
     }
 
     protected handlerSave(serverState: IObjectState) {
@@ -242,5 +272,4 @@ export class RxAVObject {
             return body;
         }
     }
-
 }
