@@ -100,31 +100,21 @@ var RxAVObject = (function () {
      */
     RxAVObject.prototype.save = function () {
         var _this = this;
-        var dirtyChildren = this.collectDirtyChildren();
-        if (dirtyChildren.length == 0) {
-            var y = RxAVObject._objectController.save(this.state, this.estimatedData, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverState) {
+        var rtn = rxjs_1.Observable.from([true]);
+        if (!this.isDirty)
+            return rtn;
+        RxAVObject.recursionCollectDirtyChildren(this, [], [], []);
+        var dirtyChildren = this.collectAllLeafNodes();
+        if (dirtyChildren.length > 0) {
+            rtn = RxAVObject.batchSave(dirtyChildren).flatMap(function (sal) { return _this.save(); });
+        }
+        else {
+            rtn = RxAVObject._objectController.save(this.state, this.estimatedData, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverState) {
                 _this.handlerSave(serverState);
                 return true;
             });
-            return y;
         }
-        else {
-            var states = dirtyChildren.map(function (c) { return c.state; });
-            var ds = dirtyChildren.map(function (c) { return c.estimatedData; });
-            var x = RxAVObject._objectController.batchSave(states, ds, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverStateArray) {
-                dirtyChildren.forEach(function (dc, i, a) {
-                    dc.isDirty = false;
-                    dc.handlerSave(serverStateArray[i]);
-                });
-                return dirtyChildren;
-            }).flatMap(function (sss, i) {
-                return RxAVObject._objectController.save(_this.state, _this.estimatedData, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverState) {
-                    _this.handlerSave(serverState);
-                    return true;
-                });
-            });
-            return x;
-        }
+        return rtn;
     };
     RxAVObject.prototype.fetch = function () {
         var _this = this;
@@ -166,7 +156,16 @@ var RxAVObject = (function () {
         });
         return r;
     };
-    RxAVObject.batchSave = function () {
+    RxAVObject.batchSave = function (objArray) {
+        var states = objArray.map(function (c) { return c.state; });
+        var ds = objArray.map(function (c) { return c.estimatedData; });
+        return RxAVObject._objectController.batchSave(states, ds, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverStateArray) {
+            objArray.forEach(function (dc, i, a) {
+                dc.isDirty = false;
+                dc.handlerSave(serverStateArray[i]);
+            });
+            return true;
+        });
     };
     RxAVObject.deepSave = function (obj) {
         var dirtyChildren = [];
@@ -193,6 +192,37 @@ var RxAVObject = (function () {
             }
         }
         return dirtyChildren;
+    };
+    RxAVObject.prototype.collectAllLeafNodes = function () {
+        var leafNodes = [];
+        var dirtyChildren = this.collectDirtyChildren();
+        if (dirtyChildren.length == 0) {
+            if (this.isDirty)
+                leafNodes.push(this);
+        }
+        else {
+            dirtyChildren.map(function (child) {
+                leafNodes = leafNodes.concat(child.collectAllLeafNodes());
+            });
+        }
+        return leafNodes;
+    };
+    RxAVObject.recursionCollectDirtyChildren = function (root, warehouse, seen, seenNew) {
+        var dirtyChildren = root.collectDirtyChildren();
+        dirtyChildren.map(function (child) {
+            var scopedSeenNew = [];
+            if (seenNew.indexOf(child) > -1) {
+                throw new Error('Found a circular dependency while saving');
+            }
+            scopedSeenNew = scopedSeenNew.concat(seenNew);
+            scopedSeenNew.push(child);
+            if (seen.indexOf(child) > -1) {
+                return;
+            }
+            seen.push(child);
+            RxAVObject.recursionCollectDirtyChildren(child, warehouse, seen, scopedSeenNew);
+            warehouse.push(child);
+        });
     };
     RxAVObject.prototype.handlerSave = function (serverState) {
         this.state.apply(serverState);

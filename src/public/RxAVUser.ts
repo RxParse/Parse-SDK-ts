@@ -19,7 +19,6 @@ export class RxAVUser extends RxAVObject {
     mobilephone: string;
     roles: Array<RxAVRole>;
 
-
     constructor() {
         super('_User');
     }

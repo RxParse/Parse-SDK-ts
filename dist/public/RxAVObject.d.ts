@@ -61,9 +61,11 @@ export declare class RxAVObject {
      * @memberOf RxAVObject
      */
     static saveAll(objects: Array<RxAVObject>): Observable<boolean>;
-    protected static batchSave(): void;
+    protected static batchSave(objArray: Array<RxAVObject>): Observable<boolean>;
     protected static deepSave(obj: RxAVObject): Observable<boolean>;
     protected collectDirtyChildren(): RxAVObject[];
+    collectAllLeafNodes(): RxAVObject[];
+    static recursionCollectDirtyChildren(root: RxAVObject, warehouse: Array<RxAVObject>, seen: Array<RxAVObject>, seenNew: Array<RxAVObject>): void;
     protected handlerSave(serverState: IObjectState): void;
     handleFetchResult(serverState: IObjectState): void;
     protected mergeFromServer(serverState: IObjectState): void;

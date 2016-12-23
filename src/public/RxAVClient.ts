@@ -48,7 +48,7 @@ export class RxAVClient {
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             currentConfig.isNode = true;
         }
-        
+
         currentConfig.log = config.log;
         currentConfig.pluginVersion = config.pluginVersion;
         SDKPlugins.version = config.pluginVersion;
@@ -92,10 +92,12 @@ export class RxAVClient {
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     }
     public static printLog(message?: any, ...optionalParams: any[]) {
-        if (RxAVClient.currentConfig().log)
+        if (RxAVClient.currentConfig().log) {
+            console.log('===================================');
             if (optionalParams.length > 0)
                 console.log(message, optionalParams);
             else console.log(message);
+        }
     }
 
     protected static generateAVCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): AVCommand {

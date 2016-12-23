@@ -179,6 +179,16 @@ export /**
         return rtn;
     }
 
+    /**
+     * 根据名字以及 objectId 构建 Role
+     * 
+     * @static
+     * @param {string} name
+     * @param {string} objectId
+     * @returns
+     * 
+     * @memberOf RxAVRole
+     */
     public static createWithName(name: string, objectId: string) {
         let rtn = new RxAVRole();
         rtn.name = name;

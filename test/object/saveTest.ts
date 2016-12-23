@@ -100,10 +100,10 @@ describe('RxObject', function () {
     it('RxAVObject#saveUnderACL', done => {
         RxAVUser.login('junwu', 'leancloud').subscribe(user => {
             let team: RxAVObject = new RxAVObject('teams');
-            
+
             let teamPrefix = 'hua';
             let admin = `${teamPrefix}_admin`;
-            
+
             let acl = new RxAVACL();
             acl.setRoleWriteAccess(admin, true);
             acl.setReadAccess(admin, true);
@@ -118,6 +118,48 @@ describe('RxObject', function () {
                 done();
             });
         });
+    });
+
+    it('RxAVObject#collectChildrenTwoHierarchies', done => {
+        let todo: RxAVObject = new RxAVObject('RxTodo');
+        todo.set('title', 'todo');
+
+        let todo2: RxAVObject = new RxAVObject('RxTodo');
+        todo2.set('title', 'todo2');
+
+        let todo3: RxAVObject = new RxAVObject('RxTodo');
+        todo3.set('title', 'todo3');
+
+        let todo4: RxAVObject = new RxAVObject('RxTodo');
+        todo4.set('title', 'todo4');
+
+
+        let todo5: RxAVObject = new RxAVObject('RxTodo');
+        todo5.set('title', 'todo5');
+
+        todo4.set('t', todo5);
+        //todo5.set('t', todo4);
+
+        todo.set('t2', todo2);
+        todo.set('t3', todo3);
+        todo.set('t4', todo4);
+
+        // let x = todo.collectAllLeafNodes();
+        // console.log('leafNodes', x);
+        // let warehouse: Array<RxAVObject> = [];
+        // let s: Array<RxAVObject> = [];
+        // let t: Array<RxAVObject> = [];
+        // RxAVObject.recursionCollectDirtyChildren(todo, warehouse, s, t);
+        // console.log('warehouse', warehouse);
+        // console.log('s', s);
+        // console.log('t', t);
+        // done();
+
+        todo.save().subscribe(s => {
+            console.log(s);
+            done();
+        });
+
     });
 
 });
