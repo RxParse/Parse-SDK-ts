@@ -5,22 +5,15 @@
 
 ## 目前支持的模块
 
-- [x] Object#save
-- [x] Object.saveAll
-- [x] User#signUp
-- [x] Query#equalTo
-- [x] Query#notEqualTo
-- [x] Query#lessThan
-- [x] Query#greaterlTo
-- [x] Query#descending
-- [x] Query#ascending
-- [x] LeanEngine#callFunction
+- [x] 数据存储(RxAVObject)
+- [x] 数据查询(RxAVQuery)
+- [x] 云函数(RxLeanEngine)
+- [x] ACL(RxAVRole & RxAVACL)
+- [x] 短信(注册和登陆)
 
 ## 未来肯定支持的模块
-- [ ] ACL
-- [ ] 短信
 - [ ] Ionic2 本地存储适配
-- [ ] Angular 本地存储适配
+- [ ] Angular2 本地存储适配
 
 ## 未来未必支持的模块
 - [ ] Push
@@ -29,7 +22,6 @@
 
 ## 未来说不定就有的模块
 - [ ] 聊天
-
 
 ### 性感的订阅语法
 
