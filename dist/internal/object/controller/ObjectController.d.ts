@@ -7,6 +7,22 @@ export declare class ObjectController implements IObjectController {
     private readonly _commandRunner;
     constructor(commandRunner: IAVCommandRunner);
     fetch(state: IObjectState, sessionToken: string): Observable<IObjectState>;
+    clearReadonlyFields(dictionary: {
+        [key: string]: any;
+    }): void;
+    clearRelationFields(dictionary: {
+        [key: string]: any;
+    }): void;
+    copyToMutable(dictionary: {
+        [key: string]: any;
+    }): {
+        [key: string]: any;
+    };
+    packForSave(dictionary: {
+        [key: string]: any;
+    }): {
+        [key: string]: any;
+    };
     save(state: IObjectState, dictionary: {
         [key: string]: any;
     }, sessionToken: string): Observable<IObjectState>;

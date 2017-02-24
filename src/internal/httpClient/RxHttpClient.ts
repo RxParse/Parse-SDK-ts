@@ -20,9 +20,10 @@ export class RxHttpClient implements IRxHttpClient {
         };
         let response = new HttpResponse(tuple);
         RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxAVClient.isNode() && this.version == 1)
+        if (RxAVClient.isNode() && this.version == 1) {
+            RxAVClient.printLog('http client:axios');
             return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
-                RxAVClient.printLog('http client:axios');
+
                 tuple[0] = res.status;
                 tuple[1] = res.data;
                 let response = new HttpResponse(tuple);
@@ -37,22 +38,26 @@ export class RxHttpClient implements IRxHttpClient {
                 RxAVClient.printLog('Error:', JSON.stringify(errMsg));
                 return Observable.throw(errMsg);
             });
-        else return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
+        }
+
+        else {
             RxAVClient.printLog('http client:superagent');
-            tuple[0] = res.status;
-            tuple[1] = res.body;
-            let response = new HttpResponse(tuple);
-            RxAVClient.printLog('Response:', JSON.stringify(response));
-            return response;
-        }).catch((err: any) => {
-            RxAVClient.printLog('Meta Error:', JSON.stringify(err));
-            if (err) {
-                errMsg.statusCode = err.status;
-                errMsg.error = JSON.parse(err.response.text);
-            }
-            RxAVClient.printLog('Error:', JSON.stringify(errMsg));
-            return Observable.throw(errMsg);
-        });
+            return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
+                tuple[0] = res.status;
+                tuple[1] = res.body;
+                let response = new HttpResponse(tuple);
+                RxAVClient.printLog('Response:', JSON.stringify(response));
+                return response;
+            }).catch((err: any) => {
+                RxAVClient.printLog('Meta Error:', err);
+                if (err) {
+                    errMsg.statusCode = err.status;
+                    errMsg.error = JSON.parse(err.response.text);
+                }
+                RxAVClient.printLog('Error:', errMsg);
+                return Observable.throw(errMsg);
+            });
+        }
     }
 
     batchExecute() {

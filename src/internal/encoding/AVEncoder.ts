@@ -14,7 +14,6 @@ export /**
         for (let key in dictionary) {
             let v = dictionary[key];
             encodedDictionary[key] = this.encodeItem(v);
-            // RxAVClient.printLog(key, v, '->', encodedDictionary[key]);
         }
         return encodedDictionary;
     }

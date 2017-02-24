@@ -1,7 +1,5 @@
-/// <reference path="../../typings/index.d.ts" />
-
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole } from '../../src/RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery } from '../../src/RxLeanCloud';
 
 describe('RxObject', function () {
     before(() => {
@@ -13,7 +11,7 @@ describe('RxObject', function () {
             pluginVersion: 2
         });
     });
-    it('RxAVObject#save', function (done) {
+    it('RxAVObject#saveBase', function (done) {
         let todo: RxAVObject = new RxAVObject('RxTodo');
 
         todo.set('title', '开会');
@@ -98,7 +96,7 @@ describe('RxObject', function () {
     });
 
     it('RxAVObject#saveUnderACL', done => {
-        RxAVUser.login('junwu', 'leancloud').subscribe(user => {
+        RxAVUser.logIn('junwu', 'leancloud').subscribe(user => {
             let team: RxAVObject = new RxAVObject('teams');
 
             let teamPrefix = 'hua';
@@ -159,7 +157,30 @@ describe('RxObject', function () {
             console.log(s);
             done();
         });
-
+    });
+    it('RxAVObject#saveDate', done => {
+        let testTodo = new RxAVObject('Todo');
+        testTodo.set('rDate', new Date());
+        testTodo.save().flatMap(s => {
+            let query = new RxAVQuery('Todo');
+            query.equalTo('objectId', testTodo.objectId);
+            return query.find();
+        }).map(todos => {
+            let updatedAt = todos[0].updatedAt;
+            let testDate = todos[0].get('rDate');
+            console.log('testDate', testDate);
+            console.log(typeof testDate);
+            console.log('ed', todos[0].estimatedData);
+            //chai.assert.isTrue(testDate instanceof Date);
+            //chai.assert.isTrue(updatedAt instanceof Date);
+            //chai.assert.isTrue(testTodo.updatedAt instanceof Date);
+            return todos[0];
+        }).flatMap(s1 => {
+            return s1.save();
+        }).subscribe(s2 => {
+            chai.assert.isTrue(s2);
+            done();
+        });
     });
 
 });

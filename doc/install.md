@@ -1,3 +1,4 @@
-    typings install env~mocha --global --save
-
-    typings install mocha --save-dev
+## 开发环境配置
+```sh
+$:npm install
+```

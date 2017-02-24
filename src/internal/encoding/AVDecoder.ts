@@ -35,7 +35,7 @@ export class AVDecoder implements IAVDecoder {
         } else {
             let typeString = dict['__type'];
             if (typeString == 'Date') {
-                let dt: Date = dict["iso"];
+                let dt: Date = new Date(dict["iso"]);
                 return dt;
             } else if (typeString == 'Pointer') {
                 return this.decodePointer(dict['className'], dict['objectId']);

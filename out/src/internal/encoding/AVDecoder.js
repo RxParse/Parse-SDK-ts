@@ -35,7 +35,7 @@ var AVDecoder = (function () {
         else {
             var typeString = dict['__type'];
             if (typeString == 'Date') {
-                var dt = dict["iso"];
+                var dt = new Date(dict["iso"]);
                 return dt;
             }
             else if (typeString == 'Pointer') {

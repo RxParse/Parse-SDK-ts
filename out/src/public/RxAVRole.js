@@ -5,7 +5,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var RxLeanCloud_1 = require('../RxLeanCloud');
-var rxjs_1 = require('rxjs');
 /**
  * 角色
  *
@@ -70,39 +69,9 @@ var RxAVRole = (function (_super) {
         configurable: true
     });
     /**
-     * 为用户赋予角色
+     * 将当前 Role 的权限授予给 args 里面包含的 Role 和 User
      *
-     * @param {...any[]} args Array<RxAVUser.objectId> or Array<RxAVUser>
-     * @returns {Observable<boolean>}
-     *
-     * @memberOf RxAVRole
-     */
-    RxAVRole.prototype.assign = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        return this._setRelation.apply(this, ['users', 'add', '_User'].concat(args));
-    };
-    /**
-     * 剥夺用户的角色
-     *
-     * @param {...any[]} args Array<RxAVUser.objectId> or Array<RxAVUser>
-     * @returns {Observable<boolean>}
-     *
-     * @memberOf RxAVRole
-     */
-    RxAVRole.prototype.deprive = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        return this._setRelation.apply(this, ['users', 'remove', '_User'].concat(args));
-    };
-    /**
-     * 将当前 Role 的权限授予给 args 里面包含的 Role
-     *
-     * @param {...any[]} args Array<RxAVRole.objectId> or Array<RxAVRole>
+     * @param {...any[]} args Array<RxAVRole> or Array<RxAVUser>
      * @returns {Observable<boolean>}
      *
      * @memberOf RxAVRole
@@ -112,12 +81,12 @@ var RxAVRole = (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        return this._setRelation.apply(this, ['roles', 'add', '_Role'].concat(args));
+        return this._postRelation.apply(this, ['add'].concat(args));
     };
     /**
-     * 取消当前用户对 args 包含的 Role 的关联，args 包含的 Role 将不再具备当前 Role 的权限
+     * 取消当前用户对 args 包含的 Role 和 User 的关联，args 包含的 Role 和 User 将不再具备当前 Role 的权限
      *
-     * @param {...any[]} args
+     * @param {...any[]} args Array<RxAVRole> or Array<RxAVUser>
      * @returns {Observable<boolean>}
      *
      * @memberOf RxAVRole
@@ -127,51 +96,53 @@ var RxAVRole = (function (_super) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        return this._setRelation.apply(this, ['roles', 'remove', '_Role'].concat(args));
+        return this._postRelation.apply(this, ['remove'].concat(args));
     };
-    RxAVRole.prototype.save = function () {
-        this._buildRoleRelation();
-        if (!this.ACL)
-            throw new Error('Role muse have a ACL.');
-        // if (this.ACL.getPublicReadAccess() && this.ACL.getPublicWriteAccess())
-        //     throw new Error('can NOT set Role.ACL public read and write access both in true.');
-        return _super.prototype.save.call(this);
-    };
-    RxAVRole.prototype._buildRoleRelation = function () {
-        if (this.users) {
-            var usersBody = this.buildRelation('add', this.users);
-            this.estimatedData['users'] = usersBody;
-        }
-        if (this.roles) {
-            var rolesBody = this.buildRelation('add', this.users);
-            this.estimatedData['roles'] = rolesBody;
-        }
-    };
-    RxAVRole.prototype._setRelation = function (field, op, className) {
+    RxAVRole.prototype._postRelation = function (op) {
         var args = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            args[_i - 3] = arguments[_i];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
         }
-        if (args == null || args.length < 1 || typeof this.objectId === undefined)
-            return rxjs_1.Observable.from([false]);
-        var toOpEntities = [];
+        var body = {};
+        var users = [];
+        var roles = [];
         args.forEach(function (currentItem) {
-            if (currentItem instanceof RxLeanCloud_1.RxAVObject) {
-                toOpEntities.push(currentItem);
+            if (currentItem instanceof RxLeanCloud_1.RxAVUser) {
+                users.push(currentItem);
             }
-            else if (typeof currentItem == 'string') {
-                var restoredObject = RxLeanCloud_1.RxAVObject.createWithoutData(className, currentItem);
-                toOpEntities.push(restoredObject);
+            else if (currentItem instanceof RxAVRole) {
+                roles.push(currentItem);
             }
             else {
-                throw new TypeError('args type must be string or RxAVUser.');
+                throw new TypeError('args type must be RxAVRole or RxAVUser.');
             }
         });
-        var body = {};
-        body[field] = this.buildRelation(op, toOpEntities);
+        this._buildRoleRelation(op, users, roles, body);
         return RxLeanCloud_1.RxAVUser._objectController.save(this.state, body, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverState) {
             return serverState != null;
         });
+    };
+    RxAVRole.prototype.save = function () {
+        this._buildRoleRelation('add', this.users, this.roles, this.estimatedData);
+        if (!this.ACL)
+            throw new Error('Role must have a ACL.');
+        if (this.ACL.getPublicWriteAccess()) {
+            throw new Error('can NOT set Role.ACL public write access in true.');
+        }
+        if (!(this.ACL.findWriteAccess() && RxLeanCloud_1.RxAVClient.inLeanEngine)) {
+            throw new Error('can NOT set Role.ACL write access in closed.');
+        }
+        return _super.prototype.save.call(this);
+    };
+    RxAVRole.prototype._buildRoleRelation = function (op, users, roles, postBody) {
+        if (users && users.length > 0) {
+            var usersBody = this.buildRelation(op, users);
+            postBody['users'] = usersBody;
+        }
+        if (roles && roles.length > 0) {
+            var rolesBody = this.buildRelation(op, roles);
+            postBody['roles'] = rolesBody;
+        }
     };
     /**
      * 根据 objectId 构建 Role

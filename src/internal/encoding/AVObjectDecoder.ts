@@ -2,6 +2,7 @@ import { IObjectState } from '../object/state/IObjectState';
 import { MutableObjectState } from '../object/state/MutableObjectState';
 import { IAVObjectDecoder } from './IAVObjectDecoder';
 import { IAVDecoder } from './IAVDecoder';
+import { RxAVObject } from '../../RxLeanCloud';
 
 export /**
  * AVDecoder
@@ -31,11 +32,18 @@ export /**
             state.objectId = serverResult.objectId;
             delete serverResult.objectId;
         }
-        
+
         for (let key in serverResult) {
             var value = serverResult[key];
             if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
-                mutableData[key] = decoder.decodeItem(value);
+                if (value['__type'] == 'Pointer') {
+                    let rxAVObject: RxAVObject = decoder.decodeItem(value);
+                    let serverState = this.decode(value, decoder);
+                    rxAVObject.handleFetchResult(serverState);
+                    mutableData[key] = rxAVObject;
+                } else {
+                    mutableData[key] = decoder.decodeItem(value);
+                }
             } else {
                 mutableData[key] = value;
             }

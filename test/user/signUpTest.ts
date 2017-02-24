@@ -1,5 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
-
 import * as chai from 'chai';
 import * as random from "../utils/random";
 import { RxAVClient } from '../../src/RxLeanCloud';
@@ -61,7 +59,11 @@ describe('RxAVUser', function () {
             done();
             return;
         }
-        RxAVUser.signUpByMobilephone('18612438929', '064241').subscribe(s => {
+        let user = new RxAVUser();
+        user.username = random.randomString(8);
+        user.password = 'leancloud';
+        user.set('nickName', 'hahaha');
+        RxAVUser.signUpByMobilephone('18612438929', '064241', user).subscribe(s => {
             done();
         }, error => {
             console.log(error);
@@ -81,6 +83,15 @@ describe('RxAVUser', function () {
             return user.fetchRoles();
         }).subscribe(roles => {
             chai.assert.isTrue(roles.length == 1);
+            done();
+        });
+    });
+    it('RxAVUser#create', done => {
+        let user: RxAVUser = new RxAVUser();
+        user.username = random.randomString(8);
+        user.password = 'leancloud';
+        user.create().subscribe(s => {
+            chai.assert.isNotNull(user.objectId);
             done();
         });
     });

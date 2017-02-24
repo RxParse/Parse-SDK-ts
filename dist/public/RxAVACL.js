@@ -184,6 +184,17 @@ var RxAVACL = (function () {
         }
         return !!permissions[accessType];
     };
+    RxAVACL.prototype.findWriteAccess = function () {
+        var rtn = false;
+        for (var key in this.permissionsById) {
+            var permisstion = this.permissionsById[key];
+            if (permisstion['write']) {
+                rtn = true;
+                break;
+            }
+        }
+        return rtn;
+    };
     /**
      * Sets whether the given user is allowed to read this object.
      * @method setReadAccess

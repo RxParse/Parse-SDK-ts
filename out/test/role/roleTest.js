@@ -47,7 +47,7 @@ describe('RxAVRole', function () {
         // let casher = new RxAVRole(`${teamName}_casher`);
     });
     it('RxAVRole#createWithPublicACL', function (done) {
-        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').flatMap(function (user) {
+        RxLeanCloud_1.RxAVUser.logIn('junwu', 'leancloud').flatMap(function (user) {
             var randomRoleName = random.randomHexString(8);
             var testRole = new RxLeanCloud_1.RxAVRole(randomRoleName, new RxLeanCloud_1.RxAVACL());
             return testRole.save();
@@ -57,7 +57,7 @@ describe('RxAVRole', function () {
         });
     });
     it('RxAVRole#createTwoRolesWithACL', function (done) {
-        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').flatMap(function (user) {
+        RxLeanCloud_1.RxAVUser.logIn('junwu', 'leancloud').flatMap(function (user) {
             var randomRoleName1 = random.randomHexString(8);
             var randomRole1 = new RxLeanCloud_1.RxAVRole(randomRoleName1, new RxLeanCloud_1.RxAVACL(user), [user]);
             return randomRole1.save().map(function (s) {
@@ -69,6 +69,21 @@ describe('RxAVRole', function () {
             var randomRole2 = new RxLeanCloud_1.RxAVRole(randomRoleName2, new RxLeanCloud_1.RxAVACL(role1), null, [role1]);
             randomRole2.grant(role1);
             return randomRole2.save();
+        }).subscribe(function (fs) {
+            chai.assert.isTrue(fs);
+            done();
+        });
+    });
+    it('RxAVRole#grantUsers', function (done) {
+        RxLeanCloud_1.RxAVUser.logIn('junwu', 'leancloud').flatMap(function (user) {
+            var randomRoleName1 = random.randomHexStringWithPrefix('Role_', 4);
+            var randomRole1 = new RxLeanCloud_1.RxAVRole(randomRoleName1, new RxLeanCloud_1.RxAVACL(user));
+            return randomRole1.save().map(function (s) {
+                if (s)
+                    return randomRole1;
+            });
+        }).flatMap(function (role1) {
+            return role1.grant(RxLeanCloud_1.RxAVUser.currentUser);
         }).subscribe(function (fs) {
             chai.assert.isTrue(fs);
             done();

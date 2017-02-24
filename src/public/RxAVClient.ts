@@ -3,7 +3,11 @@ import { AVCommand } from '../internal/command/AVCommand';
 import { AVCommandResponse } from '../internal/command/AVCommandResponse';
 import { IAVCommandRunner } from '../internal/command/IAVCommandRunner';
 import { AVCommandRunner } from '../internal/command/AVCommandRunner';
+import { IStorage } from '../internal/storage/IStorage';
+import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
+import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
+var pjson = require('../package.json');
 
 var currentConfig: {
     applicationId?: string,
@@ -13,8 +17,15 @@ var currentConfig: {
     isNode?: boolean,
     sdkVersion?: string,
     log?: boolean,
-    pluginVersion?: number
+    pluginVersion?: number,
+    runtime?: string
 } = {};
+
+// var providers: {
+//     storage?: IStorage,
+//     device?: IDeviceInfo
+// } = {};
+
 /**
  * SDK 核心类，包含了基础的功能模块
  * 
@@ -28,7 +39,11 @@ export class RxAVClient {
         region?: string,
         serverUrl?: string,
         log?: boolean,
-        pluginVersion?: number
+        pluginVersion?: number,
+        plugins?: {
+            storage?: IStorage,
+            device?: IDeviceInfo
+        }
     }): void {
         currentConfig.applicationId = config.appId;
         currentConfig.applicationKey = config.appKey;
@@ -52,9 +67,21 @@ export class RxAVClient {
         currentConfig.log = config.log;
         currentConfig.pluginVersion = config.pluginVersion;
         SDKPlugins.version = config.pluginVersion;
-
+        if (config.plugins) {
+            if (config.plugins.storage) {
+                SDKPlugins.instance.StorageProvider = config.plugins.storage;
+                SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
+            }
+            if (config.plugins.device) {
+                SDKPlugins.instance.DeviceProvider = config.plugins.device;
+            }
+        }
         RxAVClient.printWelcome();
-
+    }
+    static restoreSettings(): Observable<boolean> {
+        return SDKPlugins.instance.LocalStorageControllerInstance.load().map(provider => {
+            return provider != null;
+        });
     }
     protected static _headers: { [key: string]: any };
     public static headers() {
@@ -66,11 +93,13 @@ export class RxAVClient {
                 'Content-Type': 'application/json'
             }
             if (RxAVClient.isNode()) {
-                RxAVClient._headers['User-Agent'] = 'ts-sdk/' + config.sdkVersion;
+                RxAVClient._headers['User-Agent'] = 'ts-sdk/' + pjson.version;
             }
         }
-
         return RxAVClient._headers;
+    }
+    public static get sdk_version() {
+        return pjson.version;
     }
     public static serverUrl() {
         return currentConfig.serverUrl;
@@ -81,6 +110,9 @@ export class RxAVClient {
     }
     public static isNode() {
         return RxAVClient.currentConfig().isNode;
+    }
+    public static inLeanEngine() {
+        return false;
     }
     protected static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');

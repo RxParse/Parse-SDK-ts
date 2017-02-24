@@ -1,4 +1,6 @@
 import { AVCommand } from '../internal/command/AVCommand';
+import { IStorage } from '../internal/storage/IStorage';
+import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
 import { Observable } from 'rxjs';
 /**
  * SDK 核心类，包含了基础的功能模块
@@ -14,13 +16,19 @@ export declare class RxAVClient {
         serverUrl?: string;
         log?: boolean;
         pluginVersion?: number;
+        plugins?: {
+            storage?: IStorage;
+            device?: IDeviceInfo;
+        };
     }): void;
+    static restoreSettings(): Observable<boolean>;
     protected static _headers: {
         [key: string]: any;
     };
     static headers(): {
         [key: string]: any;
     };
+    static readonly sdk_version: any;
     static serverUrl(): string;
     static currentConfig(): {
         applicationId?: string;
@@ -31,8 +39,10 @@ export declare class RxAVClient {
         sdkVersion?: string;
         log?: boolean;
         pluginVersion?: number;
+        runtime?: string;
     };
     static isNode(): boolean;
+    static inLeanEngine(): boolean;
     protected static printWelcome(): void;
     static printLog(message?: any, ...optionalParams: any[]): void;
     protected static generateAVCommand(relativeUrl: string, method: string, data?: {

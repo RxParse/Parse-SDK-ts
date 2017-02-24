@@ -72,95 +72,74 @@ export /**
     protected users: Array<RxAVUser>;
     protected roles: Array<RxAVRole>;
 
-    /**
-     * 为用户赋予角色
-     * 
-     * @param {...any[]} args Array<RxAVUser.objectId> or Array<RxAVUser>
-     * @returns {Observable<boolean>}
-     * 
-     * @memberOf RxAVRole
-     */
-    assign(...args: any[]): Observable<boolean> {
-        return this._setRelation('users', 'add', '_User', ...args);
-    }
 
     /**
-     * 剥夺用户的角色
+     * 将当前 Role 的权限授予给 args 里面包含的 Role 和 User
      * 
-     * @param {...any[]} args Array<RxAVUser.objectId> or Array<RxAVUser>
-     * @returns {Observable<boolean>}
-     * 
-     * @memberOf RxAVRole
-     */
-    deprive(...args: any[]): Observable<boolean> {
-        return this._setRelation('users', 'remove', '_User', ...args);
-    }
-
-    /**
-     * 将当前 Role 的权限授予给 args 里面包含的 Role
-     * 
-     * @param {...any[]} args Array<RxAVRole.objectId> or Array<RxAVRole>
+     * @param {...any[]} args Array<RxAVRole> or Array<RxAVUser>
      * @returns {Observable<boolean>}
      * 
      * @memberOf RxAVRole
      */
     grant(...args: any[]): Observable<boolean> {
-        return this._setRelation('roles', 'add', '_Role', ...args);
+        return this._postRelation('add', ...args);
     }
 
     /**
-     * 取消当前用户对 args 包含的 Role 的关联，args 包含的 Role 将不再具备当前 Role 的权限
+     * 取消当前用户对 args 包含的 Role 和 User 的关联，args 包含的 Role 和 User 将不再具备当前 Role 的权限
      * 
-     * @param {...any[]} args
+     * @param {...any[]} args Array<RxAVRole> or Array<RxAVUser>
      * @returns {Observable<boolean>}
      * 
      * @memberOf RxAVRole
      */
     deny(...args: any[]): Observable<boolean> {
-        return this._setRelation('roles', 'remove', '_Role', ...args);
+        return this._postRelation('remove', ...args);
     }
 
-    public save() {
-        this._buildRoleRelation();
-        if (!this.ACL) throw new Error('Role muse have a ACL.');
-        // if (this.ACL.getPublicReadAccess() && this.ACL.getPublicWriteAccess())
-        //     throw new Error('can NOT set Role.ACL public read and write access both in true.');
-        return super.save();
-    }
-
-    protected _buildRoleRelation() {
-        if (this.users) {
-            let usersBody: { [key: string]: any } = this.buildRelation('add', this.users);
-            this.estimatedData['users'] = usersBody;
-        }
-        if (this.roles) {
-            let rolesBody: { [key: string]: any } = this.buildRelation('add', this.users);
-            this.estimatedData['roles'] = rolesBody;
-        }
-    }
-
-    protected _setRelation(field: string, op: string, className: string, ...args: any[]) {
-        
-        if (args == null || args.length < 1 || typeof this.objectId === undefined) return Observable.from([false]);
-
-        let toOpEntities: Array<RxAVObject> = [];
+    protected _postRelation(op: string, ...args: any[]) {
+        let body: { [key: string]: any } = {};
+        let users: Array<RxAVUser> = [];
+        let roles: Array<RxAVRole> = [];
         args.forEach(currentItem => {
-            if (currentItem instanceof RxAVObject) {
-                toOpEntities.push(currentItem);
-            } else if (typeof currentItem == 'string') {
-                let restoredObject = RxAVObject.createWithoutData(className, currentItem);
-                toOpEntities.push(restoredObject);
+            if (currentItem instanceof RxAVUser) {
+                users.push(currentItem);
+            } else if (currentItem instanceof RxAVRole) {
+                roles.push(currentItem);
             } else {
-                throw new TypeError('args type must be string or RxAVUser.');
+                throw new TypeError('args type must be RxAVRole or RxAVUser.');
             }
         });
-
-        let body: { [key: string]: any } = {};
-        body[field] = this.buildRelation(op, toOpEntities);
-
+        this._buildRoleRelation(op, users, roles, body);
         return RxAVUser._objectController.save(this.state, body, RxAVUser.currentSessionToken).map(serverState => {
             return serverState != null;
         });
+    }
+
+    public save() {
+        this._buildRoleRelation('add', this.users, this.roles, this.estimatedData);
+        if (!this.ACL) throw new Error('Role must have a ACL.');
+
+        if (this.ACL.getPublicWriteAccess()) {
+            throw new Error('can NOT set Role.ACL public write access in true.');
+        }
+
+        if (!(this.ACL.findWriteAccess() && RxAVClient.inLeanEngine)) {
+            throw new Error('can NOT set Role.ACL write access in closed.');
+        }
+
+        return super.save();
+    }
+
+    protected _buildRoleRelation(op: string, users: Array<RxAVUser>, roles: Array<RxAVRole>, postBody: { [key: string]: any }) {
+        if (users && users.length > 0) {
+            let usersBody: { [key: string]: any } = this.buildRelation(op, users);
+            postBody['users'] = usersBody;
+        }
+        if (roles && roles.length > 0) {
+            let rolesBody: { [key: string]: any } = this.buildRelation(op, roles);
+            postBody['roles'] = rolesBody;
+        }
     }
 
     /**

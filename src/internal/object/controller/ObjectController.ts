@@ -24,9 +24,45 @@ export class ObjectController implements IObjectController {
             return serverState;
         });
     }
+    clearReadonlyFields(dictionary: { [key: string]: any }) {
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'objectId')) {
+            delete dictionary['objectId'];
+        }
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'createdAt')) {
+            delete dictionary['createdAt'];
+        }
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'updatedAt')) {
+            delete dictionary['updatedAt'];
+        }
+    }
+
+    clearRelationFields(dictionary: { [key: string]: any }) {
+        for (let key in dictionary) {
+            let v = dictionary[key];
+            if (Object.prototype.hasOwnProperty.call(v, '__type')) {
+                if (v['__type'] == 'Relation') {
+                    delete dictionary[key];
+                }
+            }
+        }
+    }
+    copyToMutable(dictionary: { [key: string]: any }) {
+        let newDictionary: { [key: string]: any } = {};
+        for (let key in dictionary) {
+            newDictionary[key] = dictionary[key];
+        }
+        return newDictionary;
+    }
+    packForSave(dictionary: { [key: string]: any }) {
+        let mutableDictionary = this.copyToMutable(dictionary);
+        this.clearReadonlyFields(mutableDictionary);
+        this.clearRelationFields(mutableDictionary);
+        return mutableDictionary;
+    }
 
     save(state: IObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<IObjectState> {
-        let encoded = SDKPlugins.instance.Encoder.encode(dictionary);
+        let mutableDictionary = this.packForSave(dictionary);
+        let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
 
         let cmd = new AVCommand({
             relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
@@ -49,7 +85,8 @@ export class ObjectController implements IObjectController {
         let cmdArray: Array<AVCommand> = [];
 
         states.map((state, i, a) => {
-            let encoded = SDKPlugins.instance.Encoder.encode(dictionaries[i]);
+            let mutableDictionary = this.packForSave(dictionaries[i]);
+            let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
             let cmd = new AVCommand({
                 relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
@@ -64,6 +101,7 @@ export class ObjectController implements IObjectController {
             return batchRes.map(res => {
                 let serverState = SDKPlugins.instance.ObjectDecoder.decode(res, SDKPlugins.instance.Decoder);
                 serverState = serverState.mutatedClone((s: IObjectState) => {
+                    s.isNew = res['satusCode'] == 201;
                 });
                 return serverState;
             });

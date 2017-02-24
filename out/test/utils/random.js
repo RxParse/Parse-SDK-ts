@@ -11,6 +11,10 @@ function randomHexString(size) {
     return crypto_1.randomBytes(size / 2).toString('hex');
 }
 exports.randomHexString = randomHexString;
+function randomHexStringWithPrefix(prefix, size) {
+    return prefix + randomHexString(size);
+}
+exports.randomHexStringWithPrefix = randomHexStringWithPrefix;
 // Returns a new random alphanumeric string of the given size.
 //
 // Note: to simplify implementation, the result has slight modulo bias,

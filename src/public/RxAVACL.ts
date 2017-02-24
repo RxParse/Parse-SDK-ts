@@ -91,8 +91,8 @@ export /**
      * @return {Object}
      */
     toJSON(): ByIdMap {
-        var permissions = {};
-        for (var p in this.permissionsById) {
+        let permissions = {};
+        for (let p in this.permissionsById) {
             permissions[p] = this.permissionsById[p];
         }
         return permissions;
@@ -108,12 +108,12 @@ export /**
         if (!(other instanceof RxAVACL)) {
             return false;
         }
-        var users = Object.keys(this.permissionsById);
-        var otherUsers = Object.keys(other.permissionsById);
+        let users = Object.keys(this.permissionsById);
+        let otherUsers = Object.keys(other.permissionsById);
         if (users.length !== otherUsers.length) {
             return false;
         }
-        for (var u in this.permissionsById) {
+        for (let u in this.permissionsById) {
             if (!other.permissionsById[u]) {
                 return false;
             }
@@ -143,7 +143,7 @@ export /**
         if (typeof allowed !== 'boolean') {
             throw new TypeError('allowed must be either true or false.');
         }
-        var permissions = this.permissionsById[userId];
+        let permissions = this.permissionsById[userId];
         if (!permissions) {
             if (!allowed) {
                 // The user already doesn't have this permission, so no action is needed
@@ -180,11 +180,23 @@ export /**
             }
             userId = 'role:' + name;
         }
-        var permissions = this.permissionsById[userId];
+        let permissions = this.permissionsById[userId];
         if (!permissions) {
             return false;
         }
         return !!permissions[accessType];
+    }
+
+    public findWriteAccess() {
+        let rtn = false;
+        for (let key in this.permissionsById) {
+            let permisstion = this.permissionsById[key];
+            if (permisstion['write']) {
+                rtn = true;
+                break;
+            }
+        }
+        return rtn;
     }
 
     /**

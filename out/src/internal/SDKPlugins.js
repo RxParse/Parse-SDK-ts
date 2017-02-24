@@ -6,10 +6,13 @@ var ObjectController_1 = require('./object/controller/ObjectController');
 var UserController_1 = require('./user/controller/UserController');
 var QueryController_1 = require('./query/controller/QueryController');
 var LeanEngineController_1 = require('./LeanEngine/controller/LeanEngineController');
+var ToolController_1 = require('./tool/controller/ToolController');
 var AVEncoder_1 = require('./encoding/AVEncoder');
 var AVDecoder_1 = require('./encoding/AVDecoder');
 var AVObjectDecoder_1 = require('./encoding/AVObjectDecoder');
 var LeanEngineDecoder_1 = require('./LeanEngine/encoding/LeanEngineDecoder');
+var StorageController_1 = require('./storage/controller/StorageController');
+var AnalyticsController_1 = require('./analytics/controller/AnalyticsController');
 var RxAVClient_1 = require('../public/RxAVClient');
 var SDKPlugins = (function () {
     function SDKPlugins(version) {
@@ -72,6 +75,72 @@ var SDKPlugins = (function () {
                 this._LeanEngineController = new LeanEngineController_1.LeanEngineController(this.LeanEngineDecoder);
             }
             return this._LeanEngineController;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "ToolControllerInstance", {
+        get: function () {
+            if (this._ToolController == null) {
+                this._ToolController = new ToolController_1.ToolController();
+            }
+            return this._ToolController;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "LocalStorageControllerInstance", {
+        get: function () {
+            if (this._StorageController == null) {
+                if (this.StorageProvider != null)
+                    this._StorageController = new StorageController_1.StorageController(this.StorageProvider);
+            }
+            return this._StorageController;
+        },
+        set: function (controller) {
+            this._StorageController = controller;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "hasStorage", {
+        get: function () {
+            return this.StorageProvider != null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "AnalyticsControllerInstance", {
+        get: function () {
+            if (this._AnalyticsController == null) {
+                if (this._DevicePorvider != null) {
+                    this._AnalyticsController = new AnalyticsController_1.AnalyticsController(this.CommandRunner, this._DevicePorvider);
+                }
+            }
+            return this._AnalyticsController;
+        },
+        set: function (controller) {
+            this._AnalyticsController = controller;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "StorageProvider", {
+        get: function () {
+            return this._StorageProvider;
+        },
+        set: function (provider) {
+            this._StorageProvider = provider;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SDKPlugins.prototype, "DeviceProvider", {
+        get: function () {
+            return this._DevicePorvider;
+        },
+        set: function (provider) {
+            this._DevicePorvider = provider;
         },
         enumerable: true,
         configurable: true

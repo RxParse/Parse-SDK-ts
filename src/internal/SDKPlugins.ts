@@ -13,6 +13,9 @@ import { QueryController } from './query/controller/QueryController';
 import { ILeanEngineController } from './LeanEngine/controller/ILeanEngineController';
 import { LeanEngineController } from './LeanEngine/controller/LeanEngineController';
 
+import { IToolController } from './tool/controller/IToolController';
+import { ToolController } from './tool/controller/ToolController';
+
 import { IAVEncoder } from './encoding/IAVEncoder';
 import { AVEncoder } from './encoding/AVEncoder';
 import { IAVDecoder } from './encoding/IAVDecoder';
@@ -21,6 +24,14 @@ import { IAVObjectDecoder } from './encoding/IAVObjectDecoder';
 import { AVObjectDecoder } from './encoding/AVObjectDecoder';
 import { ILeanEngineDecoder } from './LeanEngine/encoding/ILeanEngineDecoder';
 import { LeanEngineDecoder } from './LeanEngine/encoding/LeanEngineDecoder';
+
+import { IStorage } from './storage/IStorage';
+import { IStorageController } from './storage/controller/IStorageController';
+import { StorageController } from './storage/controller/StorageController';
+
+import { IDeviceInfo } from './analytics/IDeviceInfo';
+import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
+import { AnalyticsController } from './analytics/controller/AnalyticsController';
 
 import { RxAVClient } from '../public/RxAVClient';
 
@@ -39,6 +50,11 @@ export /**
     private _decoder: IAVDecoder;
     private _objectdecoder: IAVObjectDecoder;
     private _LeanEngineDecoder: ILeanEngineDecoder;
+    private _ToolController: IToolController;
+    private _StorageController: IStorageController;
+    private _StorageProvider: IStorage;
+    private _AnalyticsController: IAnalyticsController;
+    private _DevicePorvider: IDeviceInfo;
     private static _sdkPluginsInstance: SDKPlugins;
 
     constructor(version?: number) {
@@ -65,25 +81,79 @@ export /**
         }
         return this._ObjectController;
     }
+
     get UserControllerInstance() {
         if (this._UserController == null) {
             this._UserController = new UserController(this.CommandRunner);
         }
         return this._UserController;
     }
+
     get QueryControllerInstance() {
         if (this._QueryController == null) {
             this._QueryController = new QueryController(this.CommandRunner);
         }
         return this._QueryController;
     }
+
     get LeanEngineControllerInstance() {
         if (this._LeanEngineController == null) {
             this._LeanEngineController = new LeanEngineController(this.LeanEngineDecoder);
         }
         return this._LeanEngineController;
     }
-    
+
+    get ToolControllerInstance() {
+        if (this._ToolController == null) {
+            this._ToolController = new ToolController();
+        }
+        return this._ToolController;
+    }
+
+    get LocalStorageControllerInstance() {
+        if (this._StorageController == null) {
+            if (this.StorageProvider != null)
+                this._StorageController = new StorageController(this.StorageProvider);
+        }
+        return this._StorageController;
+    }
+
+    get hasStorage() {
+        return this.StorageProvider != null;
+    }
+
+    set LocalStorageControllerInstance(controller: IStorageController) {
+        this._StorageController = controller;
+    }
+
+    get AnalyticsControllerInstance() {
+        if (this._AnalyticsController == null) {
+            if (this._DevicePorvider != null) {
+                this._AnalyticsController = new AnalyticsController(this.CommandRunner, this._DevicePorvider);
+            }
+        }
+        return this._AnalyticsController;
+    }
+
+    set AnalyticsControllerInstance(controller: IAnalyticsController) {
+        this._AnalyticsController = controller;
+    }
+
+    get StorageProvider() {
+        return this._StorageProvider;
+    }
+
+    set StorageProvider(provider: IStorage) {
+        this._StorageProvider = provider;
+    }
+
+    get DeviceProvider() {
+        return this._DevicePorvider;
+    }
+    set DeviceProvider(provider: IDeviceInfo) {
+        this._DevicePorvider = provider;
+    }
+
     generateAVCommand(relativeUrl: string, method: string, data: { [key: string]: any }): HttpRequest {
         let request: HttpRequest = new HttpRequest();
         request.method = method;
@@ -93,12 +163,14 @@ export /**
         request.headers = RxAVClient.headers();
         return request;
     }
+
     get Encoder() {
         if (this._encoder == null) {
             this._encoder = new AVEncoder();
         }
         return this._encoder;
     }
+
     get Decoder() {
         if (this._decoder == null) {
             this._decoder = new AVDecoder();

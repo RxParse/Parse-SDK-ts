@@ -31,6 +31,7 @@ var RxAVUser = (function (_super) {
     });
     RxAVUser.saveCurrentUser = function (user) {
         RxAVUser._currentUser = user;
+        return RxLeanCloud_1.RxAVObject.saveToLocalStorage(user, RxAVUser.currenUserCacheKey);
     };
     Object.defineProperty(RxAVUser, "currentUser", {
         get: function () {
@@ -39,6 +40,26 @@ var RxAVUser = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * 获取本地缓存文件里面是否存在已经登录过的用户
+     *
+     * @readonly
+     * @static
+     * @type {Observable<RxAVUser>}
+     * @memberOf RxAVUser
+     */
+    RxAVUser.current = function () {
+        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVUser.currenUserCacheKey).map(function (userCache) {
+            if (userCache) {
+                var userState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins_1.SDKPlugins.instance.Decoder);
+                userState = userState.mutatedClone(function (s) { });
+                var user = RxAVUser.createWithoutData();
+                user.handlerLogIn(userState);
+                RxAVUser._currentUser = user;
+            }
+            return RxAVUser._currentUser;
+        });
+    };
     Object.defineProperty(RxAVUser, "UserController", {
         get: function () {
             return SDKPlugins_1.SDKPlugins.instance.UserControllerInstance;
@@ -75,6 +96,23 @@ var RxAVUser = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(RxAVUser.prototype, "mobilephone", {
+        get: function () {
+            this._mobilephone = this.getProperty('mobilePhoneNumber');
+            return this._mobilephone;
+        },
+        set: function (mobile) {
+            if (this.sesstionToken == null) {
+                this._mobilephone = mobile;
+                this.set('mobilePhoneNumber', this._mobilephone);
+            }
+            else {
+                throw new Error('can not reset mobilephone.');
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(RxAVUser.prototype, "password", {
         /**
          * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
@@ -86,7 +124,7 @@ var RxAVUser = (function (_super) {
             if (this.sesstionToken == null)
                 this.set('password', password);
             else {
-                throw new Error('can not set password for a exist user,if you want to reset password,please call requestResetPassword.');
+                throw new Error('can not set password for a exist user, if you want to reset password, please call requestResetPassword.');
             }
         },
         enumerable: true,
@@ -128,12 +166,12 @@ var RxAVUser = (function (_super) {
         this.set('primaryRole', role);
         if (role.isDirty)
             return role.save().flatMap(function (s1) {
-                return role.assign(_this);
+                return role.grant(_this);
             }).flatMap(function (s2) {
                 return _this.save();
             });
         else
-            return role.assign(this).flatMap(function (s3) {
+            return role.grant(this).flatMap(function (s3) {
                 return _this.save();
             });
     };
@@ -150,6 +188,47 @@ var RxAVUser = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * 将一个 RxAVInstallation 对象绑定到 RxAVUser
+     *
+     * @param {RxAVInstallation} installation
+     * @param {boolean} unique
+     * @returns
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.prototype.activate = function (installation, unique) {
+        var _this = this;
+        if (!installation || installation == null || !installation.objectId || installation.objectId == null) {
+            throw new Error('installation can not be a unsaved object.');
+        }
+        var ch;
+        if (unique) {
+            this.remove(RxAVUser.installationKey);
+            ch = this.save();
+        }
+        else {
+            ch = rxjs_1.Observable.from([true]);
+        }
+        var opBody = this.buildRelation('add', [installation]);
+        this.set(RxAVUser.installationKey, opBody);
+        return ch.flatMap(function (s1) {
+            return _this.save();
+        });
+    };
+    /**
+     * 取消对当前设备的绑定
+     *
+     * @param {RxAVInstallation} installation
+     * @returns
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.prototype.inactive = function (installation) {
+        var opBody = this.buildRelation('remove', [installation]);
+        this.set(RxAVUser.installationKey, opBody);
+        return this.save();
+    };
     /**
      * 从服务端获取当前用户所拥有的角色
      *
@@ -219,9 +298,7 @@ var RxAVUser = (function (_super) {
         });
     };
     /**
-     * 使用手机号一键登录
-     * 如果手机号未被注册过，则会返回一个新用户;
-     * 如果手机号之前注册过，那就直接走登录接口不会产生新用户.
+     * 使用手机号以及验证码创建新用户
      * @static
      * @param {string} mobilephone 手机号，目前支持几乎所有主流国家
      * @param {string} shortCode 6位数的数字组成的字符串
@@ -229,19 +306,45 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.signUpByMobilephone = function (mobilephone, shortCode) {
+    RxAVUser.signUpByMobilephone = function (mobilephone, shortCode, newUser) {
+        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(newUser.estimatedData);
+        encoded['mobilePhoneNumber'] = mobilephone;
+        encoded['smsCode'] = shortCode;
+        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', encoded).flatMap(function (userState) {
+            var user = RxAVUser.createWithoutData();
+            if (userState.isNew)
+                return user.handlerSignUp(userState).map(function (s) {
+                    return user;
+                });
+            else {
+                return RxAVUser.processLogIn(userState);
+            }
+        });
+    };
+    /**
+     * 使用手机号以及验证码登录
+     *
+     * @static
+     * @param {string} mobilephone
+     * @param {string} shortCode
+     * @returns {Observable<RxAVUser>}
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.logInByMobilephone = function (mobilephone, shortCode) {
         var data = {
             "mobilePhoneNumber": mobilephone,
             "smsCode": shortCode
         };
-        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', data).map(function (userState) {
+        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', data).flatMap(function (userState) {
             var user = RxAVUser.createWithoutData();
             if (userState.isNew)
-                user.handlerSignUp(userState);
+                return user.handlerSignUp(userState).map(function (s) {
+                    return user;
+                });
             else {
-                user.handleFetchResult(userState);
+                return RxAVUser.processLogIn(userState);
             }
-            return user;
         });
     };
     /**
@@ -254,28 +357,80 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.login = function (username, password) {
-        return RxAVUser.UserController.logIn(username, password).map(function (userState) {
-            var user = RxAVUser.createWithoutData();
-            user.handlerLogIn(userState);
-            return user;
+    RxAVUser.logIn = function (username, password) {
+        return RxAVUser.UserController.logIn(username, password).flatMap(function (userState) {
+            return RxAVUser.processLogIn(userState);
+        });
+    };
+    /**
+     * 登出系统，删除本地缓存
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.prototype.logOut = function () {
+        return RxAVUser.saveCurrentUser(null);
+    };
+    /**
+     *  使用手机号+密码登录
+     *
+     * @static
+     * @param {string} mobilephone 手机号
+     * @param {string} password 密码
+     * @returns {Observable<RxAVUser>}
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.logInWithMobilephone = function (mobilephone, password) {
+        var data = {
+            "mobilePhoneNumber": mobilephone,
+            "password": password
+        };
+        return RxAVUser.UserController.logInWithParamters('/login', data).flatMap(function (userState) {
+            return RxAVUser.processLogIn(userState);
+        });
+    };
+    /**
+     * 创建一个用户，区别于 signUp，调用 create 方法并不会覆盖本地的 currentUser.
+     *
+     * @param {RxAVUser} user
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
+    RxAVUser.prototype.create = function () {
+        var _this = this;
+        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(function (userState) {
+            _super.prototype.handlerSave.call(_this, userState);
+            _this.state.serverData = userState.serverData;
+            return true;
         });
     };
     RxAVUser.createWithoutData = function (objectId) {
-        var rtn = new RxAVUser();
-        if (objectId)
-            rtn.objectId = objectId;
-        return rtn;
+        return RxLeanCloud_1.RxAVObject.createSubclass(RxAVUser, objectId);
+    };
+    RxAVUser.processLogIn = function (userState) {
+        var user = RxAVUser.createWithoutData();
+        return user.handlerLogIn(userState).map(function (s) {
+            if (s)
+                return user;
+            else
+                rxjs_1.Observable.from([null]);
+        });
     };
     RxAVUser.prototype.handlerLogIn = function (userState) {
         this.handleFetchResult(userState);
-        RxAVUser.saveCurrentUser(this);
+        return RxAVUser.saveCurrentUser(this);
     };
     RxAVUser.prototype.handlerSignUp = function (userState) {
         _super.prototype.handlerSave.call(this, userState);
-        RxAVUser.saveCurrentUser(this);
         this.state.serverData = userState.serverData;
+        return RxAVUser.saveCurrentUser(this);
     };
+    RxAVUser.installationKey = 'installations';
+    RxAVUser.currenUserCacheKey = 'CurrentUser';
+    RxAVUser._currentUser = null;
     return RxAVUser;
 }(RxLeanCloud_1.RxAVObject));
 exports.RxAVUser = RxAVUser;

@@ -1,8 +1,9 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IObjectController } from '../internal/object/controller/iObjectController';
+import { IStorageController } from '../internal/storage/controller/IStorageController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { RxAVUser, RxAVACL } from '../RxLeanCloud';
+import { RxAVUser, RxAVACL, RxAVClient, RxAVQuery } from '../RxLeanCloud';
 import { Observable } from 'rxjs';
 
 /**
@@ -108,12 +109,23 @@ export class RxAVObject {
         return rtn;
     }
 
+    /**
+     * 从服务端获取数据覆盖本地的数据
+     * 
+     * @returns {Observable<RxAVObject>}
+     * 
+     * @memberOf RxAVObject
+     */
     public fetch(): Observable<RxAVObject> {
         if (this.objectId == null) throw new Error(`Cannot refresh an object that hasn't been saved to the server.`);
         return RxAVObject._objectController.fetch(this.state, RxAVUser.currentSessionToken).map(serverState => {
             this.handleFetchResult(serverState);
             return this;
         });
+    }
+
+    public remove(key: string) {
+        this.performOperation(key, 'remove');
     }
 
     /**
@@ -128,6 +140,24 @@ export class RxAVObject {
      */
     public static createWithoutData(classnName: string, objectId: string) {
         let rtn = new RxAVObject(classnName);
+        rtn.objectId = objectId;
+        return rtn;
+    }
+
+    /**
+     * 根据子类类型以及 objectId 创建子类实例
+     * 
+     * @static
+     * @template T
+     * @param {{ new (): T; }} ctor
+     * @param {string} objectId
+     * @returns {T}
+     * 
+     * @memberOf RxAVObject
+     */
+    public static createSubclass<T extends RxAVObject>(
+        ctor: { new (): T; }, objectId: string): T {
+        let rtn = new ctor();
         rtn.objectId = objectId;
         return rtn;
     }
@@ -154,7 +184,6 @@ export class RxAVObject {
         let ds = objArray.map(c => c.estimatedData);
         return RxAVObject._objectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
             objArray.forEach((dc, i, a) => {
-                dc.isDirty = false;
                 dc.handlerSave(serverStateArray[i]);
             });
             return true;
@@ -191,14 +220,18 @@ export class RxAVObject {
     collectAllLeafNodes() {
         let leafNodes: Array<RxAVObject> = [];
         let dirtyChildren = this.collectDirtyChildren();
-        if (dirtyChildren.length == 0) {
-            if (this.isDirty)
-                leafNodes.push(this);
-        } else {
-            dirtyChildren.map(child => {
-                leafNodes = leafNodes.concat(child.collectAllLeafNodes());
-            });
-        }
+
+        dirtyChildren.map(child => {
+            let childLeafNodes = child.collectAllLeafNodes();
+            if (childLeafNodes.length == 0) {
+                if (child.isDirty) {
+                    leafNodes.push(child);
+                }
+            } else {
+                leafNodes = leafNodes.concat(childLeafNodes);
+            }
+        });
+
         return leafNodes;
     }
 
@@ -222,7 +255,7 @@ export class RxAVObject {
         });
     }
 
-    protected handlerSave(serverState: IObjectState) {
+    handlerSave(serverState: IObjectState) {
         this.state.apply(serverState);
         this.isDirty = false;
         //this.rebuildEstimatedData();
@@ -247,7 +280,7 @@ export class RxAVObject {
     }
 
     protected setProperty(propertyName: string, value: any) {
-        if (this.state != null) {
+        if (this.state && this.state != null) {
             this.state.serverData[propertyName] = value;
         }
     }
@@ -258,6 +291,12 @@ export class RxAVObject {
                 return this.state.serverData[propertyName];
         }
         return null;
+    }
+
+    performOperation(key: string, operation: string) {
+        if (operation == 'remove') {
+            this.set(key, { __op: 'Delete' });
+        }
     }
 
     protected buildRelation(op: string, opEntities: Array<RxAVObject>) {
@@ -271,5 +310,44 @@ export class RxAVObject {
             };
             return body;
         }
+    }
+
+    /**
+     * 查询 Relation 包含的对象数组
+     * 
+     * @param {string} key
+     * @param {any} targetClassName
+     * @returns {Observable<RxAVObject[]>}
+     * 
+     * @memberOf RxAVObject
+     */
+    fetchRelation(key: string, targetClassName): Observable<RxAVObject[]> {
+        let query = new RxAVQuery(targetClassName);
+        query.relatedTo(this, key);
+        return query.find();
+    }
+
+    protected static saveToLocalStorage(entity: RxAVObject, key: string) {
+        if (SDKPlugins.instance.hasStorage) {
+            if (entity == null) {
+                return SDKPlugins.instance.LocalStorageControllerInstance.remove(key).map(provider => {
+                    return provider != null;
+                });
+            } else {
+                return SDKPlugins.instance.LocalStorageControllerInstance.set(key, entity.toJSONObjectForSaving()).map(provider => {
+                    return provider != null;
+                });
+            }
+        }
+        return Observable.from([true]);
+    }
+
+    protected toJSONObjectForSaving() {
+        let data = this.estimatedData;
+        data['objectId'] = this.objectId;
+        data['createdAt'] = this.createdAt;
+        data['updatedAt'] = this.updatedAt;
+        let encoded = SDKPlugins.instance.Encoder.encode(data);
+        return encoded;
     }
 }
