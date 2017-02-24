@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var MutableObjectState_1 = require("../object/state/MutableObjectState");
+var MutableObjectState_1 = require('../object/state/MutableObjectState');
 var AVObjectDecoder = (function () {
     function AVObjectDecoder() {
     }

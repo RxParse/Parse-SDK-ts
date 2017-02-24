@@ -1,9 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var chai = require("chai");
+var chai = require('chai');
 var random = require("../utils/random");
-var RxLeanCloud_1 = require("../../src/RxLeanCloud");
-var RxLeanCloud_2 = require("../../src/RxLeanCloud");
+var RxLeanCloud_1 = require('../../src/RxLeanCloud');
+var RxLeanCloud_2 = require('../../src/RxLeanCloud');
 var randomUsername = '';
 describe('RxAVUser', function () {
     before(function () {

@@ -1,20 +1,19 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var HttpRequest_1 = require("./httpClient/HttpRequest");
-var RxHttpClient_1 = require("./httpClient/RxHttpClient");
-var AVCommandRunner_1 = require("./command/AVCommandRunner");
-var ObjectController_1 = require("./object/controller/ObjectController");
-var UserController_1 = require("./user/controller/UserController");
-var QueryController_1 = require("./query/controller/QueryController");
-var LeanEngineController_1 = require("./LeanEngine/controller/LeanEngineController");
-var ToolController_1 = require("./tool/controller/ToolController");
-var AVEncoder_1 = require("./encoding/AVEncoder");
-var AVDecoder_1 = require("./encoding/AVDecoder");
-var AVObjectDecoder_1 = require("./encoding/AVObjectDecoder");
-var LeanEngineDecoder_1 = require("./LeanEngine/encoding/LeanEngineDecoder");
-var StorageController_1 = require("./storage/controller/StorageController");
-var AnalyticsController_1 = require("./analytics/controller/AnalyticsController");
-var RxAVClient_1 = require("../public/RxAVClient");
+var HttpRequest_1 = require('./httpClient/HttpRequest');
+var RxHttpClient_1 = require('./httpClient/RxHttpClient');
+var AVCommandRunner_1 = require('./command/AVCommandRunner');
+var ObjectController_1 = require('./object/controller/ObjectController');
+var UserController_1 = require('./user/controller/UserController');
+var QueryController_1 = require('./query/controller/QueryController');
+var LeanEngineController_1 = require('./LeanEngine/controller/LeanEngineController');
+var ToolController_1 = require('./tool/controller/ToolController');
+var AVEncoder_1 = require('./encoding/AVEncoder');
+var AVDecoder_1 = require('./encoding/AVDecoder');
+var AVObjectDecoder_1 = require('./encoding/AVObjectDecoder');
+var LeanEngineDecoder_1 = require('./LeanEngine/encoding/LeanEngineDecoder');
+var StorageController_1 = require('./storage/controller/StorageController');
+var AnalyticsController_1 = require('./analytics/controller/AnalyticsController');
+var RxAVClient_1 = require('../public/RxAVClient');
 var SDKPlugins = (function () {
     function SDKPlugins(version) {
         this._version = 1;

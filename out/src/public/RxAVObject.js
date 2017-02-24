@@ -1,9 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var SDKPlugins_1 = require("../internal/SDKPlugins");
-var MutableObjectState_1 = require("../internal/object/state/MutableObjectState");
-var RxLeanCloud_1 = require("../RxLeanCloud");
-var rxjs_1 = require("rxjs");
+var SDKPlugins_1 = require('../internal/SDKPlugins');
+var MutableObjectState_1 = require('../internal/object/state/MutableObjectState');
+var RxLeanCloud_1 = require('../RxLeanCloud');
+var rxjs_1 = require('rxjs');
 /**
  * 代表的一个 free-schema 的对象
  *

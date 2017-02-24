@@ -1,18 +1,12 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var SDKPlugins_1 = require("../internal/SDKPlugins");
-var RxLeanCloud_1 = require("../RxLeanCloud");
-var rxjs_1 = require("rxjs");
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var SDKPlugins_1 = require('../internal/SDKPlugins');
+var RxLeanCloud_1 = require('../RxLeanCloud');
+var rxjs_1 = require('rxjs');
 /**
  * 用户
  *
@@ -23,7 +17,7 @@ var rxjs_1 = require("rxjs");
 var RxAVUser = (function (_super) {
     __extends(RxAVUser, _super);
     function RxAVUser() {
-        return _super.call(this, '_User') || this;
+        _super.call(this, '_User');
     }
     Object.defineProperty(RxAVUser, "currentSessionToken", {
         get: function () {
@@ -434,9 +428,9 @@ var RxAVUser = (function (_super) {
         this.state.serverData = userState.serverData;
         return RxAVUser.saveCurrentUser(this);
     };
+    RxAVUser.installationKey = 'installations';
+    RxAVUser.currenUserCacheKey = 'CurrentUser';
+    RxAVUser._currentUser = null;
     return RxAVUser;
 }(RxLeanCloud_1.RxAVObject));
-RxAVUser.installationKey = 'installations';
-RxAVUser.currenUserCacheKey = 'CurrentUser';
-RxAVUser._currentUser = null;
 exports.RxAVUser = RxAVUser;

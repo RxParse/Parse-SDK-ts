@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var LeanEngineDecoder = (function () {
     function LeanEngineDecoder(AVDecoder, AVObjectDecoder) {
         this._AVDecoder = AVDecoder;

@@ -1,16 +1,10 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var RxLeanCloud_1 = require("../RxLeanCloud");
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var RxLeanCloud_1 = require('../RxLeanCloud');
 /**
  * 角色
  *
@@ -31,37 +25,34 @@ var RxAVRole = (function (_super) {
      * @memberOf RxAVRole
      */
     function RxAVRole(name, acl, users, roles) {
-        var _this = _super.call(this, '_Role') || this;
+        _super.call(this, '_Role');
         var idChecker = function (element, index, array) {
             return element.objectId != null;
         };
         if (users) {
             if (users.every(idChecker))
-                _this.users = users;
+                this.users = users;
             else
                 throw new Error('some users in args(users) has no objectId.');
         }
         if (roles) {
             if (roles.every(idChecker))
-                _this.roles = roles;
+                this.roles = roles;
             else
                 throw new Error('some roles in args(roles) has no objectId.');
         }
         if (name)
-            _this.name = name;
+            this.name = name;
         if (acl) {
-            _this.ACL = acl;
+            this.ACL = acl;
         }
         else {
             if (RxLeanCloud_1.RxAVUser.currentUser) {
-                _this.ACL = new RxLeanCloud_1.RxAVACL(RxLeanCloud_1.RxAVUser.currentUser);
+                this.ACL = new RxLeanCloud_1.RxAVACL(RxLeanCloud_1.RxAVUser.currentUser);
             }
             else {
-                //throw new Error('Object must have a valid ACL.');
-                //this.ACL = new RxAVACL(this.name);
             }
         }
-        return _this;
     }
     Object.defineProperty(RxAVRole.prototype, "name", {
         get: function () {
@@ -88,7 +79,7 @@ var RxAVRole = (function (_super) {
     RxAVRole.prototype.grant = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
+            args[_i - 0] = arguments[_i];
         }
         return this._postRelation.apply(this, ['add'].concat(args));
     };
@@ -103,7 +94,7 @@ var RxAVRole = (function (_super) {
     RxAVRole.prototype.deny = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
+            args[_i - 0] = arguments[_i];
         }
         return this._postRelation.apply(this, ['remove'].concat(args));
     };

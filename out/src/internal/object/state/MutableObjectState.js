@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var _hasOwnProperty = Object.prototype.hasOwnProperty;
 exports.has = function (obj, prop) {
     return _hasOwnProperty.call(obj, prop);

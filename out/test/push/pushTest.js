@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var RxLeanCloud_1 = require("../../src/RxLeanCloud");
+var RxLeanCloud_1 = require('../../src/RxLeanCloud');
 describe('RxAVPush', function () {
     before(function () {
         RxLeanCloud_1.RxAVClient.init({

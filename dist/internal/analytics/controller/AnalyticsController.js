@@ -1,9 +1,11 @@
 "use strict";
-var RxLeancloud_1 = require('../../../RxLeancloud');
+var RxAVAnalytics_1 = require('../../../public/RxAVAnalytics');
+var RxAVClient_1 = require('../../../public/RxAVClient');
 var AVCommand_1 = require('../../command/AVCommand');
 var AnalyticsController = (function () {
     function AnalyticsController(commandRunner, deviceInfo) {
         this._commandRunner = commandRunner;
+        this.deviceProvider = deviceInfo;
     }
     AnalyticsController.prototype.send = function (analyticsData, sessionToken) {
         var collectCMD = new AVCommand_1.AVCommand({
@@ -17,11 +19,11 @@ var AnalyticsController = (function () {
     };
     AnalyticsController.prototype.getPolicy = function () {
         var policyCMD = new AVCommand_1.AVCommand({
-            relativeUrl: "/statistics/apps/" + RxLeancloud_1.RxAVClient.currentConfig().applicationId + "/sendPolicy",
+            relativeUrl: "/statistics/apps/" + RxAVClient_1.RxAVClient.currentConfig().applicationId + "/sendPolicy",
             method: 'GET',
         });
         return this._commandRunner.runRxCommand(policyCMD).map(function (res) {
-            var rtn = new RxLeancloud_1.RxAVAnalytics();
+            var rtn = new RxAVAnalytics_1.RxAVAnalytics();
             rtn.enable = res.body.enable;
             rtn.policy = res.body.policy;
             rtn.parameters = res.body.parameters;

@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { IDeviceInfo } from '../IDeviceInfo';
-import { RxAVAnalytics } from '../../../RxLeancloud';
+import { RxAVAnalytics } from '../../../public/RxAVAnalytics';
 import { IAnalyticsController } from './IAnalyticsController';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 export declare class AnalyticsController implements IAnalyticsController {

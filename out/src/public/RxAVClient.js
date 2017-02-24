@@ -1,8 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var SDKPlugins_1 = require("../internal/SDKPlugins");
-var AVCommand_1 = require("../internal/command/AVCommand");
-var StorageController_1 = require("../internal/storage/controller/StorageController");
+var SDKPlugins_1 = require('../internal/SDKPlugins');
+var AVCommand_1 = require('../internal/command/AVCommand');
+var StorageController_1 = require('../internal/storage/controller/StorageController');
 var pjson = require('../package.json');
 var currentConfig = {};
 // var providers: {

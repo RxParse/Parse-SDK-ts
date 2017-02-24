@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
  * @extends {RxAVObject}
  */
 export declare class RxAVUser extends RxAVObject {
+    constructor();
     static readonly installationKey: string;
     static readonly currenUserCacheKey: string;
     private _username;
@@ -17,7 +18,6 @@ export declare class RxAVUser extends RxAVObject {
     email: string;
     private _mobilephone;
     roles: Array<RxAVRole>;
-    constructor();
     static readonly currentSessionToken: any;
     private static _currentUser;
     protected static saveCurrentUser(user: RxAVUser): Observable<boolean>;

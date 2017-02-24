@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var crypto_1 = require("crypto");
+var crypto_1 = require('crypto');
 // Returns a new random hex string of the given even size.
 function randomHexString(size) {
     if (size === 0) {

@@ -1,7 +1,6 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var rxjs_1 = require("rxjs");
-var SDKPlugins_1 = require("../internal/SDKPlugins");
+var rxjs_1 = require('rxjs');
+var SDKPlugins_1 = require('../internal/SDKPlugins');
 var RxAVAnalytics = (function () {
     function RxAVAnalytics() {
     }

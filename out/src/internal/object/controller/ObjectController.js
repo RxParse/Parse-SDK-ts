@@ -1,7 +1,6 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var AVCommand_1 = require("../../command/AVCommand");
-var SDKPlugins_1 = require("../../SDKPlugins");
+var AVCommand_1 = require('../../command/AVCommand');
+var SDKPlugins_1 = require('../../SDKPlugins');
 var ObjectController = (function () {
     function ObjectController(commandRunner) {
         this._commandRunner = commandRunner;

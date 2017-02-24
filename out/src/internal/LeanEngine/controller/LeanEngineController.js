@@ -1,7 +1,6 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var AVCommand_1 = require("../../command/AVCommand");
-var SDKPlugins_1 = require("../../SDKPlugins");
+var AVCommand_1 = require('../../command/AVCommand');
+var SDKPlugins_1 = require('../../SDKPlugins');
 var LeanEngineController = (function () {
     function LeanEngineController(LeanEngineDecoder) {
         this._LeanEngineDecoder = LeanEngineDecoder;

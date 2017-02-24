@@ -1,7 +1,6 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var RxLeanCloud_1 = require("../RxLeanCloud");
-var SDKPlugins_1 = require("../internal/SDKPlugins");
+var RxLeanCloud_1 = require('../RxLeanCloud');
+var SDKPlugins_1 = require('../internal/SDKPlugins');
 /**
  * 针对 RxAVObject 的查询构建类
  *
@@ -108,7 +107,7 @@ var RxAVQuery = (function () {
     RxAVQuery.prototype.ascending = function () {
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i] = arguments[_i];
+            keys[_i - 0] = arguments[_i];
         }
         this._order = [];
         return this.addAscending.apply(this, keys);
@@ -117,7 +116,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i] = arguments[_i];
+            keys[_i - 0] = arguments[_i];
         }
         if (!this._order) {
             this._order = [];
@@ -133,7 +132,7 @@ var RxAVQuery = (function () {
     RxAVQuery.prototype.descending = function () {
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i] = arguments[_i];
+            keys[_i - 0] = arguments[_i];
         }
         this._order = [];
         return this.addDescending.apply(this, keys);
@@ -142,7 +141,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i] = arguments[_i];
+            keys[_i - 0] = arguments[_i];
         }
         if (!this._order) {
             this._order = [];
@@ -175,7 +174,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i] = arguments[_i];
+            keys[_i - 0] = arguments[_i];
         }
         keys.forEach(function (key) {
             if (Array.isArray(key)) {
@@ -191,7 +190,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i] = arguments[_i];
+            keys[_i - 0] = arguments[_i];
         }
         if (!this._select) {
             this._select = [];
@@ -239,7 +238,7 @@ var RxAVQuery = (function () {
     RxAVQuery.or = function () {
         var queries = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            queries[_i] = arguments[_i];
+            queries[_i - 0] = arguments[_i];
         }
         var className = null;
         queries.forEach(function (q) {

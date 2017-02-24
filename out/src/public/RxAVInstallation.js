@@ -1,19 +1,13 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var rxjs_1 = require("rxjs");
-var RxLeanCloud_1 = require("../RxLeanCloud");
-var SDKPlugins_1 = require("../internal/SDKPlugins");
-var jstz = require("jstz");
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var rxjs_1 = require('rxjs');
+var RxLeanCloud_1 = require('../RxLeanCloud');
+var SDKPlugins_1 = require('../internal/SDKPlugins');
+var jstz = require('jstz');
 /**
  * 安装数据
  *
@@ -24,9 +18,8 @@ var jstz = require("jstz");
 var RxAVInstallation = (function (_super) {
     __extends(RxAVInstallation, _super);
     function RxAVInstallation() {
-        var _this = _super.call(this, '_Installation') || this;
-        _this.set('timeZone', _this.timeZone);
-        return _this;
+        _super.call(this, '_Installation');
+        this.set('timeZone', this.timeZone);
     }
     Object.defineProperty(RxAVInstallation.prototype, "channels", {
         get: function () {
@@ -114,8 +107,8 @@ var RxAVInstallation = (function (_super) {
         RxAVInstallation._currentInstallation = installation;
         return RxLeanCloud_1.RxAVObject.saveToLocalStorage(installation, RxAVInstallation.installationCacheKey);
     };
+    RxAVInstallation.installationCacheKey = 'CurrentInstallation';
+    RxAVInstallation._currentInstallation = null;
     return RxAVInstallation;
 }(RxLeanCloud_1.RxAVObject));
-RxAVInstallation.installationCacheKey = 'CurrentInstallation';
-RxAVInstallation._currentInstallation = null;
 exports.RxAVInstallation = RxAVInstallation;

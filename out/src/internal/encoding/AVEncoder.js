@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var RxLeanCloud_1 = require("../../RxLeanCloud");
+var RxLeanCloud_1 = require('../../RxLeanCloud');
 var AVEncoder = (function () {
     function AVEncoder() {
     }
