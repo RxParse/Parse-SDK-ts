@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 import { IDeviceInfo } from '../IDeviceInfo';
-import { RxAVAnalytics, RxAVClient } from '../../../RxLeancloud';
+import { RxAVAnalytics } from '../../../public/RxAVAnalytics';
+import { RxAVClient } from '../../../public/RxAVClient';
 import { IAnalyticsController } from './IAnalyticsController';
 import { SDKPlugins } from '../../SDKPlugins';
 import { AVCommand } from '../../command/AVCommand';
@@ -9,8 +10,9 @@ import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 export class AnalyticsController implements IAnalyticsController {
     private readonly _commandRunner: IAVCommandRunner;
     deviceProvider: IDeviceInfo;
-    constructor(commandRunner: IAVCommandRunner,deviceInfo:IDeviceInfo) {
+    constructor(commandRunner: IAVCommandRunner, deviceInfo: IDeviceInfo) {
         this._commandRunner = commandRunner;
+        this.deviceProvider = deviceInfo;
     }
     send(analyticsData: RxAVAnalytics, sessionToken: string): Observable<boolean> {
         let collectCMD = new AVCommand({
