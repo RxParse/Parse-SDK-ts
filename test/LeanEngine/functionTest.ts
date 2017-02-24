@@ -1,5 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
-
 import * as chai from 'chai';
 import * as random from "../utils/random";
 import { RxAVClient, RxLeanEngine } from '../../src/RxLeanCloud';

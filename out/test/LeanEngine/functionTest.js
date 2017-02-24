@@ -1,7 +1,7 @@
-/// <reference path="../../typings/index.d.ts" />
 "use strict";
-var chai = require('chai');
-var RxLeanCloud_1 = require('../../src/RxLeanCloud');
+Object.defineProperty(exports, "__esModule", { value: true });
+var chai = require("chai");
+var RxLeanCloud_1 = require("../../src/RxLeanCloud");
 var randomUsername = '';
 describe('RxLeanEngine', function () {
     before(function () {

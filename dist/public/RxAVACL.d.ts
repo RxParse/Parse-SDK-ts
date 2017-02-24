@@ -30,6 +30,7 @@ export declare class RxAVACL {
     equals(other: RxAVACL): boolean;
     private _setAccess(accessType, userId, allowed);
     private _getAccess(accessType, userId);
+    findWriteAccess(): boolean;
     /**
      * Sets whether the given user is allowed to read this object.
      * @method setReadAccess

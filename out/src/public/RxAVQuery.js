@@ -1,6 +1,7 @@
 "use strict";
-var RxLeanCloud_1 = require('../RxLeanCloud');
-var SDKPlugins_1 = require('../internal/SDKPlugins');
+Object.defineProperty(exports, "__esModule", { value: true });
+var RxLeanCloud_1 = require("../RxLeanCloud");
+var SDKPlugins_1 = require("../internal/SDKPlugins");
 /**
  * 针对 RxAVObject 的查询构建类
  *
@@ -60,10 +61,54 @@ var RxAVQuery = (function () {
     RxAVQuery.prototype.greaterThanOrEqualTo = function (key, value) {
         return this._addCondition(key, '$gte', value);
     };
+    RxAVQuery.prototype.containedIn = function (key, value) {
+        return this._addCondition(key, '$in', value);
+    };
+    RxAVQuery.prototype.notContainedIn = function (key, value) {
+        return this._addCondition(key, '$nin', value);
+    };
+    RxAVQuery.prototype.containsAll = function (key, values) {
+        return this._addCondition(key, '$all', values);
+    };
+    RxAVQuery.prototype.exists = function (key) {
+        return this._addCondition(key, '$exists', true);
+    };
+    RxAVQuery.prototype.doesNotExist = function (key) {
+        return this._addCondition(key, '$exists', false);
+    };
+    RxAVQuery.prototype.contains = function (key, value) {
+        if (typeof value !== 'string') {
+            throw new Error('The value being searched for must be a string.');
+        }
+        return this._addCondition(key, '$regex', this.quote(value));
+    };
+    RxAVQuery.prototype.startsWith = function (key, value) {
+        if (typeof value !== 'string') {
+            throw new Error('The value being searched for must be a string.');
+        }
+        return this._addCondition(key, '$regex', '^' + this.quote(value));
+    };
+    RxAVQuery.prototype.endsWith = function (key, value) {
+        if (typeof value !== 'string') {
+            throw new Error('The value being searched for must be a string.');
+        }
+        return this._addCondition(key, '$regex', this.quote(value) + '$');
+    };
+    RxAVQuery.prototype.quote = function (s) {
+        return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
+    };
+    RxAVQuery.prototype.relatedTo = function (parent, key) {
+        this._addCondition('$relatedTo', 'object', {
+            __type: 'Pointer',
+            className: parent.className,
+            objectId: parent.objectId
+        });
+        return this._addCondition('$relatedTo', 'key', key);
+    };
     RxAVQuery.prototype.ascending = function () {
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i - 0] = arguments[_i];
+            keys[_i] = arguments[_i];
         }
         this._order = [];
         return this.addAscending.apply(this, keys);
@@ -72,7 +117,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i - 0] = arguments[_i];
+            keys[_i] = arguments[_i];
         }
         if (!this._order) {
             this._order = [];
@@ -88,7 +133,7 @@ var RxAVQuery = (function () {
     RxAVQuery.prototype.descending = function () {
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i - 0] = arguments[_i];
+            keys[_i] = arguments[_i];
         }
         this._order = [];
         return this.addDescending.apply(this, keys);
@@ -97,7 +142,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i - 0] = arguments[_i];
+            keys[_i] = arguments[_i];
         }
         if (!this._order) {
             this._order = [];
@@ -130,7 +175,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i - 0] = arguments[_i];
+            keys[_i] = arguments[_i];
         }
         keys.forEach(function (key) {
             if (Array.isArray(key)) {
@@ -146,7 +191,7 @@ var RxAVQuery = (function () {
         var _this = this;
         var keys = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            keys[_i - 0] = arguments[_i];
+            keys[_i] = arguments[_i];
         }
         if (!this._select) {
             this._select = [];
@@ -161,6 +206,13 @@ var RxAVQuery = (function () {
         });
         return this;
     };
+    /**
+     * 执行查询
+     *
+     * @returns {Observable<Array<RxAVObject>>}
+     *
+     * @memberOf RxAVQuery
+     */
     RxAVQuery.prototype.find = function () {
         var _this = this;
         return RxAVQuery._queryController.find(this, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverStates) {
@@ -174,6 +226,40 @@ var RxAVQuery = (function () {
             }
             return resultList;
         });
+    };
+    /**
+     *
+     *
+     * @static
+     * @param {...Array<RxAVQuery>} queries
+     * @returns {RxAVQuery}
+     *
+     * @memberOf RxAVQuery
+     */
+    RxAVQuery.or = function () {
+        var queries = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            queries[_i] = arguments[_i];
+        }
+        var className = null;
+        queries.forEach(function (q) {
+            if (!className) {
+                className = q.className;
+            }
+            if (className !== q.className) {
+                throw new Error('All queries must be for the same class.');
+            }
+        });
+        var query = new RxAVQuery(className);
+        query._orQuery(queries);
+        return query;
+    };
+    RxAVQuery.prototype._orQuery = function (queries) {
+        var queryJSON = queries.map(function (q) {
+            return q._where;
+        });
+        this._where.$or = queryJSON;
+        return this;
     };
     RxAVQuery.prototype._addCondition = function (key, condition, value) {
         if (!this._where[key] || typeof this._where[key] === 'string') {

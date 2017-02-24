@@ -26,7 +26,15 @@ var AVObjectDecoder = (function () {
         for (var key in serverResult) {
             var value = serverResult[key];
             if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
-                mutableData[key] = decoder.decodeItem(value);
+                if (value['__type'] == 'Pointer') {
+                    var rxAVObject = decoder.decodeItem(value);
+                    var serverState = this.decode(value, decoder);
+                    rxAVObject.handleFetchResult(serverState);
+                    mutableData[key] = rxAVObject;
+                }
+                else {
+                    mutableData[key] = decoder.decodeItem(value);
+                }
             }
             else {
                 mutableData[key] = value;

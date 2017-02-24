@@ -1,7 +1,8 @@
 "use strict";
-var AVCommand_1 = require('../../command/AVCommand');
-var SDKPlugins_1 = require('../../SDKPlugins');
-var rxjs_1 = require('rxjs');
+Object.defineProperty(exports, "__esModule", { value: true });
+var AVCommand_1 = require("../../command/AVCommand");
+var SDKPlugins_1 = require("../../SDKPlugins");
+var rxjs_1 = require("rxjs");
 var QueryController = (function () {
     function QueryController(commandRunner) {
         this._commandRunner = commandRunner;

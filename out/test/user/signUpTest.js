@@ -1,9 +1,9 @@
-/// <reference path="../../typings/index.d.ts" />
 "use strict";
-var chai = require('chai');
+Object.defineProperty(exports, "__esModule", { value: true });
+var chai = require("chai");
 var random = require("../utils/random");
-var RxLeanCloud_1 = require('../../src/RxLeanCloud');
-var RxLeanCloud_2 = require('../../src/RxLeanCloud');
+var RxLeanCloud_1 = require("../../src/RxLeanCloud");
+var RxLeanCloud_2 = require("../../src/RxLeanCloud");
 var randomUsername = '';
 describe('RxAVUser', function () {
     before(function () {
@@ -55,7 +55,11 @@ describe('RxAVUser', function () {
             done();
             return;
         }
-        RxLeanCloud_2.RxAVUser.signUpByMobilephone('18612438929', '064241').subscribe(function (s) {
+        var user = new RxLeanCloud_2.RxAVUser();
+        user.username = random.randomString(8);
+        user.password = 'leancloud';
+        user.set('nickName', 'hahaha');
+        RxLeanCloud_2.RxAVUser.signUpByMobilephone('18612438929', '064241', user).subscribe(function (s) {
             done();
         }, function (error) {
             console.log(error);
@@ -75,6 +79,15 @@ describe('RxAVUser', function () {
             return user.fetchRoles();
         }).subscribe(function (roles) {
             chai.assert.isTrue(roles.length == 1);
+            done();
+        });
+    });
+    it('RxAVUser#create', function (done) {
+        var user = new RxLeanCloud_2.RxAVUser();
+        user.username = random.randomString(8);
+        user.password = 'leancloud';
+        user.create().subscribe(function (s) {
+            chai.assert.isNotNull(user.objectId);
             done();
         });
     });

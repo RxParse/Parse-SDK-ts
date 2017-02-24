@@ -1,6 +1,7 @@
 "use strict";
-var AVCommand_1 = require('../../command/AVCommand');
-var SDKPlugins_1 = require('../../SDKPlugins');
+Object.defineProperty(exports, "__esModule", { value: true });
+var AVCommand_1 = require("../../command/AVCommand");
+var SDKPlugins_1 = require("../../SDKPlugins");
 var ObjectController = (function () {
     function ObjectController(commandRunner) {
         this._commandRunner = commandRunner;
@@ -17,8 +18,43 @@ var ObjectController = (function () {
             return serverState;
         });
     };
+    ObjectController.prototype.clearReadonlyFields = function (dictionary) {
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'objectId')) {
+            delete dictionary['objectId'];
+        }
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'createdAt')) {
+            delete dictionary['createdAt'];
+        }
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'updatedAt')) {
+            delete dictionary['updatedAt'];
+        }
+    };
+    ObjectController.prototype.clearRelationFields = function (dictionary) {
+        for (var key in dictionary) {
+            var v = dictionary[key];
+            if (Object.prototype.hasOwnProperty.call(v, '__type')) {
+                if (v['__type'] == 'Relation') {
+                    delete dictionary[key];
+                }
+            }
+        }
+    };
+    ObjectController.prototype.copyToMutable = function (dictionary) {
+        var newDictionary = {};
+        for (var key in dictionary) {
+            newDictionary[key] = dictionary[key];
+        }
+        return newDictionary;
+    };
+    ObjectController.prototype.packForSave = function (dictionary) {
+        var mutableDictionary = this.copyToMutable(dictionary);
+        this.clearReadonlyFields(mutableDictionary);
+        this.clearRelationFields(mutableDictionary);
+        return mutableDictionary;
+    };
     ObjectController.prototype.save = function (state, dictionary, sessionToken) {
-        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(dictionary);
+        var mutableDictionary = this.packForSave(dictionary);
+        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
         var cmd = new AVCommand_1.AVCommand({
             relativeUrl: state.objectId == null ? "/classes/" + state.className : "/classes/" + state.className + "/" + state.objectId,
             method: state.objectId == null ? 'POST' : 'PUT',
@@ -34,9 +70,11 @@ var ObjectController = (function () {
         });
     };
     ObjectController.prototype.batchSave = function (states, dictionaries, sessionToken) {
+        var _this = this;
         var cmdArray = [];
         states.map(function (state, i, a) {
-            var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(dictionaries[i]);
+            var mutableDictionary = _this.packForSave(dictionaries[i]);
+            var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
             var cmd = new AVCommand_1.AVCommand({
                 relativeUrl: state.objectId == null ? "/1.1/classes/" + state.className : "/1.1/classes/" + state.className + "/" + state.objectId,
                 method: state.objectId == null ? 'POST' : 'PUT',
@@ -49,6 +87,7 @@ var ObjectController = (function () {
             return batchRes.map(function (res) {
                 var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res, SDKPlugins_1.SDKPlugins.instance.Decoder);
                 serverState = serverState.mutatedClone(function (s) {
+                    s.isNew = res['satusCode'] == 201;
                 });
                 return serverState;
             });

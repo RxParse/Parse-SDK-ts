@@ -1,6 +1,7 @@
 "use strict";
-var RxAVUser_1 = require('./RxAVUser');
-var RxAVRole_1 = require('./RxAVRole');
+Object.defineProperty(exports, "__esModule", { value: true });
+var RxAVUser_1 = require("./RxAVUser");
+var RxAVRole_1 = require("./RxAVRole");
 var PUBLIC_KEY = '*';
 /**
  *
@@ -10,11 +11,11 @@ var PUBLIC_KEY = '*';
  */
 var RxAVACL = (function () {
     function RxAVACL() {
-        var _this = this;
         var arg = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            arg[_i - 0] = arguments[_i];
+            arg[_i] = arguments[_i];
         }
+        var _this = this;
         this.permissionsById = {};
         if (arg.length > 0) {
             arg.forEach(function (currentItem) {
@@ -183,6 +184,17 @@ var RxAVACL = (function () {
             return false;
         }
         return !!permissions[accessType];
+    };
+    RxAVACL.prototype.findWriteAccess = function () {
+        var rtn = false;
+        for (var key in this.permissionsById) {
+            var permisstion = this.permissionsById[key];
+            if (permisstion['write']) {
+                rtn = true;
+                break;
+            }
+        }
+        return rtn;
     };
     /**
      * Sets whether the given user is allowed to read this object.

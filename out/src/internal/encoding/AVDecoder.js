@@ -1,5 +1,6 @@
 "use strict";
-var RxLeanCloud_1 = require('../../RxLeanCloud');
+Object.defineProperty(exports, "__esModule", { value: true });
+var RxLeanCloud_1 = require("../../RxLeanCloud");
 var AVDecoder = (function () {
     function AVDecoder() {
     }
@@ -35,7 +36,7 @@ var AVDecoder = (function () {
         else {
             var typeString = dict['__type'];
             if (typeString == 'Date') {
-                var dt = dict["iso"];
+                var dt = new Date(dict["iso"]);
                 return dt;
             }
             else if (typeString == 'Pointer') {

@@ -5,10 +5,15 @@ import { IObjectController } from './object/controller/iObjectController';
 import { IUserController } from './user/controller/iUserController';
 import { IQueryController } from './query/controller/IQueryController';
 import { ILeanEngineController } from './LeanEngine/controller/ILeanEngineController';
+import { IToolController } from './tool/controller/IToolController';
 import { IAVEncoder } from './encoding/IAVEncoder';
 import { IAVDecoder } from './encoding/IAVDecoder';
 import { IAVObjectDecoder } from './encoding/IAVObjectDecoder';
 import { ILeanEngineDecoder } from './LeanEngine/encoding/ILeanEngineDecoder';
+import { IStorage } from './storage/IStorage';
+import { IStorageController } from './storage/controller/IStorageController';
+import { IDeviceInfo } from './analytics/IDeviceInfo';
+import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
 export declare class SDKPlugins {
     private _version;
     private _HttpClient;
@@ -21,6 +26,11 @@ export declare class SDKPlugins {
     private _decoder;
     private _objectdecoder;
     private _LeanEngineDecoder;
+    private _ToolController;
+    private _StorageController;
+    private _StorageProvider;
+    private _AnalyticsController;
+    private _DevicePorvider;
     private static _sdkPluginsInstance;
     constructor(version?: number);
     readonly HttpClient: IRxHttpClient;
@@ -29,6 +39,12 @@ export declare class SDKPlugins {
     readonly UserControllerInstance: IUserController;
     readonly QueryControllerInstance: IQueryController;
     readonly LeanEngineControllerInstance: ILeanEngineController;
+    readonly ToolControllerInstance: IToolController;
+    LocalStorageControllerInstance: IStorageController;
+    readonly hasStorage: boolean;
+    AnalyticsControllerInstance: IAnalyticsController;
+    StorageProvider: IStorage;
+    DeviceProvider: IDeviceInfo;
     generateAVCommand(relativeUrl: string, method: string, data: {
         [key: string]: any;
     }): HttpRequest;

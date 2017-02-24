@@ -1,5 +1,6 @@
 "use strict";
-var crypto_1 = require('crypto');
+Object.defineProperty(exports, "__esModule", { value: true });
+var crypto_1 = require("crypto");
 // Returns a new random hex string of the given even size.
 function randomHexString(size) {
     if (size === 0) {
@@ -11,6 +12,10 @@ function randomHexString(size) {
     return crypto_1.randomBytes(size / 2).toString('hex');
 }
 exports.randomHexString = randomHexString;
+function randomHexStringWithPrefix(prefix, size) {
+    return prefix + randomHexString(size);
+}
+exports.randomHexStringWithPrefix = randomHexStringWithPrefix;
 // Returns a new random alphanumeric string of the given size.
 //
 // Note: to simplify implementation, the result has slight modulo bias,

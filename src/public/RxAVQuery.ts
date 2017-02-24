@@ -82,6 +82,60 @@ export /**
         return this._addCondition(key, '$gte', value);
     }
 
+    containedIn(key: string, value: any): RxAVQuery {
+        return this._addCondition(key, '$in', value);
+    }
+
+    notContainedIn(key: string, value: any): RxAVQuery {
+        return this._addCondition(key, '$nin', value);
+    }
+
+    containsAll(key: string, values: Array<any>): RxAVQuery {
+        return this._addCondition(key, '$all', values);
+    }
+
+    exists(key: string): RxAVQuery {
+        return this._addCondition(key, '$exists', true);
+    }
+
+    doesNotExist(key: string): RxAVQuery {
+        return this._addCondition(key, '$exists', false);
+    }
+
+    contains(key: string, value: string): RxAVQuery {
+        if (typeof value !== 'string') {
+            throw new Error('The value being searched for must be a string.');
+        }
+        return this._addCondition(key, '$regex', this.quote(value));
+    }
+
+    startsWith(key: string, value: string): RxAVQuery {
+        if (typeof value !== 'string') {
+            throw new Error('The value being searched for must be a string.');
+        }
+        return this._addCondition(key, '$regex', '^' + this.quote(value));
+    }
+
+    endsWith(key: string, value: string): RxAVQuery {
+        if (typeof value !== 'string') {
+            throw new Error('The value being searched for must be a string.');
+        }
+        return this._addCondition(key, '$regex', this.quote(value) + '$');
+    }
+
+    protected quote(s: string) {
+        return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
+    }
+
+    relatedTo(parent: RxAVObject, key: string) {
+        this._addCondition('$relatedTo', 'object', {
+            __type: 'Pointer',
+            className: parent.className,
+            objectId: parent.objectId
+        });
+        return this._addCondition('$relatedTo', 'key', key);
+    }
+
     ascending(...keys: Array<string>): RxAVQuery {
         this._order = [];
         return this.addAscending.apply(this, keys);
@@ -165,7 +219,14 @@ export /**
         return this;
     }
 
-    find(): Observable<Array<RxAVObject>> {
+    /**
+     * 执行查询
+     * 
+     * @returns {Observable<Array<RxAVObject>>}
+     * 
+     * @memberOf RxAVQuery
+     */
+    public find(): Observable<Array<RxAVObject>> {
         return RxAVQuery._queryController.find(this, RxAVUser.currentSessionToken).map(serverStates => {
             let resultList = serverStates.map((serverState, i, a) => {
                 let rxObject = new RxAVObject(this.className);
@@ -179,6 +240,41 @@ export /**
         });
     }
 
+    /**
+     * 
+     * 
+     * @static
+     * @param {...Array<RxAVQuery>} queries
+     * @returns {RxAVQuery}
+     * 
+     * @memberOf RxAVQuery
+     */
+    public static or(...queries: Array<RxAVQuery>): RxAVQuery {
+        let className = null;
+        queries.forEach((q) => {
+            if (!className) {
+                className = q.className;
+            }
+
+            if (className !== q.className) {
+                throw new Error('All queries must be for the same class.');
+            }
+        });
+
+        let query = new RxAVQuery(className);
+        query._orQuery(queries);
+        return query;
+    }
+
+    protected _orQuery(queries: Array<RxAVQuery>): RxAVQuery {
+        let queryJSON = queries.map((q) => {
+            return q._where;
+        });
+
+        this._where.$or = queryJSON;
+        return this;
+    }
+
     protected _addCondition(key: string, condition: string, value: any): RxAVQuery {
         if (!this._where[key] || typeof this._where[key] === 'string') {
             this._where[key] = {};
@@ -190,6 +286,7 @@ export /**
     protected _encode(value: any, disallowObjects: boolean, forcePointers: boolean) {
         return RxAVQuery._encoder.encodeItem(value);
     }
+
 
     buildParameters(includeClassName: boolean = false) {
         let result: { [key: string]: any } = {};

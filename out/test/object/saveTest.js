@@ -1,7 +1,7 @@
-/// <reference path="../../typings/index.d.ts" />
 "use strict";
-var chai = require('chai');
-var RxLeanCloud_1 = require('../../src/RxLeanCloud');
+Object.defineProperty(exports, "__esModule", { value: true });
+var chai = require("chai");
+var RxLeanCloud_1 = require("../../src/RxLeanCloud");
 describe('RxObject', function () {
     before(function () {
         RxLeanCloud_1.RxAVClient.init({
@@ -12,7 +12,7 @@ describe('RxObject', function () {
             pluginVersion: 2
         });
     });
-    it('RxAVObject#save', function (done) {
+    it('RxAVObject#saveBase', function (done) {
         var todo = new RxLeanCloud_1.RxAVObject('RxTodo');
         todo.set('title', '开会');
         todo.set('time', '2016-12-03');
@@ -81,7 +81,7 @@ describe('RxObject', function () {
         });
     });
     it('RxAVObject#saveUnderACL', function (done) {
-        RxLeanCloud_1.RxAVUser.login('junwu', 'leancloud').subscribe(function (user) {
+        RxLeanCloud_1.RxAVUser.logIn('junwu', 'leancloud').subscribe(function (user) {
             var team = new RxLeanCloud_1.RxAVObject('teams');
             var teamPrefix = 'hua';
             var admin = teamPrefix + "_admin";
@@ -126,6 +126,30 @@ describe('RxObject', function () {
         // done();
         todo.save().subscribe(function (s) {
             console.log(s);
+            done();
+        });
+    });
+    it('RxAVObject#saveDate', function (done) {
+        var testTodo = new RxLeanCloud_1.RxAVObject('Todo');
+        testTodo.set('rDate', new Date());
+        testTodo.save().flatMap(function (s) {
+            var query = new RxLeanCloud_1.RxAVQuery('Todo');
+            query.equalTo('objectId', testTodo.objectId);
+            return query.find();
+        }).map(function (todos) {
+            var updatedAt = todos[0].updatedAt;
+            var testDate = todos[0].get('rDate');
+            console.log('testDate', testDate);
+            console.log(typeof testDate);
+            console.log('ed', todos[0].estimatedData);
+            //chai.assert.isTrue(testDate instanceof Date);
+            //chai.assert.isTrue(updatedAt instanceof Date);
+            //chai.assert.isTrue(testTodo.updatedAt instanceof Date);
+            return todos[0];
+        }).flatMap(function (s1) {
+            return s1.save();
+        }).subscribe(function (s2) {
+            chai.assert.isTrue(s2);
             done();
         });
     });

@@ -16,9 +16,9 @@ var RxHttpClient = (function () {
         };
         var response = new HttpResponse_1.HttpResponse(tuple);
         RxAVClient_1.RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxAVClient_1.RxAVClient.isNode() && this.version == 1)
+        if (RxAVClient_1.RxAVClient.isNode() && this.version == 1) {
+            RxAVClient_1.RxAVClient.printLog('http client:axios');
             return rxjs_1.Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(function (res) {
-                RxAVClient_1.RxAVClient.printLog('http client:axios');
                 tuple[0] = res.status;
                 tuple[1] = res.data;
                 var response = new HttpResponse_1.HttpResponse(tuple);
@@ -33,23 +33,25 @@ var RxHttpClient = (function () {
                 RxAVClient_1.RxAVClient.printLog('Error:', JSON.stringify(errMsg));
                 return rxjs_1.Observable.throw(errMsg);
             });
-        else
+        }
+        else {
+            RxAVClient_1.RxAVClient.printLog('http client:superagent');
             return rxjs_1.Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(function (res) {
-                RxAVClient_1.RxAVClient.printLog('http client:superagent');
                 tuple[0] = res.status;
                 tuple[1] = res.body;
                 var response = new HttpResponse_1.HttpResponse(tuple);
                 RxAVClient_1.RxAVClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch(function (err) {
-                RxAVClient_1.RxAVClient.printLog('Meta Error:', JSON.stringify(err));
+                RxAVClient_1.RxAVClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.status;
                     errMsg.error = JSON.parse(err.response.text);
                 }
-                RxAVClient_1.RxAVClient.printLog('Error:', JSON.stringify(errMsg));
+                RxAVClient_1.RxAVClient.printLog('Error:', errMsg);
                 return rxjs_1.Observable.throw(errMsg);
             });
+        }
     };
     RxHttpClient.prototype.batchExecute = function () {
     };

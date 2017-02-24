@@ -1,4 +1,4 @@
-import { RxAVObject, RxAVRole } from '../RxLeanCloud';
+import { RxAVObject, RxAVRole, RxAVInstallation } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IUserController } from '../internal/user/controller/iUserController';
 import { Observable } from 'rxjs';
@@ -10,16 +10,27 @@ import { Observable } from 'rxjs';
  * @extends {RxAVObject}
  */
 export declare class RxAVUser extends RxAVObject {
+    static readonly installationKey: string;
+    static readonly currenUserCacheKey: string;
     private _username;
     private _primaryRole;
     email: string;
-    mobilephone: string;
+    private _mobilephone;
     roles: Array<RxAVRole>;
     constructor();
     static readonly currentSessionToken: any;
     private static _currentUser;
-    protected static saveCurrentUser(user: RxAVUser): void;
+    protected static saveCurrentUser(user: RxAVUser): Observable<boolean>;
     static readonly currentUser: RxAVUser;
+    /**
+     * 获取本地缓存文件里面是否存在已经登录过的用户
+     *
+     * @readonly
+     * @static
+     * @type {Observable<RxAVUser>}
+     * @memberOf RxAVUser
+     */
+    static current(): Observable<RxAVUser>;
     protected static readonly UserController: IUserController;
     /**
      * 获取用户名
@@ -34,6 +45,7 @@ export declare class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     username: string;
+    mobilephone: string;
     /**
      * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
      *
@@ -65,6 +77,25 @@ export declare class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     readonly primaryRole: any;
+    /**
+     * 将一个 RxAVInstallation 对象绑定到 RxAVUser
+     *
+     * @param {RxAVInstallation} installation
+     * @param {boolean} unique
+     * @returns
+     *
+     * @memberOf RxAVUser
+     */
+    activate(installation: RxAVInstallation, unique: boolean): Observable<boolean>;
+    /**
+     * 取消对当前设备的绑定
+     *
+     * @param {RxAVInstallation} installation
+     * @returns
+     *
+     * @memberOf RxAVUser
+     */
+    inactive(installation: RxAVInstallation): Observable<boolean>;
     /**
      * 从服务端获取当前用户所拥有的角色
      *
@@ -102,9 +133,7 @@ export declare class RxAVUser extends RxAVObject {
      */
     static sendLogInShortcode(mobilephone: string): Observable<boolean>;
     /**
-     * 使用手机号一键登录
-     * 如果手机号未被注册过，则会返回一个新用户;
-     * 如果手机号之前注册过，那就直接走登录接口不会产生新用户.
+     * 使用手机号以及验证码创建新用户
      * @static
      * @param {string} mobilephone 手机号，目前支持几乎所有主流国家
      * @param {string} shortCode 6位数的数字组成的字符串
@@ -112,7 +141,18 @@ export declare class RxAVUser extends RxAVObject {
      *
      * @memberOf RxAVUser
      */
-    static signUpByMobilephone(mobilephone: string, shortCode: string): Observable<RxAVUser>;
+    static signUpByMobilephone(mobilephone: string, shortCode: string, newUser: RxAVUser): Observable<RxAVUser>;
+    /**
+     * 使用手机号以及验证码登录
+     *
+     * @static
+     * @param {string} mobilephone
+     * @param {string} shortCode
+     * @returns {Observable<RxAVUser>}
+     *
+     * @memberOf RxAVUser
+     */
+    static logInByMobilephone(mobilephone: string, shortCode: string): Observable<RxAVUser>;
     /**
      * 使用用户名和密码登录
      *
@@ -123,8 +163,37 @@ export declare class RxAVUser extends RxAVObject {
      *
      * @memberOf RxAVUser
      */
-    static login(username: string, password: string): Observable<RxAVUser>;
+    static logIn(username: string, password: string): Observable<RxAVUser>;
+    /**
+     * 登出系统，删除本地缓存
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
+    logOut(): Observable<boolean>;
+    /**
+     *  使用手机号+密码登录
+     *
+     * @static
+     * @param {string} mobilephone 手机号
+     * @param {string} password 密码
+     * @returns {Observable<RxAVUser>}
+     *
+     * @memberOf RxAVUser
+     */
+    static logInWithMobilephone(mobilephone: string, password: string): Observable<RxAVUser>;
+    /**
+     * 创建一个用户，区别于 signUp，调用 create 方法并不会覆盖本地的 currentUser.
+     *
+     * @param {RxAVUser} user
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVUser
+     */
+    create(): Observable<boolean>;
     static createWithoutData(objectId?: string): RxAVUser;
-    protected handlerLogIn(userState: IObjectState): void;
-    protected handlerSignUp(userState: IObjectState): void;
+    protected static processLogIn(userState: IObjectState): Observable<RxAVUser>;
+    protected handlerLogIn(userState: IObjectState): Observable<boolean>;
+    protected handlerSignUp(userState: IObjectState): Observable<boolean>;
 }

@@ -1,8 +1,9 @@
 "use strict";
-var SDKPlugins_1 = require('../internal/SDKPlugins');
-var MutableObjectState_1 = require('../internal/object/state/MutableObjectState');
-var RxLeanCloud_1 = require('../RxLeanCloud');
-var rxjs_1 = require('rxjs');
+Object.defineProperty(exports, "__esModule", { value: true });
+var SDKPlugins_1 = require("../internal/SDKPlugins");
+var MutableObjectState_1 = require("../internal/object/state/MutableObjectState");
+var RxLeanCloud_1 = require("../RxLeanCloud");
+var rxjs_1 = require("rxjs");
 /**
  * 代表的一个 free-schema 的对象
  *
@@ -116,6 +117,13 @@ var RxAVObject = (function () {
         }
         return rtn;
     };
+    /**
+     * 从服务端获取数据覆盖本地的数据
+     *
+     * @returns {Observable<RxAVObject>}
+     *
+     * @memberOf RxAVObject
+     */
     RxAVObject.prototype.fetch = function () {
         var _this = this;
         if (this.objectId == null)
@@ -124,6 +132,9 @@ var RxAVObject = (function () {
             _this.handleFetchResult(serverState);
             return _this;
         });
+    };
+    RxAVObject.prototype.remove = function (key) {
+        this.performOperation(key, 'remove');
     };
     /**
      * 根据 className 和 objectId 构建一个对象
@@ -137,6 +148,22 @@ var RxAVObject = (function () {
      */
     RxAVObject.createWithoutData = function (classnName, objectId) {
         var rtn = new RxAVObject(classnName);
+        rtn.objectId = objectId;
+        return rtn;
+    };
+    /**
+     * 根据子类类型以及 objectId 创建子类实例
+     *
+     * @static
+     * @template T
+     * @param {{ new (): T; }} ctor
+     * @param {string} objectId
+     * @returns {T}
+     *
+     * @memberOf RxAVObject
+     */
+    RxAVObject.createSubclass = function (ctor, objectId) {
+        var rtn = new ctor();
         rtn.objectId = objectId;
         return rtn;
     };
@@ -161,7 +188,6 @@ var RxAVObject = (function () {
         var ds = objArray.map(function (c) { return c.estimatedData; });
         return RxAVObject._objectController.batchSave(states, ds, RxLeanCloud_1.RxAVUser.currentSessionToken).map(function (serverStateArray) {
             objArray.forEach(function (dc, i, a) {
-                dc.isDirty = false;
                 dc.handlerSave(serverStateArray[i]);
             });
             return true;
@@ -196,15 +222,17 @@ var RxAVObject = (function () {
     RxAVObject.prototype.collectAllLeafNodes = function () {
         var leafNodes = [];
         var dirtyChildren = this.collectDirtyChildren();
-        if (dirtyChildren.length == 0) {
-            if (this.isDirty)
-                leafNodes.push(this);
-        }
-        else {
-            dirtyChildren.map(function (child) {
-                leafNodes = leafNodes.concat(child.collectAllLeafNodes());
-            });
-        }
+        dirtyChildren.map(function (child) {
+            var childLeafNodes = child.collectAllLeafNodes();
+            if (childLeafNodes.length == 0) {
+                if (child.isDirty) {
+                    leafNodes.push(child);
+                }
+            }
+            else {
+                leafNodes = leafNodes.concat(childLeafNodes);
+            }
+        });
         return leafNodes;
     };
     RxAVObject.recursionCollectDirtyChildren = function (root, warehouse, seen, seenNew) {
@@ -244,7 +272,7 @@ var RxAVObject = (function () {
         this.estimatedData = this.state.serverData;
     };
     RxAVObject.prototype.setProperty = function (propertyName, value) {
-        if (this.state != null) {
+        if (this.state && this.state != null) {
             this.state.serverData[propertyName] = value;
         }
     };
@@ -254,6 +282,11 @@ var RxAVObject = (function () {
                 return this.state.serverData[propertyName];
         }
         return null;
+    };
+    RxAVObject.prototype.performOperation = function (key, operation) {
+        if (operation == 'remove') {
+            this.set(key, { __op: 'Delete' });
+        }
     };
     RxAVObject.prototype.buildRelation = function (op, opEntities) {
         if (opEntities) {
@@ -266,6 +299,43 @@ var RxAVObject = (function () {
             };
             return body;
         }
+    };
+    /**
+     * 查询 Relation 包含的对象数组
+     *
+     * @param {string} key
+     * @param {any} targetClassName
+     * @returns {Observable<RxAVObject[]>}
+     *
+     * @memberOf RxAVObject
+     */
+    RxAVObject.prototype.fetchRelation = function (key, targetClassName) {
+        var query = new RxLeanCloud_1.RxAVQuery(targetClassName);
+        query.relatedTo(this, key);
+        return query.find();
+    };
+    RxAVObject.saveToLocalStorage = function (entity, key) {
+        if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
+            if (entity == null) {
+                return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.remove(key).map(function (provider) {
+                    return provider != null;
+                });
+            }
+            else {
+                return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(key, entity.toJSONObjectForSaving()).map(function (provider) {
+                    return provider != null;
+                });
+            }
+        }
+        return rxjs_1.Observable.from([true]);
+    };
+    RxAVObject.prototype.toJSONObjectForSaving = function () {
+        var data = this.estimatedData;
+        data['objectId'] = this.objectId;
+        data['createdAt'] = this.createdAt;
+        data['updatedAt'] = this.updatedAt;
+        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(data);
+        return encoded;
     };
     return RxAVObject;
 }());
