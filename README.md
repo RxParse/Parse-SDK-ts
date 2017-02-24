@@ -10,15 +10,17 @@
 - [x] 云函数(RxLeanEngine)
 - [x] ACL(RxAVRole & RxAVACL)
 - [x] 短信(注册和登陆)
+- [x] Analytic
+- [x] Push
+- [x] Ionic2 本地存储适配
 
 ## 未来肯定支持的模块
-- [ ] Ionic2 本地存储适配
+
 - [ ] Angular2 本地存储适配
 
 ## 未来未必支持的模块
-- [ ] Push
+
 - [ ] File
-- [ ] Analytic
 
 ## 未来说不定就有的模块
 - [ ] 聊天
