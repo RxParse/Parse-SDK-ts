@@ -6,11 +6,12 @@ const os = require('os');
 export class PCInfo implements IDeviceInfo {
     getDevice(): Promise<RxAVAnalyticDevice> {
         let device = new RxAVAnalyticDevice();
-        device.app_version = '0.0.1';
+        device.app_version = '0.0.2';
         device.channel = 'LeanCloud Store';
-        device.device_model = process.platform;
-        device.os = os.platform();
-        device.os_version = '10.12.3';
+        device.device_model = 'iPhone 6s plus';
+        device.os = 'iOS';
+        device.device_id = '665188eb-1a7e-4fd5-928e-cd334b0be54e';
+        device.os_version = '10.11.0';
         device.sdk_version = RxAVClient.sdk_version;
         return Promise.resolve<RxAVAnalyticDevice>(device);
     }
@@ -33,15 +34,16 @@ describe('RxAVAnalytics', function () {
             if (enable) {
                 var analytics = RxAVAnalytics.currentAnalytics;
                 analytics.trackAppOpened();
-                let pageId = analytics.beginPage('LogInPage');
-                analytics.trackEvent('LogIn_Button_Clicked');
-                let inputEventId = analytics.beginEevent('Input', 'username', {
-                    max: 666
+                let pageId = analytics.beginPage('xPage');
+                analytics.trackEvent('xClicked');
+                let inputEventId = analytics.beginEevent('xPut', 'username', {
+                    max: 777
                 });
                 analytics.endEvent(inputEventId, {
-                    min: 222
+                    min: 111
                 });
                 analytics.endPage(pageId);
+                analytics.closeSesstion();
                 return analytics.send();
             }
         }).subscribe(sent => {

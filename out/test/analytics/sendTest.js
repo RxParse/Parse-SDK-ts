@@ -6,11 +6,12 @@ var PCInfo = (function () {
     }
     PCInfo.prototype.getDevice = function () {
         var device = new RxLeanCloud_1.RxAVAnalyticDevice();
-        device.app_version = '0.0.1';
+        device.app_version = '0.0.2';
         device.channel = 'LeanCloud Store';
-        device.device_model = process.platform;
-        device.os = os.platform();
-        device.os_version = '10.12.3';
+        device.device_model = 'iPhone 6s plus';
+        device.os = 'iOS';
+        device.device_id = '665188eb-1a7e-4fd5-928e-cd334b0be54e';
+        device.os_version = '10.11.0';
         device.sdk_version = RxLeanCloud_1.RxAVClient.sdk_version;
         return Promise.resolve(device);
     };
@@ -34,15 +35,16 @@ describe('RxAVAnalytics', function () {
             if (enable) {
                 var analytics = RxLeanCloud_1.RxAVAnalytics.currentAnalytics;
                 analytics.trackAppOpened();
-                var pageId = analytics.beginPage('LogInPage');
-                analytics.trackEvent('LogIn_Button_Clicked');
-                var inputEventId = analytics.beginEevent('Input', 'username', {
-                    max: 666
+                var pageId = analytics.beginPage('xPage');
+                analytics.trackEvent('xClicked');
+                var inputEventId = analytics.beginEevent('xPut', 'username', {
+                    max: 777
                 });
                 analytics.endEvent(inputEventId, {
-                    min: 222
+                    min: 111
                 });
                 analytics.endPage(pageId);
+                analytics.closeSesstion();
                 return analytics.send();
             }
         }).subscribe(function (sent) {
