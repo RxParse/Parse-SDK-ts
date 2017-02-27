@@ -43,6 +43,15 @@ export class ToolController implements IToolController {
         //TODO: increase length to better protect against collisions.
         return this.randomString(10);
     }
+    getTimestamp(unit: string): number {
+        let unitLower = unit.toLowerCase();
+        if (unitLower == 'seconds' || unitLower == 'second' || unitLower == 's') {
+            return Math.floor(Date.now());
+        } else if(unitLower == 'milliseconds' || unitLower == 'millisecond' || unitLower == 'ms'){
+            return new Date().getTime();
+            //return Math.floor(Date.now() / 1000);
+        }
+    }
 
     // Returns a new random hex string suitable for secure tokens.
     newToken(): string {

@@ -19,7 +19,7 @@ export /**
     private static setCurrentAnalytics(analytics: RxAVAnalytics) {
         RxAVAnalytics._CurrentAnalytics = analytics;
     }
-    protected static get _toolController() {
+    static get _toolController() {
         return SDKPlugins.instance.ToolControllerInstance;
     }
 
@@ -46,7 +46,7 @@ export /**
     public static init(): Observable<boolean> {
         return RxAVAnalytics._analyticsController.getPolicy().flatMap(instance => {
             RxAVAnalytics.setCurrentAnalytics(instance);
-            return instance.startCollect();
+            return instance.startSesstion();
         }).map(started => {
             return started && RxAVAnalytics.currentAnalytics.enable;
         });
@@ -59,9 +59,8 @@ export /**
      * @memberOf RxAVAnalytics
      */
     public trackAppOpened() {
-        this.trackEvent('!AV!AppOpen', null, null);
+        this.trackEvent('!AV!AppOpen', '!AV!AppOpen', null);
     }
-
 
     /**
      * 标记本次应用打开是来自于推送
@@ -70,7 +69,7 @@ export /**
      * @memberOf RxAVAnalytics
      */
     public trackAppOpenedFromPush() {
-        this.trackEvent('!AV!PushOpen', null, null);
+        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', null);
     }
 
     /**
@@ -88,7 +87,10 @@ export /**
         newEvent.eventId = `event_${RxAVAnalytics._toolController.newObjectId()}`;
         newEvent.attributes = attributes;
         newEvent.name = name;
-        newEvent.timestamp = new Date().getTime();
+        newEvent.du = 0;
+        newEvent.tag = tag;
+        newEvent.ts = RxAVAnalytics._toolController.getTimestamp('ms');
+        newEvent.sessionId = this.sessionId;
         this.events.event.push(newEvent);
         return newEvent.eventId;
     }
@@ -120,7 +122,7 @@ export /**
             return e.eventId == eventId;
         });
         if (begunEvent != null) {
-            begunEvent.duration = new Date().getTime() - begunEvent.timestamp;
+            begunEvent.du = RxAVAnalytics._toolController.getTimestamp('ms') - begunEvent.ts;
             if (attributes && attributes != null) {
                 for (let key in attributes) {
                     begunEvent.attributes[key] = attributes[key];
@@ -141,7 +143,7 @@ export /**
     public trackPage(name: string, duration: number) {
         let newActivity = new RxAVAnalyticActivity();
         newActivity.activityId = `activity_${RxAVAnalytics._toolController.newObjectId()}`;
-        newActivity.ts = new Date().getTime();
+        newActivity.ts = RxAVAnalytics._toolController.getTimestamp('ms');
         newActivity.du = duration;
         newActivity.name = name;
         this.events.terminate.activities.push(newActivity);
@@ -172,7 +174,7 @@ export /**
             return a.activityId == activityId;
         });
         if (begunPage != null) {
-            begunPage.du = new Date().getTime() - begunPage.ts;
+            begunPage.du = RxAVAnalytics._toolController.getTimestamp('ms') - begunPage.ts;
         }
     }
 
@@ -192,7 +194,7 @@ export /**
         else return Observable.from([false]);
     }
 
-    
+
     /**
      * 主动发送本次统计数据
      * 
@@ -201,15 +203,21 @@ export /**
      * @memberOf RxAVAnalytics
      */
     public send() {
+        if (!this.enable) {
+            return Observable.from([false]);
+        }
         return RxAVAnalytics._analyticsController.send(this, null);
     }
 
-    protected startCollect() {
+    protected startSesstion() {
         return Observable.fromPromise(RxAVAnalytics._analyticsController.deviceProvider.getDevice()).map(deviceInfo => {
             this.device = deviceInfo;
             this.resetData();
             return true;
         });
+    }
+    closeSesstion() {
+        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
     }
 
     protected resetData() {
@@ -263,7 +271,7 @@ export class RxAVAnalyticDevice {
 
 export class RxAVAnalyticLaunch {
     constructor(sessionId: string) {
-        this.date = new Date().getTime();
+        this.date = RxAVAnalytics._toolController.getTimestamp('ms');
         this.sessionId = sessionId;
     }
     date: number;
@@ -292,10 +300,10 @@ export class RxAVAnalyticEvent {
 
     }
     eventId: string;
-    duration: number;
+    du: number;
     name: string;
     sessionId: string;
     tag: string;
-    timestamp: number;
+    ts: number;
     attributes: { [key: string]: any };
 }

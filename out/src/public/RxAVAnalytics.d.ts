@@ -6,7 +6,7 @@ export declare class RxAVAnalytics {
     protected static readonly _analyticsController: IAnalyticsController;
     private static _CurrentAnalytics;
     private static setCurrentAnalytics(analytics);
-    protected static readonly _toolController: IToolController;
+    static readonly _toolController: IToolController;
     /**
      * 获取本地对话的统计对象
      *
@@ -119,7 +119,8 @@ export declare class RxAVAnalytics {
      * @memberOf RxAVAnalytics
      */
     send(): Observable<boolean>;
-    protected startCollect(): Observable<boolean>;
+    protected startSesstion(): Observable<boolean>;
+    closeSesstion(): void;
     protected resetData(): void;
     sessionId: string;
     enable: boolean;
@@ -182,11 +183,11 @@ export declare class RxAVAnalyticActivity {
 export declare class RxAVAnalyticEvent {
     constructor();
     eventId: string;
-    duration: number;
+    du: number;
     name: string;
     sessionId: string;
     tag: string;
-    timestamp: number;
+    ts: number;
     attributes: {
         [key: string]: any;
     };

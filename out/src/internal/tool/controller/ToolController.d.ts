@@ -4,6 +4,7 @@ export declare class ToolController implements IToolController {
     randomHexStringWithPrefix(prefix: string, size: number): string;
     randomString(size: number): string;
     newObjectId(): string;
+    getTimestamp(unit: string): number;
     newToken(): string;
     md5Hash(string: string): string;
     newMobilePhoneNumber(): string;

@@ -41,6 +41,15 @@ var ToolController = (function () {
         //TODO: increase length to better protect against collisions.
         return this.randomString(10);
     };
+    ToolController.prototype.getTimestamp = function (unit) {
+        var unitLower = unit.toLowerCase();
+        if (unitLower == 'seconds' || unitLower == 'second' || unitLower == 's') {
+            return Math.floor(Date.now());
+        }
+        else if (unitLower == 'milliseconds' || unitLower == 'millisecond' || unitLower == 'ms') {
+            return new Date().getTime();
+        }
+    };
     // Returns a new random hex string suitable for secure tokens.
     ToolController.prototype.newToken = function () {
         return this.randomHexString(32);
