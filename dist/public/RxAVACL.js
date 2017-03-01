@@ -86,11 +86,6 @@ var RxAVACL = (function () {
         //     );
         // }
     }
-    /**
-     * Returns a JSON-encoded version of the ACL.
-     * @method toJSON
-     * @return {Object}
-     */
     RxAVACL.prototype.toJSON = function () {
         var permissions = {};
         for (var p in this.permissionsById) {
@@ -99,10 +94,12 @@ var RxAVACL = (function () {
         return permissions;
     };
     /**
-     * Returns whether this ACL is equal to another object
-     * @method equals
-     * @param other The other object to compare to
-     * @return {Boolean}
+     * 判断两个 ACL 对象是否相等
+     *
+     * @param {RxAVACL} other
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.equals = function (other) {
         if (!(other instanceof RxAVACL)) {
@@ -184,6 +181,13 @@ var RxAVACL = (function () {
         }
         return !!permissions[accessType];
     };
+    /**
+     * 查找 Write 权限
+     *
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
+     */
     RxAVACL.prototype.findWriteAccess = function () {
         var rtn = false;
         for (var key in this.permissionsById) {
@@ -196,88 +200,96 @@ var RxAVACL = (function () {
         return rtn;
     };
     /**
-     * Sets whether the given user is allowed to read this object.
-     * @method setReadAccess
-     * @param userId An instance of User or its objectId.
-     * @param {Boolean} allowed Whether that user should have read access.
+     * 设置 Read 权限
+     *
+     * @param {any} userId {(RxAVUser | RxAVRole | string)}
+     * @param {boolean} allowed
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.setReadAccess = function (userId, allowed) {
         this._setAccess('read', userId, allowed);
     };
     /**
-     * Get whether the given user id is *explicitly* allowed to read this object.
-     * Even if this returns false, the user may still be able to access it if
-     * getPublicReadAccess returns true or a role that the user belongs to has
-     * write access.
-     * @method getReadAccess
-     * @param userId An instance of User or its objectId, or a Role.
-     * @return {Boolean}
+     * 获取 Read 权限
+     *
+     * @param {any}  userId {(RxAVUser | RxAVRole | string)}
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.getReadAccess = function (userId) {
         return this._getAccess('read', userId);
     };
     /**
-     * Sets whether the given user id is allowed to write this object.
-     * @method setWriteAccess
-     * @param userId An instance of User or its objectId, or a Role..
-     * @param {Boolean} allowed Whether that user should have write access.
+     * 设置 Write 权限
+     *
+     * @param {any} userId {(RxAVUser | RxAVRole | string)}
+     * @param {boolean} allowed
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.setWriteAccess = function (userId, allowed) {
         this._setAccess('write', userId, allowed);
     };
     /**
-     * Gets whether the given user id is *explicitly* allowed to write this object.
-     * Even if this returns false, the user may still be able to write it if
-     * getPublicWriteAccess returns true or a role that the user belongs to has
-     * write access.
-     * @method getWriteAccess
-     * @param userId An instance of User or its objectId, or a Role.
-     * @return {Boolean}
+     * 获取 Write 权限
+     *
+     * @param {any} userId {(RxAVUser | RxAVRole | string)} userId
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.getWriteAccess = function (userId) {
         return this._getAccess('write', userId);
     };
     /**
-     * Sets whether the public is allowed to read this object.
-     * @method setPublicReadAccess
-     * @param {Boolean} allowed
+     * 设置所有人的 Read 权限
+     *
+     * @param {boolean} allowed
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.setPublicReadAccess = function (allowed) {
         this.setReadAccess(PUBLIC_KEY, allowed);
     };
     /**
-     * Gets whether the public is allowed to read this object.
-     * @method getPublicReadAccess
-     * @return {Boolean}
+     *  获取所有人的 Read 权限
+     *
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.getPublicReadAccess = function () {
         return this.getReadAccess(PUBLIC_KEY);
     };
     /**
-     * Sets whether the public is allowed to write this object.
-     * @method setPublicWriteAccess
-     * @param {Boolean} allowed
+     * 设置所有人的 Write 权限
+     *
+     * @param {boolean} allowed
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.setPublicWriteAccess = function (allowed) {
         this.setWriteAccess(PUBLIC_KEY, allowed);
     };
     /**
-     * Gets whether the public is allowed to write this object.
-     * @method getPublicWriteAccess
-     * @return {Boolean}
+     * 获取所有人的 Write 权限
+     *
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.getPublicWriteAccess = function () {
         return this.getWriteAccess(PUBLIC_KEY);
     };
     /**
-     * Gets whether users belonging to the given role are allowed
-     * to read this object. Even if this returns false, the role may
-     * still be able to write it if a parent role has read access.
+     * 设置角色的 Read 权限
      *
-     * @method getRoleReadAccess
-     * @param role The name of the role, or a Role object.
-     * @return {Boolean} true if the role has read access. false otherwise.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * @param {any} role {(RxAVRole | string)}
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.getRoleReadAccess = function (role) {
         if (role instanceof RxAVRole_1.RxAVRole) {
@@ -290,14 +302,12 @@ var RxAVACL = (function () {
         return this.getReadAccess('role:' + role);
     };
     /**
-     * Gets whether users belonging to the given role are allowed
-     * to write this object. Even if this returns false, the role may
-     * still be able to write it if a parent role has write access.
+     *  获取角色的 Write 权限
      *
-     * @method getRoleWriteAccess
-     * @param role The name of the role, or a Role object.
-     * @return {Boolean} true if the role has write access. false otherwise.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * @param {any} role {(RxAVRole | string)}
+     * @returns {boolean}
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.getRoleWriteAccess = function (role) {
         if (role instanceof RxAVRole_1.RxAVRole) {
@@ -310,13 +320,12 @@ var RxAVACL = (function () {
         return this.getWriteAccess('role:' + role);
     };
     /**
-     * Sets whether users belonging to the given role are allowed
-     * to read this object.
+     * 设置角色的 Read 权限
      *
-     * @method setRoleReadAccess
-     * @param role The name of the role, or a Role object.
-     * @param {Boolean} allowed Whether the given role can read this object.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * @param {any} role {(RxAVRole | string)}
+     * @param {boolean} allowed
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.setRoleReadAccess = function (role, allowed) {
         if (role instanceof RxAVRole_1.RxAVRole) {
@@ -329,13 +338,12 @@ var RxAVACL = (function () {
         this.setReadAccess('role:' + role, allowed);
     };
     /**
-     * Sets whether users belonging to the given role are allowed
-     * to write this object.
+     * 设置角色 Write 权限
      *
-     * @method setRoleWriteAccess
-     * @param role The name of the role, or a Role object.
-     * @param {Boolean} allowed Whether the given role can write this object.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * @param {any} role {(RxAVRole | string)}
+     * @param {boolean} allowed
+     *
+     * @memberOf RxAVACL
      */
     RxAVACL.prototype.setRoleWriteAccess = function (role, allowed) {
         if (role instanceof RxAVRole_1.RxAVRole) {

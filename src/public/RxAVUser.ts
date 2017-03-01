@@ -95,6 +95,13 @@ export class RxAVUser extends RxAVObject {
         return this._username;
     }
 
+    /**
+     * 手机号
+     * 
+     * @readonly
+     * 
+     * @memberOf RxAVUser
+     */
     get mobilephone() {
         this._mobilephone = this.getProperty('mobilePhoneNumber');
         return this._mobilephone;

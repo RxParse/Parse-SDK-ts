@@ -97,6 +97,13 @@ var RxAVUser = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVUser.prototype, "mobilephone", {
+        /**
+         * 手机号
+         *
+         * @readonly
+         *
+         * @memberOf RxAVUser
+         */
         get: function () {
             this._mobilephone = this.getProperty('mobilePhoneNumber');
             return this._mobilephone;

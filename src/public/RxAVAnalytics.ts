@@ -79,7 +79,7 @@ export class RxAVAnalytics {
     /**
      * 标记本次应用打开来自于用户点击推送通知打开进入
      * 
-     * @param {any} 推送内容包含的参数字典
+     * @param {any} pushData :{ [key: string]: any } 推送内容包含的参数字典
      * 
      * @memberOf RxAVAnalytics
      */

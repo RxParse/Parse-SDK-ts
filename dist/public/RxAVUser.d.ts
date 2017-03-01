@@ -46,6 +46,13 @@ export declare class RxAVUser extends RxAVObject {
      */
     username: string;
     /**
+     * 手机号
+     *
+     * @readonly
+     *
+     * @memberOf RxAVUser
+     */
+    /**
      * 设置手机号
      *
      *
