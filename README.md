@@ -1,5 +1,16 @@
 # LeanCloud TypeScript SDK  - 一门语言，一个框架，Web & Mobile 一起开发
 
+
+## 安装
+
+```shell
+npm install leancloud-typescript-rx-sdk --save
+```
+
+## API Doc
+
+[LeanCloud TypeScript SDK API Doc](https://wujun4code.github.io/leancloud-typescript-rx-sdk/docs/gen/index.html)
+
 ## 研发计划 - Roadmap
 
 ### 目前支持的模块 - Available
