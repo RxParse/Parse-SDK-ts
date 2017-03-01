@@ -1,5 +1,6 @@
 "use strict";
-var crypto_1 = require('crypto');
+Object.defineProperty(exports, "__esModule", { value: true });
+var crypto_1 = require("crypto");
 var ToolController = (function () {
     function ToolController() {
     }
@@ -48,6 +49,7 @@ var ToolController = (function () {
         }
         else if (unitLower == 'milliseconds' || unitLower == 'millisecond' || unitLower == 'ms') {
             return new Date().getTime();
+            //return Math.floor(Date.now() / 1000);
         }
     };
     // Returns a new random hex string suitable for secure tokens.

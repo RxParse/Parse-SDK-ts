@@ -95,11 +95,24 @@ export class RxAVUser extends RxAVObject {
         return this._username;
     }
 
+    /**
+     * 手机号
+     * 
+     * @readonly
+     * 
+     * @memberOf RxAVUser
+     */
     get mobilephone() {
         this._mobilephone = this.getProperty('mobilePhoneNumber');
         return this._mobilephone;
     }
 
+    /**
+     * 设置手机号
+     * 
+     * 
+     * @memberOf RxAVUser
+     */
     set mobilephone(mobile: string) {
         if (this.sesstionToken == null) {
             this._mobilephone = mobile;
@@ -152,35 +165,35 @@ export class RxAVUser extends RxAVObject {
         }
     }
 
-    public setPrimaryRole(role: RxAVRole) {
-        this.set('primaryRole', role);
-        if (role.isDirty)
-            return role.save().flatMap<boolean>(s1 => {
-                return role.grant(this);
-            }).flatMap<boolean>(s2 => {
-                return this.save();
-            });
-        else return role.grant(this).flatMap<boolean>(s3 => {
-            return this.save();
-        });
-    }
+    // public setPrimaryRole(role: RxAVRole) {
+    //     this.set('primaryRole', role);
+    //     if (role.isDirty)
+    //         return role.save().flatMap<boolean>(s1 => {
+    //             return role.grant(this);
+    //         }).flatMap<boolean>(s2 => {
+    //             return this.save();
+    //         });
+    //     else return role.grant(this).flatMap<boolean>(s3 => {
+    //         return this.save();
+    //     });
+    // }
 
-    /**
-     *  获取当前用户的主要角色
-     * 
-     * 
-     * @memberOf RxAVUser
-     */
-    get primaryRole() {
-        return this.get('primaryRole');
-    }
+    // /**
+    //  *  获取当前用户的主要角色
+    //  * 
+    //  * 
+    //  * @memberOf RxAVUser
+    //  */
+    // get primaryRole() {
+    //     return this.get('primaryRole');
+    // }
 
     /**
      * 将一个 RxAVInstallation 对象绑定到 RxAVUser
      * 
      * @param {RxAVInstallation} installation
      * @param {boolean} unique
-     * @returns
+     * @returns {Observable<boolean>} 是否成功地绑定了当前设备和 User 的关系
      * 
      * @memberOf RxAVUser
      */
@@ -206,11 +219,11 @@ export class RxAVUser extends RxAVObject {
      * 取消对当前设备的绑定
      * 
      * @param {RxAVInstallation} installation
-     * @returns
+     * @returns {Observable<boolean>} 是否成功的解绑
      * 
      * @memberOf RxAVUser
      */
-    public inactive(installation: RxAVInstallation) {
+    public inactive(installation: RxAVInstallation):Observable<boolean> {
         let opBody = this.buildRelation('remove', [installation]);
         this.set(RxAVUser.installationKey, opBody);
         return this.save();
@@ -402,6 +415,17 @@ export class RxAVUser extends RxAVObject {
             return true;
         });
     }
+
+    // /**
+    //  * 
+    //  * 
+    //  * @param {{ [key: string]: any }} authData 
+    //  * 
+    //  * @memberOf RxAVUser
+    //  */
+    // public logInWithOAuth2Data(authData: { [key: string]: any }) {
+
+    // }
 
     public static createWithoutData(objectId?: string) {
         return RxAVObject.createSubclass(RxAVUser, objectId);

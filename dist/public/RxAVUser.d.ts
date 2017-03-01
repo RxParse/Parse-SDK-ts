@@ -45,6 +45,19 @@ export declare class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     username: string;
+    /**
+     * 手机号
+     *
+     * @readonly
+     *
+     * @memberOf RxAVUser
+     */
+    /**
+     * 设置手机号
+     *
+     *
+     * @memberOf RxAVUser
+     */
     mobilephone: string;
     /**
      * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
@@ -69,20 +82,12 @@ export declare class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     isAuthenticated(): Observable<boolean>;
-    setPrimaryRole(role: RxAVRole): Observable<boolean>;
-    /**
-     *  获取当前用户的主要角色
-     *
-     *
-     * @memberOf RxAVUser
-     */
-    readonly primaryRole: any;
     /**
      * 将一个 RxAVInstallation 对象绑定到 RxAVUser
      *
      * @param {RxAVInstallation} installation
      * @param {boolean} unique
-     * @returns
+     * @returns {Observable<boolean>} 是否成功地绑定了当前设备和 User 的关系
      *
      * @memberOf RxAVUser
      */
@@ -91,7 +96,7 @@ export declare class RxAVUser extends RxAVObject {
      * 取消对当前设备的绑定
      *
      * @param {RxAVInstallation} installation
-     * @returns
+     * @returns {Observable<boolean>} 是否成功的解绑
      *
      * @memberOf RxAVUser
      */

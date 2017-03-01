@@ -1,5 +1,6 @@
 "use strict";
-var rxjs_1 = require('rxjs');
+Object.defineProperty(exports, "__esModule", { value: true });
+var rxjs_1 = require("rxjs");
 var StorageController = (function () {
     function StorageController(storageProvider) {
         this.storageFileName = 'RxApplicationSettings';

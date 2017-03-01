@@ -1,13 +1,19 @@
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var rxjs_1 = require('rxjs');
-var RxLeanCloud_1 = require('../RxLeanCloud');
-var SDKPlugins_1 = require('../internal/SDKPlugins');
-var jstz = require('jstz');
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var rxjs_1 = require("rxjs");
+var RxLeanCloud_1 = require("../RxLeanCloud");
+var SDKPlugins_1 = require("../internal/SDKPlugins");
+var jstz = require("jstz");
 /**
  * 安装数据
  *
@@ -18,13 +24,26 @@ var jstz = require('jstz');
 var RxAVInstallation = (function (_super) {
     __extends(RxAVInstallation, _super);
     function RxAVInstallation() {
-        _super.call(this, '_Installation');
-        this.set('timeZone', this.timeZone);
+        var _this = _super.call(this, '_Installation') || this;
+        _this.set('timeZone', _this.timeZone);
+        return _this;
     }
     Object.defineProperty(RxAVInstallation.prototype, "channels", {
+        /**
+         * 获取频道
+         *
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return this.get('channels');
         },
+        /**
+         * 设置频道
+         *
+         *
+         * @memberOf RxAVInstallation
+         */
         set: function (data) {
             this.set('channels', data);
         },
@@ -62,6 +81,13 @@ var RxAVInstallation = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVInstallation.prototype, "installationId", {
+        /**
+         * 获取 installationId
+         *
+         * @readonly
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return this.get('installationId');
         },
@@ -69,12 +95,26 @@ var RxAVInstallation = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVInstallation.prototype, "timeZone", {
+        /**
+         * 获取设备所在的地区/时区
+         *
+         * @readonly
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return jstz.determine().name();
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * 保存当前的 {RxAVInstallation} 到云端
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVInstallation
+     */
     RxAVInstallation.prototype.save = function () {
         var _this = this;
         return _super.prototype.save.call(this).flatMap(function (s1) {
@@ -84,6 +124,14 @@ var RxAVInstallation = (function (_super) {
                 return rxjs_1.Observable.from([false]);
         });
     };
+    /**
+     * 获取当前的 RxAVInstallation 对象
+     *
+     * @static
+     * @returns {Observable<RxAVInstallation>} 异步操作可能会失败
+     *
+     * @memberOf RxAVInstallation
+     */
     RxAVInstallation.current = function () {
         return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVInstallation.installationCacheKey).map(function (installationCache) {
             if (installationCache) {
@@ -97,6 +145,14 @@ var RxAVInstallation = (function (_super) {
         });
     };
     Object.defineProperty(RxAVInstallation, "currentInstallation", {
+        /**
+         *  在调用本方法之前，请务必确保你已经调用了 RxAVInstallation.current()
+         *
+         * @readonly
+         * @static
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return RxAVInstallation._currentInstallation;
         },
@@ -107,8 +163,8 @@ var RxAVInstallation = (function (_super) {
         RxAVInstallation._currentInstallation = installation;
         return RxLeanCloud_1.RxAVObject.saveToLocalStorage(installation, RxAVInstallation.installationCacheKey);
     };
-    RxAVInstallation.installationCacheKey = 'CurrentInstallation';
-    RxAVInstallation._currentInstallation = null;
     return RxAVInstallation;
 }(RxLeanCloud_1.RxAVObject));
+RxAVInstallation.installationCacheKey = 'CurrentInstallation';
+RxAVInstallation._currentInstallation = null;
 exports.RxAVInstallation = RxAVInstallation;

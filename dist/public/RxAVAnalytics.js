@@ -1,8 +1,24 @@
 "use strict";
 var rxjs_1 = require('rxjs');
 var SDKPlugins_1 = require('../internal/SDKPlugins');
+/**
+ * 统计服务的操作接口
+ * 当前版本只支持启动发送，也就是每一次启动之后，需要主动调用 report 接口去把上一次统计的数据发送到云端
+ * 批量发送和最小时间间隔发送本质上也是拆分成每一个请求一次请求，容易出现发送中断等诸多原因，因此 ts sdk 只打算支持启动发送这一种方式
+ *
+ * @export
+ * @class RxAVAnalytics
+ */
 var RxAVAnalytics = (function () {
-    function RxAVAnalytics() {
+    function RxAVAnalytics(mutableData) {
+        if (mutableData && mutableData != null) {
+            this.enable = mutableData.enable;
+            this.sessionId = mutableData.sessionId;
+            this.policy = mutableData.policy;
+            this.parameters = mutableData.parameters;
+            this.device = mutableData.device;
+            this.events = mutableData.events;
+        }
     }
     Object.defineProperty(RxAVAnalytics, "_analyticsController", {
         get: function () {
@@ -53,7 +69,7 @@ var RxAVAnalytics = (function () {
         });
     };
     /**
-     *  标记本次应用打开是来自于用户主动打开
+     * 标记本次应用打开来自于用户手动从图标点开进入
      *
      *
      * @memberOf RxAVAnalytics
@@ -62,21 +78,22 @@ var RxAVAnalytics = (function () {
         this.trackEvent('!AV!AppOpen', '!AV!AppOpen', null);
     };
     /**
-     * 标记本次应用打开是来自于推送
+     * 标记本次应用打开来自于用户点击推送通知打开进入
      *
+     * @param {any} pushData :{ [key: string]: any } 推送内容包含的参数字典
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.trackAppOpenedFromPush = function () {
-        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', null);
+    RxAVAnalytics.prototype.trackAppOpenedWithPush = function (pushData) {
+        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', pushData);
     };
     /**
      * 记录一次自定义事件
      *
      * @param {string} name 事件的自定义名称
      * @param {string} [tag] 时间的附加值
-     * @param {{ [key: string]: any }} [attributes] 事件的自定义属性字典
-     * @returns {string}
+     * @param {any} [attributes] 事件的自定义属性字典
+     * @returns {string} 自定义事件的 ID
      *
      * @memberOf RxAVAnalytics
      */
@@ -97,8 +114,8 @@ var RxAVAnalytics = (function () {
      *
      * @param {string} name 事件的自定义名称
      * @param {string} [tag] 事件的附加值
-     * @param {{ [key: string]: any }} [attributes] 事件的自定义属性字典
-     * @returns 返回该事件的 eventId
+     * @param {any} [attributes] 事件的自定义属性字典
+     * @returns {string} 返回该事件的 eventId
      *
      * @memberOf RxAVAnalytics
      */
@@ -109,7 +126,7 @@ var RxAVAnalytics = (function () {
      * 结束记录一次自定义事件
      *
      * @param {string} eventId  事件的 eventId
-     * @param {{ [key: string]: any }} [attributes] 事件的自定义属性字典
+     * @param {any} [attributes] 事件的自定义属性字典
      *
      * @memberOf RxAVAnalytics
      */
@@ -131,7 +148,7 @@ var RxAVAnalytics = (function () {
      *
      * @param {string} name 页面名称
      * @param {number} duration 访问持续的时间，毫秒
-     * @returns 页面的 activitId
+     * @returns {string} 页面的 activitId
      *
      * @memberOf RxAVAnalytics
      */
@@ -148,7 +165,7 @@ var RxAVAnalytics = (function () {
      * 开始记录一个页面的持续性访问
      *
      * @param {string} name 页面名称
-     * @returns 页面的 activitId
+     * @returns {string} 页面的 activitId
      *
      * @memberOf RxAVAnalytics
      */
@@ -173,13 +190,14 @@ var RxAVAnalytics = (function () {
     /**
      *  如果实现了本地缓存的接口，那么可以将本地统计数据保存在本地的缓存内
      *
-     * @returns
+     * @returns {Observable<boolean>} 发送结果，可能因为并没有实现本地缓存的接口而导致失败
      *
      * @memberOf RxAVAnalytics
      */
     RxAVAnalytics.prototype.save = function () {
+        this.closeSesstion();
         if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
-            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(this.sessionId, this.encodeForSendServer()).map(function (iStorage) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(RxAVAnalytics.analyticsCacheKey, this).map(function (iStorage) {
                 return iStorage != null;
             });
         }
@@ -189,7 +207,7 @@ var RxAVAnalytics = (function () {
     /**
      * 主动发送本次统计数据
      *
-     * @returns
+     * @returns {Observable<boolean>} 发送结果，可能因为数据格式不正确而造成服务端拒收
      *
      * @memberOf RxAVAnalytics
      */
@@ -199,6 +217,15 @@ var RxAVAnalytics = (function () {
         }
         return RxAVAnalytics._analyticsController.send(this, null);
     };
+    /**
+     *
+     * 停止 session
+     *
+     * @memberOf RxAVAnalytics
+     */
+    RxAVAnalytics.prototype.closeSesstion = function () {
+        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
+    };
     RxAVAnalytics.prototype.startSesstion = function () {
         var _this = this;
         return rxjs_1.Observable.fromPromise(RxAVAnalytics._analyticsController.deviceProvider.getDevice()).map(function (deviceInfo) {
@@ -206,9 +233,6 @@ var RxAVAnalytics = (function () {
             _this.resetData();
             return true;
         });
-    };
-    RxAVAnalytics.prototype.closeSesstion = function () {
-        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
     };
     RxAVAnalytics.prototype.resetData = function () {
         this.sessionId = "session_" + RxAVAnalytics._toolController.newObjectId();
@@ -218,12 +242,33 @@ var RxAVAnalytics = (function () {
             terminate: new RxAVAnalyticTerminate(this.sessionId)
         };
     };
+    /**
+     * 将上一次对话的统计数据报告给服务端
+     *
+     * @static
+     *
+     * @memberOf RxAVAnalytics
+     */
+    RxAVAnalytics.report = function () {
+        return RxAVAnalytics.restore().flatMap(function (data) {
+            return data.send();
+        });
+    };
+    RxAVAnalytics.restore = function () {
+        if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVAnalytics.analyticsCacheKey).map(function (cacheData) {
+                var cacheModel = new RxAVAnalytics(cacheData);
+                return cacheModel;
+            });
+        }
+    };
     RxAVAnalytics.prototype.encodeForSendServer = function () {
         return {
             device: this.device,
             events: this.events
         };
     };
+    RxAVAnalytics.analyticsCacheKey = 'LastAnalyticsData';
     return RxAVAnalytics;
 }());
 exports.RxAVAnalytics = RxAVAnalytics;

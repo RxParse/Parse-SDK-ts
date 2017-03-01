@@ -1,8 +1,9 @@
 "use strict";
-var chai = require('chai');
+Object.defineProperty(exports, "__esModule", { value: true });
+var chai = require("chai");
 var random = require("../utils/random");
-var RxLeanCloud_1 = require('../../src/RxLeanCloud');
-var RxLeanCloud_2 = require('../../src/RxLeanCloud');
+var RxLeanCloud_1 = require("../../src/RxLeanCloud");
+var RxLeanCloud_2 = require("../../src/RxLeanCloud");
 var randomUsername = '';
 describe('RxAVUser', function () {
     before(function () {
@@ -66,21 +67,21 @@ describe('RxAVUser', function () {
             chai.assert.isNull(error);
         });
     });
-    it('RxAVUser#signUpWithPrimaryRole', function (done) {
-        var user = new RxLeanCloud_2.RxAVUser();
-        user.username = random.randomString(8);
-        user.password = 'leancloud';
-        user.signUp().flatMap(function (s) {
-            var randomRoleName1 = random.randomHexString(8);
-            var randomRole1 = new RxLeanCloud_2.RxAVRole(randomRoleName1, new RxLeanCloud_2.RxAVACL(user));
-            return user.setPrimaryRole(randomRole1);
-        }).flatMap(function (s3) {
-            return user.fetchRoles();
-        }).subscribe(function (roles) {
-            chai.assert.isTrue(roles.length == 1);
-            done();
-        });
-    });
+    // it('RxAVUser#signUpWithPrimaryRole', done => {
+    //     let user: RxAVUser = new RxAVUser();
+    //     user.username = random.randomString(8);
+    //     user.password = 'leancloud';
+    //     user.signUp().flatMap<boolean>(s => {
+    //         let randomRoleName1 = random.randomHexString(8);
+    //         let randomRole1 = new RxAVRole(randomRoleName1, new RxAVACL(user));
+    //         return user.setPrimaryRole(randomRole1);
+    //     }).flatMap<Array<RxAVRole>>(s3 => {
+    //         return user.fetchRoles();
+    //     }).subscribe(roles => {
+    //         chai.assert.isTrue(roles.length == 1);
+    //         done();
+    //     });
+    // });
     it('RxAVUser#create', function (done) {
         var user = new RxLeanCloud_2.RxAVUser();
         user.username = random.randomString(8);

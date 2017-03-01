@@ -1,6 +1,7 @@
 "use strict";
-var RxAVUser_1 = require('./RxAVUser');
-var RxAVRole_1 = require('./RxAVRole');
+Object.defineProperty(exports, "__esModule", { value: true });
+var RxAVUser_1 = require("./RxAVUser");
+var RxAVRole_1 = require("./RxAVRole");
 var PUBLIC_KEY = '*';
 /**
  *
@@ -9,12 +10,18 @@ var PUBLIC_KEY = '*';
  * @class RxAVACL
  */
 var RxAVACL = (function () {
+    /**
+     * Creates an instance of RxAVACL.
+     * @param {...any[]} arg
+     *
+     * @memberOf RxAVACL
+     */
     function RxAVACL() {
-        var _this = this;
         var arg = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            arg[_i - 0] = arguments[_i];
+            arg[_i] = arguments[_i];
         }
+        var _this = this;
         this.permissionsById = {};
         if (arg.length > 0) {
             arg.forEach(function (currentItem) {
@@ -37,14 +44,8 @@ var RxAVACL = (function () {
         }
         else {
             if (RxAVUser_1.RxAVUser.currentUser) {
-                if (RxAVUser_1.RxAVUser.currentUser.primaryRole) {
-                    this.setRoleWriteAccess(RxAVUser_1.RxAVUser.currentUser.primaryRole, true);
-                    this.setRoleWriteAccess(RxAVUser_1.RxAVUser.currentUser.primaryRole, true);
-                }
-                else {
-                    this.setReadAccess(RxAVUser_1.RxAVUser.currentUser, true);
-                    this.setWriteAccess(RxAVUser_1.RxAVUser.currentUser, true);
-                }
+                this.setReadAccess(RxAVUser_1.RxAVUser.currentUser, true);
+                this.setWriteAccess(RxAVUser_1.RxAVUser.currentUser, true);
             }
             else {
                 this.setPublicReadAccess(true);

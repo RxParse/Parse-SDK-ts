@@ -1,5 +1,6 @@
 "use strict";
-var RxLeanCloud_1 = require('../RxLeanCloud');
+Object.defineProperty(exports, "__esModule", { value: true });
+var RxLeanCloud_1 = require("../RxLeanCloud");
 /**
  * 一条推送消息
  *

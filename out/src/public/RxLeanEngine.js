@@ -1,6 +1,7 @@
 "use strict";
-var SDKPlugins_1 = require('../internal/SDKPlugins');
-var RxLeanCloud_1 = require('../RxLeanCloud');
+Object.defineProperty(exports, "__esModule", { value: true });
+var SDKPlugins_1 = require("../internal/SDKPlugins");
+var RxLeanCloud_1 = require("../RxLeanCloud");
 var RxLeanEngine = (function () {
     function RxLeanEngine() {
     }

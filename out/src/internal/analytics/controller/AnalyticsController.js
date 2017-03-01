@@ -1,7 +1,8 @@
 "use strict";
-var RxAVAnalytics_1 = require('../../../public/RxAVAnalytics');
-var RxAVClient_1 = require('../../../public/RxAVClient');
-var AVCommand_1 = require('../../command/AVCommand');
+Object.defineProperty(exports, "__esModule", { value: true });
+var RxAVAnalytics_1 = require("../../../public/RxAVAnalytics");
+var RxAVClient_1 = require("../../../public/RxAVClient");
+var AVCommand_1 = require("../../command/AVCommand");
 var AnalyticsController = (function () {
     function AnalyticsController(commandRunner, deviceInfo) {
         this._commandRunner = commandRunner;

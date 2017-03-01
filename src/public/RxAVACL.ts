@@ -4,19 +4,23 @@ import { RxAVRole } from './RxAVRole';
 export type PermissionsMap = { [permission: string]: boolean };
 export type ByIdMap = { [userId: string]: PermissionsMap };
 var PUBLIC_KEY = '*';
+
 /**
  * 
  * 基于角色的权限管理
  * @export
  * @class RxAVACL
  */
-export /**
- * RxAVACL
- */
-    class RxAVACL {
+export class RxAVACL {
 
     private permissionsById: ByIdMap;
 
+    /**
+     * Creates an instance of RxAVACL.
+     * @param {...any[]} arg 
+     * 
+     * @memberOf RxAVACL
+     */
     constructor(...arg: any[]) {
         this.permissionsById = {};
         if (arg.length > 0) {
@@ -36,13 +40,8 @@ export /**
             });
         } else {
             if (RxAVUser.currentUser) {
-                if (RxAVUser.currentUser.primaryRole) {
-                    this.setRoleWriteAccess(RxAVUser.currentUser.primaryRole, true);
-                    this.setRoleWriteAccess(RxAVUser.currentUser.primaryRole, true);
-                } else {
-                    this.setReadAccess(RxAVUser.currentUser, true);
-                    this.setWriteAccess(RxAVUser.currentUser, true);
-                }
+                this.setReadAccess(RxAVUser.currentUser, true);
+                this.setWriteAccess(RxAVUser.currentUser, true);
             } else {
                 this.setPublicReadAccess(true);
                 this.setPublicWriteAccess(true);
@@ -85,11 +84,6 @@ export /**
         // }
     }
 
-    /**
-     * Returns a JSON-encoded version of the ACL.
-     * @method toJSON
-     * @return {Object}
-     */
     toJSON(): ByIdMap {
         let permissions = {};
         for (let p in this.permissionsById) {
@@ -99,10 +93,12 @@ export /**
     }
 
     /**
-     * Returns whether this ACL is equal to another object
-     * @method equals
-     * @param other The other object to compare to
-     * @return {Boolean}
+     * 判断两个 ACL 对象是否相等
+     * 
+     * @param {RxAVACL} other 
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
     equals(other: RxAVACL): boolean {
         if (!(other instanceof RxAVACL)) {
@@ -187,7 +183,14 @@ export /**
         return !!permissions[accessType];
     }
 
-    public findWriteAccess() {
+    /**
+     * 查找 Write 权限
+     * 
+     * @returns {boolean}
+     * 
+     * @memberOf RxAVACL
+     */
+    public findWriteAccess(): boolean {
         let rtn = false;
         for (let key in this.permissionsById) {
             let permisstion = this.permissionsById[key];
@@ -200,98 +203,107 @@ export /**
     }
 
     /**
-     * Sets whether the given user is allowed to read this object.
-     * @method setReadAccess
-     * @param userId An instance of User or its objectId.
-     * @param {Boolean} allowed Whether that user should have read access.
+     * 设置 Read 权限
+     * 
+     * @param {any} userId {(RxAVUser | RxAVRole | string)}  
+     * @param {boolean} allowed 
+     * 
+     * @memberOf RxAVACL
      */
-    setReadAccess(userId: RxAVUser | RxAVRole | string, allowed: boolean) {
+    public setReadAccess(userId: RxAVUser | RxAVRole | string, allowed: boolean) {
         this._setAccess('read', userId, allowed);
     }
 
     /**
-     * Get whether the given user id is *explicitly* allowed to read this object.
-     * Even if this returns false, the user may still be able to access it if
-     * getPublicReadAccess returns true or a role that the user belongs to has
-     * write access.
-     * @method getReadAccess
-     * @param userId An instance of User or its objectId, or a Role.
-     * @return {Boolean}
+     * 获取 Read 权限
+     * 
+     * @param {any}  userId {(RxAVUser | RxAVRole | string)}  
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
-    getReadAccess(userId: RxAVUser | RxAVRole | string): boolean {
+    public getReadAccess(userId: RxAVUser | RxAVRole | string): boolean {
         return this._getAccess('read', userId);
     }
 
     /**
-     * Sets whether the given user id is allowed to write this object.
-     * @method setWriteAccess
-     * @param userId An instance of User or its objectId, or a Role..
-     * @param {Boolean} allowed Whether that user should have write access.
+     * 设置 Write 权限
+     * 
+     * @param {any} userId {(RxAVUser | RxAVRole | string)}  
+     * @param {boolean} allowed 
+     * 
+     * @memberOf RxAVACL
      */
-    setWriteAccess(userId: RxAVUser | RxAVRole | string, allowed: boolean) {
+    public setWriteAccess(userId: RxAVUser | RxAVRole | string, allowed: boolean) {
         this._setAccess('write', userId, allowed);
     }
 
     /**
-     * Gets whether the given user id is *explicitly* allowed to write this object.
-     * Even if this returns false, the user may still be able to write it if
-     * getPublicWriteAccess returns true or a role that the user belongs to has
-     * write access.
-     * @method getWriteAccess
-     * @param userId An instance of User or its objectId, or a Role.
-     * @return {Boolean}
+     * 获取 Write 权限
+     * 
+     * @param {any} userId {(RxAVUser | RxAVRole | string)} userId 
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
-    getWriteAccess(userId: RxAVUser | RxAVRole | string): boolean {
+    public getWriteAccess(userId: RxAVUser | RxAVRole | string): boolean {
         return this._getAccess('write', userId);
     }
 
     /**
-     * Sets whether the public is allowed to read this object.
-     * @method setPublicReadAccess
-     * @param {Boolean} allowed
+     * 设置所有人的 Read 权限
+     * 
+     * @param {boolean} allowed 
+     * 
+     * @memberOf RxAVACL
      */
-    setPublicReadAccess(allowed: boolean) {
+    public setPublicReadAccess(allowed: boolean) {
         this.setReadAccess(PUBLIC_KEY, allowed);
     }
 
     /**
-     * Gets whether the public is allowed to read this object.
-     * @method getPublicReadAccess
-     * @return {Boolean}
+     *  获取所有人的 Read 权限
+     * 
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
-    getPublicReadAccess(): boolean {
+    public getPublicReadAccess(): boolean {
         return this.getReadAccess(PUBLIC_KEY);
     }
 
+
     /**
-     * Sets whether the public is allowed to write this object.
-     * @method setPublicWriteAccess
-     * @param {Boolean} allowed
+     * 设置所有人的 Write 权限
+     * 
+     * @param {boolean} allowed 
+     * 
+     * @memberOf RxAVACL
      */
-    setPublicWriteAccess(allowed: boolean) {
+    public setPublicWriteAccess(allowed: boolean) {
         this.setWriteAccess(PUBLIC_KEY, allowed);
     }
 
     /**
-     * Gets whether the public is allowed to write this object.
-     * @method getPublicWriteAccess
-     * @return {Boolean}
+     * 获取所有人的 Write 权限
+     * 
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
-    getPublicWriteAccess(): boolean {
+    public getPublicWriteAccess(): boolean {
         return this.getWriteAccess(PUBLIC_KEY);
     }
 
     /**
-     * Gets whether users belonging to the given role are allowed
-     * to read this object. Even if this returns false, the role may
-     * still be able to write it if a parent role has read access.
-     *
-     * @method getRoleReadAccess
-     * @param role The name of the role, or a Role object.
-     * @return {Boolean} true if the role has read access. false otherwise.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * 设置角色的 Read 权限
+     * 
+     * @param {any} role {(RxAVRole | string)}  
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
-    getRoleReadAccess(role: RxAVRole | string): boolean {
+    public getRoleReadAccess(role: RxAVRole | string): boolean {
         if (role instanceof RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -305,16 +317,14 @@ export /**
     }
 
     /**
-     * Gets whether users belonging to the given role are allowed
-     * to write this object. Even if this returns false, the role may
-     * still be able to write it if a parent role has write access.
-     *
-     * @method getRoleWriteAccess
-     * @param role The name of the role, or a Role object.
-     * @return {Boolean} true if the role has write access. false otherwise.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     *  获取角色的 Write 权限
+     * 
+     * @param {any} role {(RxAVRole | string)}  
+     * @returns {boolean} 
+     * 
+     * @memberOf RxAVACL
      */
-    getRoleWriteAccess(role: RxAVRole | string): boolean {
+    public getRoleWriteAccess(role: RxAVRole | string): boolean {
         if (role instanceof RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -328,15 +338,14 @@ export /**
     }
 
     /**
-     * Sets whether users belonging to the given role are allowed
-     * to read this object.
-     *
-     * @method setRoleReadAccess
-     * @param role The name of the role, or a Role object.
-     * @param {Boolean} allowed Whether the given role can read this object.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * 设置角色的 Read 权限
+     * 
+     * @param {any} role {(RxAVRole | string)}  
+     * @param {boolean} allowed 
+     * 
+     * @memberOf RxAVACL
      */
-    setRoleReadAccess(role: RxAVRole | string, allowed: boolean) {
+    public setRoleReadAccess(role: RxAVRole | string, allowed: boolean) {
         if (role instanceof RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -350,15 +359,14 @@ export /**
     }
 
     /**
-     * Sets whether users belonging to the given role are allowed
-     * to write this object.
-     *
-     * @method setRoleWriteAccess
-     * @param role The name of the role, or a Role object.
-     * @param {Boolean} allowed Whether the given role can write this object.
-     * @throws {TypeError} If role is neither a Role nor a String.
+     * 设置角色 Write 权限
+     * 
+     * @param {any} role {(RxAVRole | string)}  
+     * @param {boolean} allowed 
+     * 
+     * @memberOf RxAVACL
      */
-    setRoleWriteAccess(role: RxAVRole | string, allowed: boolean) {
+    public setRoleWriteAccess(role: RxAVRole | string, allowed: boolean) {
         if (role instanceof RxAVRole) {
             // Normalize to the String name
             role = role.name;

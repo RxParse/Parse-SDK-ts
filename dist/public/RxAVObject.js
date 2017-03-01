@@ -29,9 +29,21 @@ var RxAVObject = (function () {
         configurable: true
     });
     Object.defineProperty(RxAVObject.prototype, "className", {
+        /**
+         *  获取当前对象的 className
+         *
+         *
+         * @memberOf RxAVObject
+         */
         get: function () {
             return this.state.className;
         },
+        /**
+         *  设置当前对象的 className
+         *
+         *
+         * @memberOf RxAVObject
+         */
         set: function (className) {
             this.state.className = className;
         },
@@ -39,9 +51,21 @@ var RxAVObject = (function () {
         configurable: true
     });
     Object.defineProperty(RxAVObject.prototype, "objectId", {
+        /**
+         * 获取当前对象的 objectId
+         *
+         *
+         * @memberOf RxAVObject
+         */
         get: function () {
             return this.state.objectId;
         },
+        /**
+         * 设置当前对象的 objectId
+         *
+         *
+         * @memberOf RxAVObject
+         */
         set: function (id) {
             this._isDirty = true;
             this.state.objectId = id;
@@ -132,6 +156,13 @@ var RxAVObject = (function () {
             return _this;
         });
     };
+    /**
+     * 删除指定属性上的值
+     *
+     * @param {string} key
+     *
+     * @memberOf RxAVObject
+     */
     RxAVObject.prototype.remove = function (key) {
         this.performOperation(key, 'remove');
     };
@@ -141,7 +172,7 @@ var RxAVObject = (function () {
      * @static
      * @param {string} classnName 表名称
      * @param {string} objectId objectId
-     * @returns
+     * @returns {RxAVObject}
      *
      * @memberOf RxAVObject
      */
@@ -155,7 +186,7 @@ var RxAVObject = (function () {
      *
      * @static
      * @template T
-     * @param {{ new (): T; }} ctor
+     * @param {T}
      * @param {string} objectId
      * @returns {T}
      *

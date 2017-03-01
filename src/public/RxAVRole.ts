@@ -147,7 +147,7 @@ export /**
      * 
      * @static
      * @param {string} [objectId]
-     * @returns
+     * @returns {RxAVRole}
      * 
      * @memberOf RxAVRole
      */
@@ -164,7 +164,7 @@ export /**
      * @static
      * @param {string} name
      * @param {string} objectId
-     * @returns
+     * @returns {RxAVRole}
      * 
      * @memberOf RxAVRole
      */

@@ -22,9 +22,21 @@ var RxAVInstallation = (function (_super) {
         this.set('timeZone', this.timeZone);
     }
     Object.defineProperty(RxAVInstallation.prototype, "channels", {
+        /**
+         * 获取频道
+         *
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return this.get('channels');
         },
+        /**
+         * 设置频道
+         *
+         *
+         * @memberOf RxAVInstallation
+         */
         set: function (data) {
             this.set('channels', data);
         },
@@ -62,6 +74,13 @@ var RxAVInstallation = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVInstallation.prototype, "installationId", {
+        /**
+         * 获取 installationId
+         *
+         * @readonly
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return this.get('installationId');
         },
@@ -69,12 +88,26 @@ var RxAVInstallation = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVInstallation.prototype, "timeZone", {
+        /**
+         * 获取设备所在的地区/时区
+         *
+         * @readonly
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return jstz.determine().name();
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * 保存当前的 {RxAVInstallation} 到云端
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVInstallation
+     */
     RxAVInstallation.prototype.save = function () {
         var _this = this;
         return _super.prototype.save.call(this).flatMap(function (s1) {
@@ -84,6 +117,14 @@ var RxAVInstallation = (function (_super) {
                 return rxjs_1.Observable.from([false]);
         });
     };
+    /**
+     * 获取当前的 RxAVInstallation 对象
+     *
+     * @static
+     * @returns {Observable<RxAVInstallation>} 异步操作可能会失败
+     *
+     * @memberOf RxAVInstallation
+     */
     RxAVInstallation.current = function () {
         return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVInstallation.installationCacheKey).map(function (installationCache) {
             if (installationCache) {
@@ -97,6 +138,14 @@ var RxAVInstallation = (function (_super) {
         });
     };
     Object.defineProperty(RxAVInstallation, "currentInstallation", {
+        /**
+         *  在调用本方法之前，请务必确保你已经调用了 RxAVInstallation.current()
+         *
+         * @readonly
+         * @static
+         *
+         * @memberOf RxAVInstallation
+         */
         get: function () {
             return RxAVInstallation._currentInstallation;
         },

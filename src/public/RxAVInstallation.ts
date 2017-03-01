@@ -12,10 +12,22 @@ import * as jstz from 'jstz';
  * @extends {RxAVObject}
  */
 export class RxAVInstallation extends RxAVObject {
-    static readonly  installationCacheKey = 'CurrentInstallation';
+    static readonly installationCacheKey = 'CurrentInstallation';
+    /**
+     * 获取频道
+     * 
+     * 
+     * @memberOf RxAVInstallation
+     */
     get channels() {
         return this.get('channels');
     }
+    /**
+     * 设置频道
+     * 
+     * 
+     * @memberOf RxAVInstallation
+     */
     set channels(data: Array<string>) {
         this.set('channels', data);
     }
@@ -25,7 +37,6 @@ export class RxAVInstallation extends RxAVObject {
     set badge(data: number) {
         this.set('badge', data);
     }
-
     get deviceType() {
         return this.get('deviceType');
     }
@@ -39,10 +50,24 @@ export class RxAVInstallation extends RxAVObject {
         this.set('deviceToken', data);
     }
 
+    /**
+     * 获取 installationId
+     * 
+     * @readonly
+     * 
+     * @memberOf RxAVInstallation
+     */
     get installationId() {
         return this.get('installationId');
     }
 
+    /**
+     * 获取设备所在的地区/时区
+     * 
+     * @readonly
+     * 
+     * @memberOf RxAVInstallation
+     */
     get timeZone() {
         return jstz.determine().name();
     }
@@ -51,6 +76,14 @@ export class RxAVInstallation extends RxAVObject {
         super('_Installation');
         this.set('timeZone', this.timeZone);
     }
+
+    /**
+     * 保存当前的 {RxAVInstallation} 到云端
+     * 
+     * @returns {Observable<boolean>} 
+     * 
+     * @memberOf RxAVInstallation
+     */
     save(): Observable<boolean> {
         return super.save().flatMap(s1 => {
             if (s1)
@@ -58,7 +91,16 @@ export class RxAVInstallation extends RxAVObject {
             else return Observable.from([false]);
         });
     }
-    static current(): Observable<RxAVInstallation> {
+
+    /**
+     * 获取当前的 RxAVInstallation 对象
+     * 
+     * @static
+     * @returns {Observable<RxAVInstallation>} 异步操作可能会失败
+     * 
+     * @memberOf RxAVInstallation
+     */
+    public static current(): Observable<RxAVInstallation> {
         return SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVInstallation.installationCacheKey).map(installationCache => {
             if (installationCache) {
                 let installationState = SDKPlugins.instance.ObjectDecoder.decode(installationCache, SDKPlugins.instance.Decoder);
@@ -70,7 +112,15 @@ export class RxAVInstallation extends RxAVObject {
             return RxAVInstallation._currentInstallation;
         });
     }
-    static get currentInstallation() {
+    /**
+     *  在调用本方法之前，请务必确保你已经调用了 RxAVInstallation.current()
+     * 
+     * @readonly
+     * @static
+     * 
+     * @memberOf RxAVInstallation
+     */
+    public static get currentInstallation() {
         return RxAVInstallation._currentInstallation;
     }
     private static _currentInstallation: RxAVInstallation = null
