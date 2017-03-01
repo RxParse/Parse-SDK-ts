@@ -22,7 +22,8 @@ var RxAVClient = (function () {
      * 初始化 SDK
      *
      * @static
-     * @param {{
+     * @param {any}
+     * {{
      *         appId: string,
      *         appKey: string,
      *         region?: string,

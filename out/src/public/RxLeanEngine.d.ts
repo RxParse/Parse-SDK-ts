@@ -7,8 +7,8 @@ export declare class RxLeanEngine {
      *
      * @static
      * @param {string} name 云函数 name
-     * @param {{ [key: string]: any }} [parameters] 参数字典
-     * @returns
+     * @param {Object} [parameters] 参数字典:{{ [key: string]: any }}
+     * @returns {Observable<Object>}
      *
      * @memberOf RxLeanEngine
      */

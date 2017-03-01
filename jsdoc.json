@@ -1,9 +1,4 @@
 {
-    "source": {
-        "include": [ "dist"],
-        "exclude": [ /* array of paths to exclude */],
-        "includePattern": ".+\\.js?$"
-    },
     "opts": {
         "recurse": true,
         "template": "node_modules/docdash"
