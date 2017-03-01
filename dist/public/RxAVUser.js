@@ -407,6 +407,15 @@ var RxAVUser = (function (_super) {
             return true;
         });
     };
+    // /**
+    //  * 
+    //  * 
+    //  * @param {{ [key: string]: any }} authData 
+    //  * 
+    //  * @memberOf RxAVUser
+    //  */
+    // public logInWithOAuth2Data(authData: { [key: string]: any }) {
+    // }
     RxAVUser.createWithoutData = function (objectId) {
         return RxLeanCloud_1.RxAVObject.createSubclass(RxAVUser, objectId);
     };

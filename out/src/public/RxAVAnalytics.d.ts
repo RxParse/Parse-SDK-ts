@@ -1,8 +1,17 @@
 import { Observable } from 'rxjs';
 import { IAnalyticsController } from '../internal/analytics/controller/IAnalyticsController';
 import { IToolController } from '../internal/tool/controller/IToolController';
+/**
+ * 统计服务的操作接口
+ * 当前版本只支持启动发送，也就是每一次启动之后，需要主动调用 report 接口去把上一次统计的数据发送到云端
+ * 批量发送和最小时间间隔发送本质上也是拆分成每一个请求一次请求，容易出现发送中断等诸多原因，因此 ts sdk 只打算支持启动发送这一种方式
+ *
+ * @export
+ * @class RxAVAnalytics
+ */
 export declare class RxAVAnalytics {
-    constructor();
+    constructor(mutableData?: any);
+    static readonly analyticsCacheKey: string;
     protected static readonly _analyticsController: IAnalyticsController;
     private static _CurrentAnalytics;
     private static setCurrentAnalytics(analytics);
@@ -38,7 +47,9 @@ export declare class RxAVAnalytics {
      *
      * @memberOf RxAVAnalytics
      */
-    trackAppOpenedFromPush(): void;
+    trackAppOpenedWithPush(pushData?: {
+        [key: string]: any;
+    }): void;
     /**
      * 记录一次自定义事件
      *
@@ -119,9 +130,24 @@ export declare class RxAVAnalytics {
      * @memberOf RxAVAnalytics
      */
     send(): Observable<boolean>;
-    protected startSesstion(): Observable<boolean>;
+    /**
+     *
+     * 停止 session
+     *
+     * @memberOf RxAVAnalytics
+     */
     closeSesstion(): void;
+    protected startSesstion(): Observable<boolean>;
     protected resetData(): void;
+    /**
+     * 将上一次对话的统计数据报告给服务端
+     *
+     * @static
+     *
+     * @memberOf RxAVAnalytics
+     */
+    static report(): Observable<any>;
+    protected static restore(): Observable<RxAVAnalytics>;
     sessionId: string;
     enable: boolean;
     policy: number;

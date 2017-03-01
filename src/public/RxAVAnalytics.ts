@@ -4,13 +4,27 @@ import { RxAVClient, RxAVObject } from '../RxLeanCloud';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAnalyticsController } from '../internal/analytics/controller/IAnalyticsController';
 import { IToolController } from '../internal/tool/controller/IToolController';
-export /**
- * RxAVAnalytics
+/**
+ * 统计服务的操作接口
+ * 当前版本只支持启动发送，也就是每一次启动之后，需要主动调用 report 接口去把上一次统计的数据发送到云端
+ * 批量发送和最小时间间隔发送本质上也是拆分成每一个请求一次请求，容易出现发送中断等诸多原因，因此 ts sdk 只打算支持启动发送这一种方式
+ * 
+ * @export
+ * @class RxAVAnalytics
  */
-    class RxAVAnalytics {
-    constructor() {
-
+export class RxAVAnalytics {
+    constructor(mutableData?: any) {
+        if (mutableData && mutableData != null) {
+            this.enable = mutableData.enable;
+            this.sessionId = mutableData.sessionId;
+            this.policy = mutableData.policy;
+            this.parameters = mutableData.parameters;
+            this.device = mutableData.device;
+            this.events = mutableData.events;
+        }
     }
+
+    static readonly analyticsCacheKey = 'LastAnalyticsData';
 
     protected static get _analyticsController() {
         return SDKPlugins.instance.AnalyticsControllerInstance;
@@ -68,8 +82,8 @@ export /**
      * 
      * @memberOf RxAVAnalytics
      */
-    public trackAppOpenedFromPush() {
-        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', null);
+    public trackAppOpenedWithPush(pushData?: { [key: string]: any }) {
+        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', pushData);
     }
 
     /**
@@ -186,8 +200,9 @@ export /**
      * @memberOf RxAVAnalytics
      */
     public save() {
+        this.closeSesstion();
         if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.set(this.sessionId, this.encodeForSendServer()).map(iStorage => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.set(RxAVAnalytics.analyticsCacheKey, this).map(iStorage => {
                 return iStorage != null;
             });
         }
@@ -209,15 +224,22 @@ export /**
         return RxAVAnalytics._analyticsController.send(this, null);
     }
 
+    /**
+     * 
+     * 停止 session
+     * 
+     * @memberOf RxAVAnalytics
+     */
+    public closeSesstion() {
+        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
+    }
+
     protected startSesstion() {
         return Observable.fromPromise(RxAVAnalytics._analyticsController.deviceProvider.getDevice()).map(deviceInfo => {
             this.device = deviceInfo;
             this.resetData();
             return true;
         });
-    }
-    closeSesstion() {
-        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
     }
 
     protected resetData() {
@@ -227,6 +249,28 @@ export /**
             launch: new RxAVAnalyticLaunch(this.sessionId),
             terminate: new RxAVAnalyticTerminate(this.sessionId)
         };
+    }
+
+    /**
+     * 将上一次对话的统计数据报告给服务端
+     * 
+     * @static
+     * 
+     * @memberOf RxAVAnalytics
+     */
+    public static report() {
+        return RxAVAnalytics.restore().flatMap(data => {
+            return data.send();
+        });
+    }
+
+    protected static restore() {
+        if (SDKPlugins.instance.hasStorage) {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVAnalytics.analyticsCacheKey).map(cacheData => {
+                var cacheModel = new RxAVAnalytics(cacheData);
+                return cacheModel;
+            });
+        }
     }
 
     sessionId: string;

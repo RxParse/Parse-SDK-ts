@@ -34,7 +34,13 @@ describe('RxAVAnalytics', function () {
         RxLeanCloud_1.RxAVAnalytics.init().flatMap(function (enable) {
             if (enable) {
                 var analytics = RxLeanCloud_1.RxAVAnalytics.currentAnalytics;
-                analytics.trackAppOpened();
+                analytics.trackAppOpenedWithPush({
+                    alert: 'Hello,LeanCloud!',
+                    data: {
+                        k1: 'v1',
+                        k2: 6666
+                    }
+                });
                 var pageId = analytics.beginPage('xPage');
                 analytics.trackEvent('xClicked');
                 var inputEventId = analytics.beginEevent('xPut', 'username', {

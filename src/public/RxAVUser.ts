@@ -403,6 +403,17 @@ export class RxAVUser extends RxAVObject {
         });
     }
 
+    // /**
+    //  * 
+    //  * 
+    //  * @param {{ [key: string]: any }} authData 
+    //  * 
+    //  * @memberOf RxAVUser
+    //  */
+    // public logInWithOAuth2Data(authData: { [key: string]: any }) {
+
+    // }
+
     public static createWithoutData(objectId?: string) {
         return RxAVObject.createSubclass(RxAVUser, objectId);
     }

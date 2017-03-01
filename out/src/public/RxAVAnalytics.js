@@ -1,8 +1,24 @@
 "use strict";
 var rxjs_1 = require('rxjs');
 var SDKPlugins_1 = require('../internal/SDKPlugins');
+/**
+ * 统计服务的操作接口
+ * 当前版本只支持启动发送，也就是每一次启动之后，需要主动调用 report 接口去把上一次统计的数据发送到云端
+ * 批量发送和最小时间间隔发送本质上也是拆分成每一个请求一次请求，容易出现发送中断等诸多原因，因此 ts sdk 只打算支持启动发送这一种方式
+ *
+ * @export
+ * @class RxAVAnalytics
+ */
 var RxAVAnalytics = (function () {
-    function RxAVAnalytics() {
+    function RxAVAnalytics(mutableData) {
+        if (mutableData && mutableData != null) {
+            this.enable = mutableData.enable;
+            this.sessionId = mutableData.sessionId;
+            this.policy = mutableData.policy;
+            this.parameters = mutableData.parameters;
+            this.device = mutableData.device;
+            this.events = mutableData.events;
+        }
     }
     Object.defineProperty(RxAVAnalytics, "_analyticsController", {
         get: function () {
@@ -67,8 +83,8 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.trackAppOpenedFromPush = function () {
-        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', null);
+    RxAVAnalytics.prototype.trackAppOpenedWithPush = function (pushData) {
+        this.trackEvent('!AV!PushOpen', '!AV!PushOpen', pushData);
     };
     /**
      * 记录一次自定义事件
@@ -178,8 +194,9 @@ var RxAVAnalytics = (function () {
      * @memberOf RxAVAnalytics
      */
     RxAVAnalytics.prototype.save = function () {
+        this.closeSesstion();
         if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
-            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(this.sessionId, this.encodeForSendServer()).map(function (iStorage) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(RxAVAnalytics.analyticsCacheKey, this).map(function (iStorage) {
                 return iStorage != null;
             });
         }
@@ -199,6 +216,15 @@ var RxAVAnalytics = (function () {
         }
         return RxAVAnalytics._analyticsController.send(this, null);
     };
+    /**
+     *
+     * 停止 session
+     *
+     * @memberOf RxAVAnalytics
+     */
+    RxAVAnalytics.prototype.closeSesstion = function () {
+        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
+    };
     RxAVAnalytics.prototype.startSesstion = function () {
         var _this = this;
         return rxjs_1.Observable.fromPromise(RxAVAnalytics._analyticsController.deviceProvider.getDevice()).map(function (deviceInfo) {
@@ -206,9 +232,6 @@ var RxAVAnalytics = (function () {
             _this.resetData();
             return true;
         });
-    };
-    RxAVAnalytics.prototype.closeSesstion = function () {
-        this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
     };
     RxAVAnalytics.prototype.resetData = function () {
         this.sessionId = "session_" + RxAVAnalytics._toolController.newObjectId();
@@ -218,12 +241,33 @@ var RxAVAnalytics = (function () {
             terminate: new RxAVAnalyticTerminate(this.sessionId)
         };
     };
+    /**
+     * 将上一次对话的统计数据报告给服务端
+     *
+     * @static
+     *
+     * @memberOf RxAVAnalytics
+     */
+    RxAVAnalytics.report = function () {
+        return RxAVAnalytics.restore().flatMap(function (data) {
+            return data.send();
+        });
+    };
+    RxAVAnalytics.restore = function () {
+        if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVAnalytics.analyticsCacheKey).map(function (cacheData) {
+                var cacheModel = new RxAVAnalytics(cacheData);
+                return cacheModel;
+            });
+        }
+    };
     RxAVAnalytics.prototype.encodeForSendServer = function () {
         return {
             device: this.device,
             events: this.events
         };
     };
+    RxAVAnalytics.analyticsCacheKey = 'LastAnalyticsData';
     return RxAVAnalytics;
 }());
 exports.RxAVAnalytics = RxAVAnalytics;

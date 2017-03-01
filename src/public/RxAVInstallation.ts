@@ -12,7 +12,7 @@ import * as jstz from 'jstz';
  * @extends {RxAVObject}
  */
 export class RxAVInstallation extends RxAVObject {
-    static readonly  installationCacheKey = 'CurrentInstallation';
+    static readonly installationCacheKey = 'CurrentInstallation';
     get channels() {
         return this.get('channels');
     }
