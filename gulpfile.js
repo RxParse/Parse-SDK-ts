@@ -33,8 +33,9 @@ gulp.task('devCopy', function () {
 });
 
 gulp.task('doc', ['source'], function (cb) {
+    var config = require('./jsdoc.json');
     gulp.src(['README.md', './dist/**/*.js'], { read: false })
-        .pipe(jsdoc(cb));
+        .pipe(jsdoc(config,cb));
 });
 
 gulp.task('default', ['source', 'releaseCopy']);

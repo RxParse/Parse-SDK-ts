@@ -18,6 +18,7 @@
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.34",
     "@types/superagent": "^2.0.36",
+    "docdash": "git+https://github.com/leeyeh/docdash.git#leancloud",
     "gulp": "^3.9.1",
     "gulp-jsdoc3": "^1.0.1",
     "gulp-typescript": "^3.1.3",
