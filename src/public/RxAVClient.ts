@@ -33,6 +33,26 @@ var currentConfig: {
  * @class RxAVClient
  */
 export class RxAVClient {
+    /**
+     * 初始化 SDK
+     * 
+     * @static
+     * @param {any}
+     * {{
+     *         appId: string,
+     *         appKey: string,
+     *         region?: string,
+     *         serverUrl?: string,
+     *         log?: boolean,
+     *         pluginVersion?: number,
+     *         plugins?: {
+     *             storage?: IStorage,
+     *             device?: IDeviceInfo
+     *         }
+     *     }} config 
+     * 
+     * @memberOf RxAVClient
+     */
     static init(config: {
         appId: string,
         appKey: string,
@@ -98,7 +118,8 @@ export class RxAVClient {
         }
         return RxAVClient._headers;
     }
-    public static get sdk_version() {
+
+    public static get sdk_version(): string {
         return pjson.version;
     }
     public static serverUrl() {

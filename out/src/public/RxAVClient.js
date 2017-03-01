@@ -1,7 +1,8 @@
 "use strict";
-var SDKPlugins_1 = require('../internal/SDKPlugins');
-var AVCommand_1 = require('../internal/command/AVCommand');
-var StorageController_1 = require('../internal/storage/controller/StorageController');
+Object.defineProperty(exports, "__esModule", { value: true });
+var SDKPlugins_1 = require("../internal/SDKPlugins");
+var AVCommand_1 = require("../internal/command/AVCommand");
+var StorageController_1 = require("../internal/storage/controller/StorageController");
 var pjson = require('../package.json');
 var currentConfig = {};
 // var providers: {
@@ -17,6 +18,25 @@ var currentConfig = {};
 var RxAVClient = (function () {
     function RxAVClient() {
     }
+    /**
+     * 初始化 SDK
+     *
+     * @static
+     * @param {{
+     *         appId: string,
+     *         appKey: string,
+     *         region?: string,
+     *         serverUrl?: string,
+     *         log?: boolean,
+     *         pluginVersion?: number,
+     *         plugins?: {
+     *             storage?: IStorage,
+     *             device?: IDeviceInfo
+     *         }
+     *     }} config
+     *
+     * @memberOf RxAVClient
+     */
     RxAVClient.init = function (config) {
         currentConfig.applicationId = config.appId;
         currentConfig.applicationKey = config.appKey;

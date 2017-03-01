@@ -24,7 +24,31 @@ export declare class RxAVObject {
      */
     constructor(className: string);
     protected static readonly _objectController: IObjectController;
+    /**
+     *  获取当前对象的 className
+     *
+     *
+     * @memberOf RxAVObject
+     */
+    /**
+     *  设置当前对象的 className
+     *
+     *
+     * @memberOf RxAVObject
+     */
     className: string;
+    /**
+     * 获取当前对象的 objectId
+     *
+     *
+     * @memberOf RxAVObject
+     */
+    /**
+     * 设置当前对象的 objectId
+     *
+     *
+     * @memberOf RxAVObject
+     */
     objectId: string;
     isDirty: boolean;
     readonly createdAt: Date;
@@ -48,6 +72,13 @@ export declare class RxAVObject {
      * @memberOf RxAVObject
      */
     fetch(): Observable<RxAVObject>;
+    /**
+     * 删除指定属性上的值
+     *
+     * @param {string} key
+     *
+     * @memberOf RxAVObject
+     */
     remove(key: string): void;
     /**
      * 根据 className 和 objectId 构建一个对象
@@ -55,7 +86,7 @@ export declare class RxAVObject {
      * @static
      * @param {string} classnName 表名称
      * @param {string} objectId objectId
-     * @returns
+     * @returns {RxAVObject}
      *
      * @memberOf RxAVObject
      */
@@ -65,7 +96,7 @@ export declare class RxAVObject {
      *
      * @static
      * @template T
-     * @param {{ new (): T; }} ctor
+     * @param {T}
      * @param {string} objectId
      * @returns {T}
      *

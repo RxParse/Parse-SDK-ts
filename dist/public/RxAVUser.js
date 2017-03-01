@@ -101,6 +101,12 @@ var RxAVUser = (function (_super) {
             this._mobilephone = this.getProperty('mobilePhoneNumber');
             return this._mobilephone;
         },
+        /**
+         * 设置手机号
+         *
+         *
+         * @memberOf RxAVUser
+         */
         set: function (mobile) {
             if (this.sesstionToken == null) {
                 this._mobilephone = mobile;
@@ -161,39 +167,33 @@ var RxAVUser = (function (_super) {
             return rxjs_1.Observable.from([error.error.code == 211]);
         }
     };
-    RxAVUser.prototype.setPrimaryRole = function (role) {
-        var _this = this;
-        this.set('primaryRole', role);
-        if (role.isDirty)
-            return role.save().flatMap(function (s1) {
-                return role.grant(_this);
-            }).flatMap(function (s2) {
-                return _this.save();
-            });
-        else
-            return role.grant(this).flatMap(function (s3) {
-                return _this.save();
-            });
-    };
-    Object.defineProperty(RxAVUser.prototype, "primaryRole", {
-        /**
-         *  获取当前用户的主要角色
-         *
-         *
-         * @memberOf RxAVUser
-         */
-        get: function () {
-            return this.get('primaryRole');
-        },
-        enumerable: true,
-        configurable: true
-    });
+    // public setPrimaryRole(role: RxAVRole) {
+    //     this.set('primaryRole', role);
+    //     if (role.isDirty)
+    //         return role.save().flatMap<boolean>(s1 => {
+    //             return role.grant(this);
+    //         }).flatMap<boolean>(s2 => {
+    //             return this.save();
+    //         });
+    //     else return role.grant(this).flatMap<boolean>(s3 => {
+    //         return this.save();
+    //     });
+    // }
+    // /**
+    //  *  获取当前用户的主要角色
+    //  * 
+    //  * 
+    //  * @memberOf RxAVUser
+    //  */
+    // get primaryRole() {
+    //     return this.get('primaryRole');
+    // }
     /**
      * 将一个 RxAVInstallation 对象绑定到 RxAVUser
      *
      * @param {RxAVInstallation} installation
      * @param {boolean} unique
-     * @returns
+     * @returns {Observable<boolean>} 是否成功地绑定了当前设备和 User 的关系
      *
      * @memberOf RxAVUser
      */
@@ -220,7 +220,7 @@ var RxAVUser = (function (_super) {
      * 取消对当前设备的绑定
      *
      * @param {RxAVInstallation} installation
-     * @returns
+     * @returns {Observable<boolean>} 是否成功的解绑
      *
      * @memberOf RxAVUser
      */

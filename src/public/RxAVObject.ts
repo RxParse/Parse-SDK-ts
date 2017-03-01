@@ -37,21 +37,47 @@ export class RxAVObject {
         return SDKPlugins.instance.ObjectControllerInstance;
     }
 
+    /**
+     *  获取当前对象的 className
+     * 
+     * 
+     * @memberOf RxAVObject
+     */
     get className() {
         return this.state.className;
     }
 
+    /**
+     *  设置当前对象的 className
+     * 
+     * 
+     * @memberOf RxAVObject
+     */
     set className(className: string) {
         this.state.className = className;
     }
 
+    /**
+     * 获取当前对象的 objectId
+     * 
+     * 
+     * @memberOf RxAVObject
+     */
     get objectId() {
         return this.state.objectId;
     }
+
+    /**
+     * 设置当前对象的 objectId
+     * 
+     * 
+     * @memberOf RxAVObject
+     */
     set objectId(id: string) {
         this._isDirty = true;
         this.state.objectId = id;
     }
+
     get isDirty() {
         return this._isDirty;
     }
@@ -124,6 +150,13 @@ export class RxAVObject {
         });
     }
 
+    /**
+     * 删除指定属性上的值
+     * 
+     * @param {string} key 
+     * 
+     * @memberOf RxAVObject
+     */
     public remove(key: string) {
         this.performOperation(key, 'remove');
     }
@@ -134,7 +167,7 @@ export class RxAVObject {
      * @static
      * @param {string} classnName 表名称
      * @param {string} objectId objectId
-     * @returns
+     * @returns {RxAVObject}
      * 
      * @memberOf RxAVObject
      */
@@ -149,7 +182,7 @@ export class RxAVObject {
      * 
      * @static
      * @template T
-     * @param {{ new (): T; }} ctor
+     * @param {T}
      * @param {string} objectId
      * @returns {T}
      * 
@@ -321,7 +354,7 @@ export class RxAVObject {
      * 
      * @memberOf RxAVObject
      */
-    fetchRelation(key: string, targetClassName): Observable<RxAVObject[]> {
+    public fetchRelation(key: string, targetClassName): Observable<RxAVObject[]> {
         let query = new RxAVQuery(targetClassName);
         query.relatedTo(this, key);
         return query.find();

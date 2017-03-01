@@ -67,22 +67,23 @@ export class RxAVAnalytics {
     }
 
     /**
-     *  标记本次应用打开是来自于用户主动打开
+     * 标记本次应用打开来自于用户手动从图标点开进入
      * 
      * 
      * @memberOf RxAVAnalytics
      */
-    public trackAppOpened() {
+    public trackAppOpened(): void {
         this.trackEvent('!AV!AppOpen', '!AV!AppOpen', null);
     }
 
     /**
-     * 标记本次应用打开是来自于推送
+     * 标记本次应用打开来自于用户点击推送通知打开进入
      * 
+     * @param {any} 推送内容包含的参数字典
      * 
      * @memberOf RxAVAnalytics
      */
-    public trackAppOpenedWithPush(pushData?: { [key: string]: any }) {
+    public trackAppOpenedWithPush(pushData?: { [key: string]: any }): void {
         this.trackEvent('!AV!PushOpen', '!AV!PushOpen', pushData);
     }
 
@@ -91,8 +92,8 @@ export class RxAVAnalytics {
      * 
      * @param {string} name 事件的自定义名称
      * @param {string} [tag] 时间的附加值
-     * @param {{ [key: string]: any }} [attributes] 事件的自定义属性字典
-     * @returns {string} 
+     * @param {any} [attributes] 事件的自定义属性字典
+     * @returns {string} 自定义事件的 ID
      * 
      * @memberOf RxAVAnalytics
      */
@@ -114,8 +115,8 @@ export class RxAVAnalytics {
      * 
      * @param {string} name 事件的自定义名称
      * @param {string} [tag] 事件的附加值
-     * @param {{ [key: string]: any }} [attributes] 事件的自定义属性字典
-     * @returns 返回该事件的 eventId
+     * @param {any} [attributes] 事件的自定义属性字典
+     * @returns {string} 返回该事件的 eventId
      * 
      * @memberOf RxAVAnalytics
      */
@@ -127,7 +128,7 @@ export class RxAVAnalytics {
      * 结束记录一次自定义事件
      * 
      * @param {string} eventId  事件的 eventId
-     * @param {{ [key: string]: any }} [attributes] 事件的自定义属性字典
+     * @param {any} [attributes] 事件的自定义属性字典
      * 
      * @memberOf RxAVAnalytics
      */
@@ -150,11 +151,11 @@ export class RxAVAnalytics {
      * 
      * @param {string} name 页面名称
      * @param {number} duration 访问持续的时间，毫秒
-     * @returns 页面的 activitId
+     * @returns {string} 页面的 activitId
      * 
      * @memberOf RxAVAnalytics
      */
-    public trackPage(name: string, duration: number) {
+    public trackPage(name: string, duration: number): string {
         let newActivity = new RxAVAnalyticActivity();
         newActivity.activityId = `activity_${RxAVAnalytics._toolController.newObjectId()}`;
         newActivity.ts = RxAVAnalytics._toolController.getTimestamp('ms');
@@ -168,7 +169,7 @@ export class RxAVAnalytics {
      * 开始记录一个页面的持续性访问
      * 
      * @param {string} name 页面名称
-     * @returns 页面的 activitId
+     * @returns {string} 页面的 activitId
      * 
      * @memberOf RxAVAnalytics
      */
@@ -195,11 +196,11 @@ export class RxAVAnalytics {
     /**
      *  如果实现了本地缓存的接口，那么可以将本地统计数据保存在本地的缓存内
      * 
-     * @returns 
+     * @returns {Observable<boolean>} 发送结果，可能因为并没有实现本地缓存的接口而导致失败
      * 
      * @memberOf RxAVAnalytics
      */
-    public save() {
+    public save(): Observable<boolean> {
         this.closeSesstion();
         if (SDKPlugins.instance.hasStorage) {
             return SDKPlugins.instance.LocalStorageControllerInstance.set(RxAVAnalytics.analyticsCacheKey, this).map(iStorage => {
@@ -213,11 +214,11 @@ export class RxAVAnalytics {
     /**
      * 主动发送本次统计数据
      * 
-     * @returns 
+     * @returns {Observable<boolean>} 发送结果，可能因为数据格式不正确而造成服务端拒收
      * 
      * @memberOf RxAVAnalytics
      */
-    public send() {
+    public send(): Observable<boolean> {
         if (!this.enable) {
             return Observable.from([false]);
         }

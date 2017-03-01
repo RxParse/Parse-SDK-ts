@@ -51,7 +51,7 @@ export declare class RxAVRole extends RxAVObject {
      *
      * @static
      * @param {string} [objectId]
-     * @returns
+     * @returns {RxAVRole}
      *
      * @memberOf RxAVRole
      */
@@ -62,7 +62,7 @@ export declare class RxAVRole extends RxAVObject {
      * @static
      * @param {string} name
      * @param {string} objectId
-     * @returns
+     * @returns {RxAVRole}
      *
      * @memberOf RxAVRole
      */

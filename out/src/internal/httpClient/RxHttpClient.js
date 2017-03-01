@@ -1,9 +1,10 @@
 "use strict";
-var rxjs_1 = require('rxjs');
-var HttpResponse_1 = require('./HttpResponse');
-var axios_1 = require('axios');
-var superagent = require('superagent');
-var RxAVClient_1 = require('../../public/RxAVClient');
+Object.defineProperty(exports, "__esModule", { value: true });
+var rxjs_1 = require("rxjs");
+var HttpResponse_1 = require("./HttpResponse");
+var axios_1 = require("axios");
+var superagent = require("superagent");
+var RxAVClient_1 = require("../../public/RxAVClient");
 var RxHttpClient = (function () {
     function RxHttpClient(version) {
         this.version = version;

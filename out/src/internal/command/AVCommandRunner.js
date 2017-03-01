@@ -1,6 +1,7 @@
 "use strict";
-var rxjs_1 = require('rxjs');
-var AVCommandResponse_1 = require('./AVCommandResponse');
+Object.defineProperty(exports, "__esModule", { value: true });
+var rxjs_1 = require("rxjs");
+var AVCommandResponse_1 = require("./AVCommandResponse");
 var AVCommandRunner = (function () {
     function AVCommandRunner(rxHttpClient) {
         this._iRxHttpClient = rxHttpClient;

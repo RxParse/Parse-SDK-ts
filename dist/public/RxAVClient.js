@@ -17,6 +17,26 @@ var currentConfig = {};
 var RxAVClient = (function () {
     function RxAVClient() {
     }
+    /**
+     * 初始化 SDK
+     *
+     * @static
+     * @param {any}
+     * {{
+     *         appId: string,
+     *         appKey: string,
+     *         region?: string,
+     *         serverUrl?: string,
+     *         log?: boolean,
+     *         pluginVersion?: number,
+     *         plugins?: {
+     *             storage?: IStorage,
+     *             device?: IDeviceInfo
+     *         }
+     *     }} config
+     *
+     * @memberOf RxAVClient
+     */
     RxAVClient.init = function (config) {
         currentConfig.applicationId = config.appId;
         currentConfig.applicationKey = config.appKey;

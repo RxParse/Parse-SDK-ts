@@ -14,6 +14,12 @@ export declare type ByIdMap = {
  */
 export declare class RxAVACL {
     private permissionsById;
+    /**
+     * Creates an instance of RxAVACL.
+     * @param {...any[]} arg
+     *
+     * @memberOf RxAVACL
+     */
     constructor(...arg: any[]);
     /**
      * Returns a JSON-encoded version of the ACL.

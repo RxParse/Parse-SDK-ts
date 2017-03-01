@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var HttpResponse = (function () {
     function HttpResponse(option) {
         if (option != null) {

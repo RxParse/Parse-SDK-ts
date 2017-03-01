@@ -9,6 +9,12 @@ var PUBLIC_KEY = '*';
  * @class RxAVACL
  */
 var RxAVACL = (function () {
+    /**
+     * Creates an instance of RxAVACL.
+     * @param {...any[]} arg
+     *
+     * @memberOf RxAVACL
+     */
     function RxAVACL() {
         var _this = this;
         var arg = [];
@@ -37,14 +43,8 @@ var RxAVACL = (function () {
         }
         else {
             if (RxAVUser_1.RxAVUser.currentUser) {
-                if (RxAVUser_1.RxAVUser.currentUser.primaryRole) {
-                    this.setRoleWriteAccess(RxAVUser_1.RxAVUser.currentUser.primaryRole, true);
-                    this.setRoleWriteAccess(RxAVUser_1.RxAVUser.currentUser.primaryRole, true);
-                }
-                else {
-                    this.setReadAccess(RxAVUser_1.RxAVUser.currentUser, true);
-                    this.setWriteAccess(RxAVUser_1.RxAVUser.currentUser, true);
-                }
+                this.setReadAccess(RxAVUser_1.RxAVUser.currentUser, true);
+                this.setWriteAccess(RxAVUser_1.RxAVUser.currentUser, true);
             }
             else {
                 this.setPublicReadAccess(true);

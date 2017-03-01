@@ -17,6 +17,12 @@ export /**
 
     private permissionsById: ByIdMap;
 
+    /**
+     * Creates an instance of RxAVACL.
+     * @param {...any[]} arg 
+     * 
+     * @memberOf RxAVACL
+     */
     constructor(...arg: any[]) {
         this.permissionsById = {};
         if (arg.length > 0) {
@@ -36,13 +42,8 @@ export /**
             });
         } else {
             if (RxAVUser.currentUser) {
-                if (RxAVUser.currentUser.primaryRole) {
-                    this.setRoleWriteAccess(RxAVUser.currentUser.primaryRole, true);
-                    this.setRoleWriteAccess(RxAVUser.currentUser.primaryRole, true);
-                } else {
-                    this.setReadAccess(RxAVUser.currentUser, true);
-                    this.setWriteAccess(RxAVUser.currentUser, true);
-                }
+                this.setReadAccess(RxAVUser.currentUser, true);
+                this.setWriteAccess(RxAVUser.currentUser, true);
             } else {
                 this.setPublicReadAccess(true);
                 this.setPublicWriteAccess(true);

@@ -71,21 +71,21 @@ describe('RxAVUser', function () {
             chai.assert.isNull(error);
         });
     });
-    it('RxAVUser#signUpWithPrimaryRole', done => {
-        let user: RxAVUser = new RxAVUser();
-        user.username = random.randomString(8);
-        user.password = 'leancloud';
-        user.signUp().flatMap<boolean>(s => {
-            let randomRoleName1 = random.randomHexString(8);
-            let randomRole1 = new RxAVRole(randomRoleName1, new RxAVACL(user));
-            return user.setPrimaryRole(randomRole1);
-        }).flatMap<Array<RxAVRole>>(s3 => {
-            return user.fetchRoles();
-        }).subscribe(roles => {
-            chai.assert.isTrue(roles.length == 1);
-            done();
-        });
-    });
+    // it('RxAVUser#signUpWithPrimaryRole', done => {
+    //     let user: RxAVUser = new RxAVUser();
+    //     user.username = random.randomString(8);
+    //     user.password = 'leancloud';
+    //     user.signUp().flatMap<boolean>(s => {
+    //         let randomRoleName1 = random.randomHexString(8);
+    //         let randomRole1 = new RxAVRole(randomRoleName1, new RxAVACL(user));
+    //         return user.setPrimaryRole(randomRole1);
+    //     }).flatMap<Array<RxAVRole>>(s3 => {
+    //         return user.fetchRoles();
+    //     }).subscribe(roles => {
+    //         chai.assert.isTrue(roles.length == 1);
+    //         done();
+    //     });
+    // });
     it('RxAVUser#create', done => {
         let user: RxAVUser = new RxAVUser();
         user.username = random.randomString(8);

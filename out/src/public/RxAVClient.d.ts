@@ -9,6 +9,25 @@ import { Observable } from 'rxjs';
  * @class RxAVClient
  */
 export declare class RxAVClient {
+    /**
+     * 初始化 SDK
+     *
+     * @static
+     * @param {{
+     *         appId: string,
+     *         appKey: string,
+     *         region?: string,
+     *         serverUrl?: string,
+     *         log?: boolean,
+     *         pluginVersion?: number,
+     *         plugins?: {
+     *             storage?: IStorage,
+     *             device?: IDeviceInfo
+     *         }
+     *     }} config
+     *
+     * @memberOf RxAVClient
+     */
     static init(config: {
         appId: string;
         appKey: string;
@@ -28,7 +47,7 @@ export declare class RxAVClient {
     static headers(): {
         [key: string]: any;
     };
-    static readonly sdk_version: any;
+    static readonly sdk_version: string;
     static serverUrl(): string;
     static currentConfig(): {
         applicationId?: string;

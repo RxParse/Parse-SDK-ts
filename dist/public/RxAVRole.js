@@ -149,7 +149,7 @@ var RxAVRole = (function (_super) {
      *
      * @static
      * @param {string} [objectId]
-     * @returns
+     * @returns {RxAVRole}
      *
      * @memberOf RxAVRole
      */
@@ -165,7 +165,7 @@ var RxAVRole = (function (_super) {
      * @static
      * @param {string} name
      * @param {string} objectId
-     * @returns
+     * @returns {RxAVRole}
      *
      * @memberOf RxAVRole
      */

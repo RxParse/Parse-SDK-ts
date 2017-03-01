@@ -14,13 +14,13 @@ var RxAVPush = (function () {
      * 发送推送给符合查询条件的 _Installation
      *
      * @static
-     * @param {(string | { [key: string]: any })} data
-     * @param {{
+     * @param {Object} data:{(string | { [key: string]: any })}
+     * @param {Object} filter:{{
      *         channels?: Array<string>,
      *         query?: RxAVQuery,
      *         prod?: string
-     *     }} filter
-     * @returns
+     *     }}
+     * @returns {Observable<boolean>} 返回是否成功刚发送
      *
      * @memberOf RxAVPush
      */
@@ -46,9 +46,9 @@ var RxAVPush = (function () {
      *
      * @static
      * @param {RxAVUser} user
-     * @param {(string | { [key: string]: any })} data
+     * @param {any} data:{(string | { [key: string]: any })}
      * @param {string} prod
-     * @returns
+     * @returns {Observable<boolean>} 返回是否成功刚发送
      *
      * @memberOf RxAVPush
      */
