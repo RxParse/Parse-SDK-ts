@@ -187,7 +187,7 @@ var RxAVObject = (function () {
      *
      * @static
      * @template T
-     * @param {{ new (): T; }} ctor
+     * @param {T}
      * @param {string} objectId
      * @returns {T}
      *

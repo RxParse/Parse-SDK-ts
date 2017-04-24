@@ -103,6 +103,13 @@ var RxAVUser = (function (_super) {
         configurable: true
     });
     Object.defineProperty(RxAVUser.prototype, "mobilephone", {
+        /**
+         * 手机号
+         *
+         * @readonly
+         *
+         * @memberOf RxAVUser
+         */
         get: function () {
             this._mobilephone = this.getProperty('mobilePhoneNumber');
             return this._mobilephone;
@@ -165,7 +172,7 @@ var RxAVUser = (function (_super) {
      */
     RxAVUser.prototype.isAuthenticated = function () {
         try {
-            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.request('/users/me', 'GET', null, this.sesstionToken).map(function (body) {
+            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken).map(function (body) {
                 return true;
             });
         }
@@ -282,7 +289,7 @@ var RxAVUser = (function (_super) {
         var data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxLeanCloud_1.RxAVClient.request('/requestSmsCode', 'POST', data).map(function (body) {
+        return RxLeanCloud_1.RxAVClient.runCommand('/requestSmsCode', 'POST', data).map(function (body) {
             return true;
         });
     };
@@ -299,7 +306,7 @@ var RxAVUser = (function (_super) {
         var data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxLeanCloud_1.RxAVClient.request('/requestLoginSmsCode', 'POST', data).map(function (body) {
+        return RxLeanCloud_1.RxAVClient.runCommand('/requestLoginSmsCode', 'POST', data).map(function (body) {
             return true;
         });
     };

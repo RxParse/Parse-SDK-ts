@@ -125,7 +125,7 @@ export class RxAVObject {
         let dirtyChildren = this.collectAllLeafNodes();
 
         if (dirtyChildren.length > 0) {
-            rtn = RxAVObject.batchSave(dirtyChildren).flatMap<boolean>(sal => this.save());
+            rtn = RxAVObject.batchSave(dirtyChildren).flatMap<boolean, boolean>(sal => this.save());
         } else {
             rtn = RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
                 this.handlerSave(serverState);

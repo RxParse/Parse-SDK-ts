@@ -4,4 +4,5 @@ export declare class AVCommand extends HttpRequest {
     sessionToken: string;
     contentType: string;
     constructor(options?: any);
+    attribute(key: string, value: any): this;
 }

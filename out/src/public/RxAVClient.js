@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var SDKPlugins_1 = require("../internal/SDKPlugins");
 var AVCommand_1 = require("../internal/command/AVCommand");
 var StorageController_1 = require("../internal/storage/controller/StorageController");
+var HttpRequest_1 = require("../internal/httpClient/HttpRequest");
 var pjson = require('../package.json');
-var currentConfig = {};
 // var providers: {
 //     storage?: IStorage,
 //     device?: IDeviceInfo
@@ -17,12 +17,14 @@ var currentConfig = {};
  */
 var RxAVClient = (function () {
     function RxAVClient() {
+        this.currentConfiguration = {};
     }
     /**
      * 初始化 SDK
      *
      * @static
-     * @param {{
+     * @param {any}
+     * {{
      *         appId: string,
      *         appKey: string,
      *         region?: string,
@@ -38,34 +40,7 @@ var RxAVClient = (function () {
      * @memberOf RxAVClient
      */
     RxAVClient.init = function (config) {
-        currentConfig.applicationId = config.appId;
-        currentConfig.applicationKey = config.appKey;
-        currentConfig.log = config.log;
-        currentConfig.region = 'cn';
-        currentConfig.serverUrl = 'https://api.leancloud.cn/1.1';
-        if (config.region != null) {
-            currentConfig.region = config.region;
-            if (currentConfig.region.toLowerCase() == 'us') {
-                currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
-            }
-        }
-        currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : currentConfig.serverUrl;
-        if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
-            currentConfig.isNode = true;
-        }
-        currentConfig.log = config.log;
-        currentConfig.pluginVersion = config.pluginVersion;
-        SDKPlugins_1.SDKPlugins.version = config.pluginVersion;
-        if (config.plugins) {
-            if (config.plugins.storage) {
-                SDKPlugins_1.SDKPlugins.instance.StorageProvider = config.plugins.storage;
-                SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance = new StorageController_1.StorageController(config.plugins.storage);
-            }
-            if (config.plugins.device) {
-                SDKPlugins_1.SDKPlugins.instance.DeviceProvider = config.plugins.device;
-            }
-        }
-        RxAVClient.printWelcome();
+        RxAVClient.instance.initialize(config);
     };
     RxAVClient.restoreSettings = function () {
         return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.load().map(function (provider) {
@@ -94,12 +69,12 @@ var RxAVClient = (function () {
         configurable: true
     });
     RxAVClient.serverUrl = function () {
-        return currentConfig.serverUrl;
+        return RxAVClient.instance.currentConfiguration.serverUrl;
     };
     RxAVClient.currentConfig = function () {
-        if (currentConfig.serverUrl == null)
+        if (RxAVClient.instance.currentConfiguration.serverUrl == null)
             throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
-        return currentConfig;
+        return RxAVClient.instance.currentConfiguration;
     };
     RxAVClient.isNode = function () {
         return RxAVClient.currentConfig().isNode;
@@ -110,10 +85,10 @@ var RxAVClient = (function () {
     RxAVClient.printWelcome = function () {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
         // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
-        RxAVClient.printLog("pluginVersion:" + currentConfig.pluginVersion);
-        RxAVClient.printLog("environment:node?" + currentConfig.isNode);
-        RxAVClient.printLog("region:" + currentConfig.region);
-        RxAVClient.printLog("server url:" + currentConfig.serverUrl);
+        RxAVClient.printLog("pluginVersion:" + RxAVClient.instance.currentConfiguration.pluginVersion);
+        RxAVClient.printLog("environment:node?" + RxAVClient.instance.currentConfiguration.isNode);
+        RxAVClient.printLog("region:" + RxAVClient.instance.currentConfiguration.region);
+        RxAVClient.printLog("server url:" + RxAVClient.instance.currentConfiguration.serverUrl);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     };
     RxAVClient.printLog = function (message) {
@@ -138,12 +113,79 @@ var RxAVClient = (function () {
         });
         return cmd;
     };
-    RxAVClient.request = function (relativeUrl, method, data, sessionToken) {
+    RxAVClient.runCommand = function (relativeUrl, method, data, sessionToken) {
         var cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
         return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(function (res) {
             return res.body;
         });
     };
+    Object.defineProperty(RxAVClient, "instance", {
+        get: function () {
+            if (RxAVClient._avClientInstance == null)
+                RxAVClient._avClientInstance = new RxAVClient();
+            return RxAVClient._avClientInstance;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    RxAVClient.prototype.initialize = function (config) {
+        this.appRouterState = new AppRouterState(config.appId);
+        this.currentConfiguration.applicationId = config.appId;
+        this.currentConfiguration.applicationKey = config.appKey;
+        this.currentConfiguration.log = config.log;
+        this.currentConfiguration.region = 'cn';
+        this.currentConfiguration.serverUrl = 'https://api.leancloud.cn/1.1';
+        if (config.region != null) {
+            this.currentConfiguration.region = config.region;
+            if (this.currentConfiguration.region.toLowerCase() == 'us') {
+                this.currentConfiguration.serverUrl = 'https://us-api.leancloud.cn/1.1';
+            }
+        }
+        this.currentConfiguration.serverUrl = config.serverUrl != null ? config.serverUrl : this.currentConfiguration.serverUrl;
+        if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
+            this.currentConfiguration.isNode = true;
+        }
+        this.currentConfiguration.log = config.log;
+        this.currentConfiguration.pluginVersion = config.pluginVersion;
+        SDKPlugins_1.SDKPlugins.version = config.pluginVersion;
+        if (config.plugins) {
+            if (config.plugins.storage) {
+                SDKPlugins_1.SDKPlugins.instance.StorageProvider = config.plugins.storage;
+                SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance = new StorageController_1.StorageController(config.plugins.storage);
+            }
+            if (config.plugins.device) {
+                SDKPlugins_1.SDKPlugins.instance.DeviceProvider = config.plugins.device;
+            }
+        }
+        RxAVClient.printWelcome();
+    };
+    RxAVClient.prototype.request = function (url, method, headers, data) {
+        var httpRequest = new HttpRequest_1.HttpRequest();
+        httpRequest.url = url;
+        httpRequest.method = "GET";
+        httpRequest.headers = {};
+        if (method)
+            httpRequest.method = method;
+        if (data)
+            httpRequest.data = data;
+        if (headers)
+            httpRequest.headers = headers;
+        return SDKPlugins_1.SDKPlugins.instance.HttpClient.execute(httpRequest);
+    };
     return RxAVClient;
 }());
 exports.RxAVClient = RxAVClient;
+var AppRouterState = (function () {
+    function AppRouterState(appId) {
+        var prefix = appId.substring(0, 8).toLowerCase();
+        this.TTL = -1;
+        this.ApiServer = prefix + ".api.lncld.net";
+        this.EngineServer = prefix + ".engine.lncld.net";
+        this.PushServer = prefix + ".push.lncld.net";
+        this.RealtimeRouterServer = prefix + ".rtm.lncld.net";
+        this.StatsServer = prefix + ".stats.lncld.net";
+        this.Source = "initial";
+    }
+    return AppRouterState;
+}());
+exports.AppRouterState = AppRouterState;

@@ -48,7 +48,7 @@ describe('RxAVRole', () => {
         // let casher = new RxAVRole(`${teamName}_casher`);
     });
     it('RxAVRole#createWithPublicACL', done => {
-        RxAVUser.logIn('junwu', 'leancloud').flatMap<boolean>(user => {
+        RxAVUser.logIn('junwu', 'leancloud').flatMap<boolean,boolean>(user => {
             let randomRoleName = random.randomHexString(8);
             let testRole = new RxAVRole(randomRoleName, new RxAVACL());
             return testRole.save();
@@ -59,7 +59,7 @@ describe('RxAVRole', () => {
     });
 
     it('RxAVRole#createTwoRolesWithACL', done => {
-        RxAVUser.logIn('junwu', 'leancloud').flatMap<RxAVRole>(user => {
+        RxAVUser.logIn('junwu', 'leancloud').flatMap<RxAVRole,RxAVRole>(user => {
             let randomRoleName1 = random.randomHexString(8);
             let randomRole1 = new RxAVRole(randomRoleName1, new RxAVACL(user), [user]);
             return randomRole1.save().map(s => {
