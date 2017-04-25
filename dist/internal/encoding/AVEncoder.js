@@ -1,18 +1,18 @@
 "use strict";
-var RxLeanCloud_1 = require('../../RxLeanCloud');
-var AVEncoder = (function () {
-    function AVEncoder() {
+Object.defineProperty(exports, "__esModule", { value: true });
+const RxLeanCloud_1 = require("../../RxLeanCloud");
+class AVEncoder {
+    constructor() {
     }
-    AVEncoder.prototype.encode = function (dictionary) {
-        var encodedDictionary = {};
-        for (var key in dictionary) {
-            var v = dictionary[key];
+    encode(dictionary) {
+        let encodedDictionary = {};
+        for (let key in dictionary) {
+            let v = dictionary[key];
             encodedDictionary[key] = this.encodeItem(v);
         }
         return encodedDictionary;
-    };
-    AVEncoder.prototype.encodeItem = function (item) {
-        var _this = this;
+    }
+    encodeItem(item) {
         if (item instanceof Date) {
             return { '__type': 'Date', 'iso': item.toJSON() };
         }
@@ -24,22 +24,21 @@ var AVEncoder = (function () {
             };
         }
         if (item instanceof Array) {
-            return item.map(function (v, i, a) {
-                return _this.encodeItem(v);
+            return item.map((v, i, a) => {
+                return this.encodeItem(v);
             });
         }
         if (item instanceof RxLeanCloud_1.RxAVACL) {
             return item.toJSON();
         }
         return item;
-    };
-    AVEncoder.prototype.isValidType = function (value) {
+    }
+    isValidType(value) {
         return value == null ||
             value instanceof String ||
             value instanceof RxLeanCloud_1.RxAVObject ||
             value instanceof RxLeanCloud_1.RxAVACL ||
             value instanceof Date;
-    };
-    return AVEncoder;
-}());
+    }
+}
 exports.AVEncoder = AVEncoder;

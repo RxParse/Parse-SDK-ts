@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var chai = require("chai");
-var random = require("../utils/random");
-var RxLeanCloud_1 = require("../../src/RxLeanCloud");
-var RxLeanCloud_2 = require("../../src/RxLeanCloud");
-var randomUsername = '';
+const chai = require("chai");
+const random = require("../utils/random");
+const RxLeanCloud_1 = require("../../src/RxLeanCloud");
+const RxLeanCloud_2 = require("../../src/RxLeanCloud");
+let randomUsername = '';
 describe('RxAVUser', function () {
-    before(function () {
+    before(() => {
         RxLeanCloud_1.RxAVClient.init({
             appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
             appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
@@ -17,13 +17,13 @@ describe('RxAVUser', function () {
         randomUsername = random.randomString(8);
     });
     it('RxAVUser#signUp', function (done) {
-        var user = new RxLeanCloud_2.RxAVUser();
+        let user = new RxLeanCloud_2.RxAVUser();
         user.username = randomUsername;
         user.password = 'leancloud';
         user.set('title', 'CEO');
-        user.signUp().subscribe(function () {
+        user.signUp().subscribe(() => {
             done();
-        }, function (error) {
+        }, error => {
             /** error 的格式如下：
              * {statusCode: -1,error: { code: 0, error: 'Server error' }}
              * statusCode:是本次 http 请求的应答的响应码，LeanCloud 云端会返回标准的 Http Status，一般错误可以从这里查找原因
@@ -36,32 +36,32 @@ describe('RxAVUser', function () {
             }
         });
     });
-    it('RxAVUser#requestShortcode', function (done) {
+    it('RxAVUser#requestShortcode', done => {
         if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }
-        RxLeanCloud_2.RxAVUser.sendSignUpShortcode('18612438929').subscribe(function (success) {
+        RxLeanCloud_2.RxAVUser.sendSignUpShortcode('18612438929').subscribe(success => {
             done();
-        }, function (error) {
+        }, error => {
             console.log(error);
             //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
             //{ statusCode: 400, error: { code: 601, error: '发送短信过快，请稍后重试。' } }
             chai.assert.isNull(error);
         });
     });
-    it('RxAVUser#signUpOrLoginByMobilephone', function (done) {
+    it('RxAVUser#signUpOrLoginByMobilephone', done => {
         if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }
-        var user = new RxLeanCloud_2.RxAVUser();
+        let user = new RxLeanCloud_2.RxAVUser();
         user.username = random.randomString(8);
         user.password = 'leancloud';
         user.set('nickName', 'hahaha');
-        RxLeanCloud_2.RxAVUser.signUpByMobilephone('18612438929', '064241', user).subscribe(function (s) {
+        RxLeanCloud_2.RxAVUser.signUpByMobilephone('18612438929', '064241', user).subscribe(s => {
             done();
-        }, function (error) {
+        }, error => {
             console.log(error);
             //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
             chai.assert.isNull(error);
@@ -82,11 +82,11 @@ describe('RxAVUser', function () {
     //         done();
     //     });
     // });
-    it('RxAVUser#create', function (done) {
-        var user = new RxLeanCloud_2.RxAVUser();
+    it('RxAVUser#create', done => {
+        let user = new RxLeanCloud_2.RxAVUser();
         user.username = random.randomString(8);
         user.password = 'leancloud';
-        user.create().subscribe(function (s) {
+        user.create().subscribe(s => {
             chai.assert.isNotNull(user.objectId);
             done();
         });

@@ -157,7 +157,7 @@ export class RxAVUser extends RxAVObject {
      */
     public isAuthenticated(): Observable<boolean> {
         try {
-            return !!this.sesstionToken && RxAVClient.request('/users/me', 'GET', null, this.sesstionToken).map(body => {
+            return !!this.sesstionToken && RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken).map(body => {
                 return true;
             });
         } catch (error) {
@@ -277,7 +277,7 @@ export class RxAVUser extends RxAVObject {
         let data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxAVClient.request('/requestSmsCode', 'POST', data).map(body => {
+        return RxAVClient.runCommand('/requestSmsCode', 'POST', data).map(body => {
             return true;
         });
     }
@@ -295,7 +295,7 @@ export class RxAVUser extends RxAVObject {
         let data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxAVClient.request('/requestLoginSmsCode', 'POST', data).map(body => {
+        return RxAVClient.runCommand('/requestLoginSmsCode', 'POST', data).map(body => {
             return true;
         });
     }

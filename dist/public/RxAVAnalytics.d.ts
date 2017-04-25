@@ -147,7 +147,7 @@ export declare class RxAVAnalytics {
      *
      * @memberOf RxAVAnalytics
      */
-    static report(): Observable<any>;
+    static report(): Observable<boolean>;
     protected static restore(): Observable<RxAVAnalytics>;
     sessionId: string;
     enable: boolean;

@@ -13,7 +13,8 @@ export declare class RxAVClient {
      * 初始化 SDK
      *
      * @static
-     * @param {{
+     * @param {any}
+     * {{
      *         appId: string,
      *         appKey: string,
      *         region?: string,
@@ -67,9 +68,53 @@ export declare class RxAVClient {
     protected static generateAVCommand(relativeUrl: string, method: string, data?: {
         [key: string]: any;
     }, sessionToken?: string): AVCommand;
-    static request(relativeUrl: string, method: string, data?: {
+    static runCommand(relativeUrl: string, method: string, data?: {
         [key: string]: any;
     }, sessionToken?: string): Observable<{
         [key: string]: any;
     }>;
+    private static _avClientInstance;
+    static readonly instance: RxAVClient;
+    appRouterState: AppRouterState;
+    currentConfiguration: {
+        applicationId?: string;
+        applicationKey?: string;
+        serverUrl?: string;
+        region?: string;
+        isNode?: boolean;
+        sdkVersion?: string;
+        log?: boolean;
+        pluginVersion?: number;
+        runtime?: string;
+    };
+    initialize(config: {
+        appId: string;
+        appKey: string;
+        region?: string;
+        serverUrl?: string;
+        log?: boolean;
+        pluginVersion?: number;
+        plugins?: {
+            storage?: IStorage;
+            device?: IDeviceInfo;
+        };
+    }): void;
+    request(url: string, method?: string, headers?: {
+        [key: string]: any;
+    }, data?: {
+        [key: string]: any;
+    }): Observable<{
+        [key: string]: any;
+    }>;
+}
+export declare class AppRouterState {
+    constructor(appId: string);
+    TTL: number;
+    ApiServer: string;
+    EngineServer: string;
+    PushServer: string;
+    RealtimeRouterServer: string;
+    StatsServer: string;
+    Source: string;
+    FetchedAt: Date;
 }

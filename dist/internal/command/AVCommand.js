@@ -1,29 +1,36 @@
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var HttpRequest_1 = require('../httpClient/HttpRequest');
-var RxLeanCloud_1 = require('../../RxLeanCloud');
-var AVCommand = (function (_super) {
-    __extends(AVCommand, _super);
-    function AVCommand(options) {
-        _super.call(this);
+Object.defineProperty(exports, "__esModule", { value: true });
+const HttpRequest_1 = require("../httpClient/HttpRequest");
+const RxLeanCloud_1 = require("../../RxLeanCloud");
+class AVCommand extends HttpRequest_1.HttpRequest {
+    constructor(options) {
+        super();
+        this.data = {};
         if (options != null) {
             this.relativeUrl = options.relativeUrl;
-            this.url = RxLeanCloud_1.RxAVClient.currentConfig().serverUrl + this.relativeUrl;
+            if (this.relativeUrl == null || typeof this.relativeUrl == 'undefined')
+                throw new Error('command must have a relative url.');
+            this.url = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.ApiServer}/1.1${this.relativeUrl}`;
+            if (this.relativeUrl.startsWith('/push') || this.relativeUrl.startsWith('/installations')) {
+                this.url = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.PushServer}/1.1${this.relativeUrl}`;
+            }
+            else if (this.relativeUrl.startsWith('/stats')
+                || this.relativeUrl.startsWith('/always_collect')
+                || this.relativeUrl.startsWith('/statistics')) {
+                this.url = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.StatsServer}/1.1${this.relativeUrl}`;
+            }
+            else if (this.relativeUrl.startsWith('/functions')
+                || this.relativeUrl.startsWith('/call')) {
+                this.url = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.EngineServer}/1.1${this.relativeUrl}`;
+            }
             this.method = options.method;
             this.data = options.data;
             this.headers = RxLeanCloud_1.RxAVClient.headers();
             if (options.headers != null) {
-                for (var key in options.headers) {
+                for (let key in options.headers) {
                     this.headers[key] = options.headers[key];
                 }
             }
-            // if (RxAVUser.currentSessionToken != null) {
-            //     this.headers['X-LC-Session'] = options.sessionToken;
-            // }
             if (options.sessionToken != null) {
                 this.sessionToken = options.sessionToken;
                 this.headers['X-LC-Session'] = options.sessionToken;
@@ -34,6 +41,9 @@ var AVCommand = (function (_super) {
             }
         }
     }
-    return AVCommand;
-}(HttpRequest_1.HttpRequest));
+    attribute(key, value) {
+        this.data[key] = value;
+        return this;
+    }
+}
 exports.AVCommand = AVCommand;

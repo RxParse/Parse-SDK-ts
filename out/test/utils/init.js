@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var RxLeanCloud_1 = require("../../src/RxLeanCloud");
-var config_1 = require("./config");
+const RxLeanCloud_1 = require("../../src/RxLeanCloud");
+const config_1 = require("./config");
 RxLeanCloud_1.RxAVClient.init({
     appId: config_1.APP_ID,
     appKey: config_1.APP_KEY,

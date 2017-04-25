@@ -11,7 +11,7 @@
     "outDir": "out",
     "module": "commonjs",
     "moduleResolution": "node",
-    "target": "es5"
+    "target": "es2017"
   },
   "include": [
     "src/**/*",

@@ -1,12 +1,8 @@
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var SDKPlugins_1 = require('../internal/SDKPlugins');
-var RxLeanCloud_1 = require('../RxLeanCloud');
-var rxjs_1 = require('rxjs');
+Object.defineProperty(exports, "__esModule", { value: true });
+const SDKPlugins_1 = require("../internal/SDKPlugins");
+const RxLeanCloud_1 = require("../RxLeanCloud");
+const rxjs_1 = require("rxjs");
 /**
  * 用户
  *
@@ -14,32 +10,23 @@ var rxjs_1 = require('rxjs');
  * @class RxAVUser 一个用户对应的是 _User 的一个对象，它的查询权限是关闭的，默认是不可以通过 RxAVQuery 查询用户的
  * @extends {RxAVObject}
  */
-var RxAVUser = (function (_super) {
-    __extends(RxAVUser, _super);
-    function RxAVUser() {
-        _super.call(this, '_User');
+class RxAVUser extends RxLeanCloud_1.RxAVObject {
+    constructor() {
+        super('_User');
     }
-    Object.defineProperty(RxAVUser, "currentSessionToken", {
-        get: function () {
-            if (RxAVUser._currentUser) {
-                return RxAVUser._currentUser.sesstionToken;
-            }
-            return null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RxAVUser.saveCurrentUser = function (user) {
+    static get currentSessionToken() {
+        if (RxAVUser._currentUser) {
+            return RxAVUser._currentUser.sesstionToken;
+        }
+        return null;
+    }
+    static saveCurrentUser(user) {
         RxAVUser._currentUser = user;
         return RxLeanCloud_1.RxAVObject.saveToLocalStorage(user, RxAVUser.currenUserCacheKey);
-    };
-    Object.defineProperty(RxAVUser, "currentUser", {
-        get: function () {
-            return RxAVUser._currentUser;
-        },
-        enumerable: true,
-        configurable: true
-    });
+    }
+    static get currentUser() {
+        return RxAVUser._currentUser;
+    }
     /**
      * 获取本地缓存文件里面是否存在已经登录过的用户
      *
@@ -48,115 +35,95 @@ var RxAVUser = (function (_super) {
      * @type {Observable<RxAVUser>}
      * @memberOf RxAVUser
      */
-    RxAVUser.current = function () {
-        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVUser.currenUserCacheKey).map(function (userCache) {
+    static current() {
+        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVUser.currenUserCacheKey).map(userCache => {
             if (userCache) {
-                var userState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins_1.SDKPlugins.instance.Decoder);
-                userState = userState.mutatedClone(function (s) { });
-                var user = RxAVUser.createWithoutData();
+                let userState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins_1.SDKPlugins.instance.Decoder);
+                userState = userState.mutatedClone((s) => { });
+                let user = RxAVUser.createWithoutData();
                 user.handlerLogIn(userState);
                 RxAVUser._currentUser = user;
             }
             return RxAVUser._currentUser;
         });
-    };
-    Object.defineProperty(RxAVUser, "UserController", {
-        get: function () {
-            return SDKPlugins_1.SDKPlugins.instance.UserControllerInstance;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RxAVUser.prototype, "username", {
-        /**
-         * 获取用户名
-         *
-         *
-         * @memberOf RxAVUser
-         */
-        get: function () {
-            this._username = this.getProperty('username');
-            return this._username;
-        },
-        /**
-         * 新用户设置用户名，已注册用户调用这个接口会抛出异常
-         *
-         *
-         * @memberOf RxAVUser
-         */
-        set: function (username) {
-            if (this.sesstionToken == null) {
-                this._username = username;
-                this.set('username', this._username);
-            }
-            else {
-                throw new Error('can not reset username.');
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RxAVUser.prototype, "mobilephone", {
-        /**
-         * 手机号
-         *
-         * @readonly
-         *
-         * @memberOf RxAVUser
-         */
-        get: function () {
-            this._mobilephone = this.getProperty('mobilePhoneNumber');
-            return this._mobilephone;
-        },
-        /**
-         * 设置手机号
-         *
-         *
-         * @memberOf RxAVUser
-         */
-        set: function (mobile) {
-            if (this.sesstionToken == null) {
-                this._mobilephone = mobile;
-                this.set('mobilePhoneNumber', this._mobilephone);
-            }
-            else {
-                throw new Error('can not reset mobilephone.');
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RxAVUser.prototype, "password", {
-        /**
-         * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
-         *
-         *
-         * @memberOf RxAVUser
-         */
-        set: function (password) {
-            if (this.sesstionToken == null)
-                this.set('password', password);
-            else {
-                throw new Error('can not set password for a exist user, if you want to reset password, please call requestResetPassword.');
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RxAVUser.prototype, "sesstionToken", {
-        /**
-         * 用户的鉴权信息
-         *
-         * @readonly
-         *
-         * @memberOf RxAVUser
-         */
-        get: function () {
-            return this.getProperty('sessionToken');
-        },
-        enumerable: true,
-        configurable: true
-    });
+    }
+    static get UserController() {
+        return SDKPlugins_1.SDKPlugins.instance.UserControllerInstance;
+    }
+    /**
+     * 新用户设置用户名，已注册用户调用这个接口会抛出异常
+     *
+     *
+     * @memberOf RxAVUser
+     */
+    set username(username) {
+        if (this.sesstionToken == null) {
+            this._username = username;
+            this.set('username', this._username);
+        }
+        else {
+            throw new Error('can not reset username.');
+        }
+    }
+    /**
+     * 获取用户名
+     *
+     *
+     * @memberOf RxAVUser
+     */
+    get username() {
+        this._username = this.getProperty('username');
+        return this._username;
+    }
+    /**
+     * 手机号
+     *
+     * @readonly
+     *
+     * @memberOf RxAVUser
+     */
+    get mobilephone() {
+        this._mobilephone = this.getProperty('mobilePhoneNumber');
+        return this._mobilephone;
+    }
+    /**
+     * 设置手机号
+     *
+     *
+     * @memberOf RxAVUser
+     */
+    set mobilephone(mobile) {
+        if (this.sesstionToken == null) {
+            this._mobilephone = mobile;
+            this.set('mobilePhoneNumber', this._mobilephone);
+        }
+        else {
+            throw new Error('can not reset mobilephone.');
+        }
+    }
+    /**
+     * 只有新用户可以设置密码，已注册用户调用这个接口会抛出异常
+     *
+     *
+     * @memberOf RxAVUser
+     */
+    set password(password) {
+        if (this.sesstionToken == null)
+            this.set('password', password);
+        else {
+            throw new Error('can not set password for a exist user, if you want to reset password, please call requestResetPassword.');
+        }
+    }
+    /**
+     * 用户的鉴权信息
+     *
+     * @readonly
+     *
+     * @memberOf RxAVUser
+     */
+    get sesstionToken() {
+        return this.getProperty('sessionToken');
+    }
     /**
      * 判断当前用户的鉴权信息是否有效
      *
@@ -164,16 +131,16 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.isAuthenticated = function () {
+    isAuthenticated() {
         try {
-            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.request('/users/me', 'GET', null, this.sesstionToken).map(function (body) {
+            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken).map(body => {
                 return true;
             });
         }
         catch (error) {
             return rxjs_1.Observable.from([error.error.code == 211]);
         }
-    };
+    }
     // public setPrimaryRole(role: RxAVRole) {
     //     this.set('primaryRole', role);
     //     if (role.isDirty)
@@ -204,12 +171,11 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.activate = function (installation, unique) {
-        var _this = this;
+    activate(installation, unique) {
         if (!installation || installation == null || !installation.objectId || installation.objectId == null) {
             throw new Error('installation can not be a unsaved object.');
         }
-        var ch;
+        let ch;
         if (unique) {
             this.remove(RxAVUser.installationKey);
             ch = this.save();
@@ -217,12 +183,12 @@ var RxAVUser = (function (_super) {
         else {
             ch = rxjs_1.Observable.from([true]);
         }
-        var opBody = this.buildRelation('add', [installation]);
+        let opBody = this.buildRelation('add', [installation]);
         this.set(RxAVUser.installationKey, opBody);
-        return ch.flatMap(function (s1) {
-            return _this.save();
+        return ch.flatMap(s1 => {
+            return this.save();
         });
-    };
+    }
     /**
      * 取消对当前设备的绑定
      *
@@ -231,11 +197,11 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.inactive = function (installation) {
-        var opBody = this.buildRelation('remove', [installation]);
+    inactive(installation) {
+        let opBody = this.buildRelation('remove', [installation]);
         this.set(RxAVUser.installationKey, opBody);
         return this.save();
-    };
+    }
     /**
      * 从服务端获取当前用户所拥有的角色
      *
@@ -243,19 +209,18 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.fetchRoles = function () {
-        var _this = this;
-        var query = new RxLeanCloud_1.RxAVQuery('_Role');
+    fetchRoles() {
+        let query = new RxLeanCloud_1.RxAVQuery('_Role');
         query.equalTo('users', this);
-        return query.find().map(function (roles) {
-            var fetched = roles.map(function (currentItem) {
-                var role = RxLeanCloud_1.RxAVRole.createWithName(currentItem.get('name'), currentItem.objectId);
+        return query.find().map(roles => {
+            let fetched = roles.map(currentItem => {
+                let role = RxLeanCloud_1.RxAVRole.createWithName(currentItem.get('name'), currentItem.objectId);
                 return role;
             });
-            _this.roles = fetched;
+            this.roles = fetched;
             return fetched;
         });
-    };
+    }
     /**
      * 使用当前用户的信息注册到 LeanCloud _User 表中
      *
@@ -263,13 +228,12 @@ var RxAVUser = (function (_super) {
      * 返回一个可订阅的对象，尽管是 void，但是当前 AVUser 实例对象里面的 sessionToken，objectId 都已更新
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.signUp = function () {
-        var _this = this;
-        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(function (userState) {
-            _this.handlerSignUp(userState);
+    signUp() {
+        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
+            this.handlerSignUp(userState);
             return true;
         });
-    };
+    }
     /**
      * 发送注册用户时需要的验证码
      *
@@ -279,14 +243,14 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.sendSignUpShortcode = function (mobilephone) {
-        var data = {
+    static sendSignUpShortcode(mobilephone) {
+        let data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxLeanCloud_1.RxAVClient.request('/requestSmsCode', 'POST', data).map(function (body) {
+        return RxLeanCloud_1.RxAVClient.runCommand('/requestSmsCode', 'POST', data).map(body => {
             return true;
         });
-    };
+    }
     /**
      * 发送登录时需要的验证码
      *
@@ -296,14 +260,14 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.sendLogInShortcode = function (mobilephone) {
-        var data = {
+    static sendLogInShortcode(mobilephone) {
+        let data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxLeanCloud_1.RxAVClient.request('/requestLoginSmsCode', 'POST', data).map(function (body) {
+        return RxLeanCloud_1.RxAVClient.runCommand('/requestLoginSmsCode', 'POST', data).map(body => {
             return true;
         });
-    };
+    }
     /**
      * 使用手机号以及验证码创建新用户
      * @static
@@ -313,21 +277,21 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.signUpByMobilephone = function (mobilephone, shortCode, newUser) {
-        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(newUser.estimatedData);
+    static signUpByMobilephone(mobilephone, shortCode, newUser) {
+        let encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(newUser.estimatedData);
         encoded['mobilePhoneNumber'] = mobilephone;
         encoded['smsCode'] = shortCode;
-        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', encoded).flatMap(function (userState) {
-            var user = RxAVUser.createWithoutData();
+        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', encoded).flatMap(userState => {
+            let user = RxAVUser.createWithoutData();
             if (userState.isNew)
-                return user.handlerSignUp(userState).map(function (s) {
+                return user.handlerSignUp(userState).map(s => {
                     return user;
                 });
             else {
                 return RxAVUser.processLogIn(userState);
             }
         });
-    };
+    }
     /**
      * 使用手机号以及验证码登录
      *
@@ -338,22 +302,22 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.logInByMobilephone = function (mobilephone, shortCode) {
-        var data = {
+    static logInByMobilephone(mobilephone, shortCode) {
+        let data = {
             "mobilePhoneNumber": mobilephone,
             "smsCode": shortCode
         };
-        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', data).flatMap(function (userState) {
-            var user = RxAVUser.createWithoutData();
+        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', data).flatMap(userState => {
+            let user = RxAVUser.createWithoutData();
             if (userState.isNew)
-                return user.handlerSignUp(userState).map(function (s) {
+                return user.handlerSignUp(userState).map(s => {
                     return user;
                 });
             else {
                 return RxAVUser.processLogIn(userState);
             }
         });
-    };
+    }
     /**
      * 使用用户名和密码登录
      *
@@ -364,11 +328,11 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.logIn = function (username, password) {
-        return RxAVUser.UserController.logIn(username, password).flatMap(function (userState) {
+    static logIn(username, password) {
+        return RxAVUser.UserController.logIn(username, password).flatMap(userState => {
             return RxAVUser.processLogIn(userState);
         });
-    };
+    }
     /**
      * 登出系统，删除本地缓存
      *
@@ -376,9 +340,9 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.logOut = function () {
+    logOut() {
         return RxAVUser.saveCurrentUser(null);
-    };
+    }
     /**
      *  使用手机号+密码登录
      *
@@ -389,15 +353,15 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.logInWithMobilephone = function (mobilephone, password) {
-        var data = {
+    static logInWithMobilephone(mobilephone, password) {
+        let data = {
             "mobilePhoneNumber": mobilephone,
             "password": password
         };
-        return RxAVUser.UserController.logInWithParamters('/login', data).flatMap(function (userState) {
+        return RxAVUser.UserController.logInWithParamters('/login', data).flatMap(userState => {
             return RxAVUser.processLogIn(userState);
         });
-    };
+    }
     /**
      * 创建一个用户，区别于 signUp，调用 create 方法并不会覆盖本地的 currentUser.
      *
@@ -406,14 +370,13 @@ var RxAVUser = (function (_super) {
      *
      * @memberOf RxAVUser
      */
-    RxAVUser.prototype.create = function () {
-        var _this = this;
-        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(function (userState) {
-            _super.prototype.handlerSave.call(_this, userState);
-            _this.state.serverData = userState.serverData;
+    create() {
+        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
+            super.handlerSave(userState);
+            this.state.serverData = userState.serverData;
             return true;
         });
-    };
+    }
     // /**
     //  * 
     //  * 
@@ -423,30 +386,29 @@ var RxAVUser = (function (_super) {
     //  */
     // public logInWithOAuth2Data(authData: { [key: string]: any }) {
     // }
-    RxAVUser.createWithoutData = function (objectId) {
+    static createWithoutData(objectId) {
         return RxLeanCloud_1.RxAVObject.createSubclass(RxAVUser, objectId);
-    };
-    RxAVUser.processLogIn = function (userState) {
-        var user = RxAVUser.createWithoutData();
-        return user.handlerLogIn(userState).map(function (s) {
+    }
+    static processLogIn(userState) {
+        let user = RxAVUser.createWithoutData();
+        return user.handlerLogIn(userState).map(s => {
             if (s)
                 return user;
             else
                 rxjs_1.Observable.from([null]);
         });
-    };
-    RxAVUser.prototype.handlerLogIn = function (userState) {
+    }
+    handlerLogIn(userState) {
         this.handleFetchResult(userState);
         return RxAVUser.saveCurrentUser(this);
-    };
-    RxAVUser.prototype.handlerSignUp = function (userState) {
-        _super.prototype.handlerSave.call(this, userState);
+    }
+    handlerSignUp(userState) {
+        super.handlerSave(userState);
         this.state.serverData = userState.serverData;
         return RxAVUser.saveCurrentUser(this);
-    };
-    RxAVUser.installationKey = 'installations';
-    RxAVUser.currenUserCacheKey = 'CurrentUser';
-    RxAVUser._currentUser = null;
-    return RxAVUser;
-}(RxLeanCloud_1.RxAVObject));
+    }
+}
+RxAVUser.installationKey = 'installations';
+RxAVUser.currenUserCacheKey = 'CurrentUser';
+RxAVUser._currentUser = null;
 exports.RxAVUser = RxAVUser;

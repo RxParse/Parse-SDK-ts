@@ -7,19 +7,9 @@ import { IStorage } from '../internal/storage/IStorage';
 import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
+import { HttpRequest } from '../internal/httpClient/HttpRequest';
 var pjson = require('../package.json');
 
-var currentConfig: {
-    applicationId?: string,
-    applicationKey?: string,
-    serverUrl?: string,
-    region?: string,
-    isNode?: boolean,
-    sdkVersion?: string,
-    log?: boolean,
-    pluginVersion?: number,
-    runtime?: string
-} = {};
 
 // var providers: {
 //     storage?: IStorage,
@@ -65,38 +55,7 @@ export class RxAVClient {
             device?: IDeviceInfo
         }
     }): void {
-        currentConfig.applicationId = config.appId;
-        currentConfig.applicationKey = config.appKey;
-        currentConfig.log = config.log;
-        currentConfig.region = 'cn';
-        currentConfig.serverUrl = 'https://api.leancloud.cn/1.1';
-
-        if (config.region != null) {
-            currentConfig.region = config.region;
-            if (currentConfig.region.toLowerCase() == 'us') {
-                currentConfig.serverUrl = 'https://us-api.leancloud.cn/1.1';
-            }
-        }
-
-        currentConfig.serverUrl = config.serverUrl != null ? config.serverUrl : currentConfig.serverUrl;
-
-        if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
-            currentConfig.isNode = true;
-        }
-
-        currentConfig.log = config.log;
-        currentConfig.pluginVersion = config.pluginVersion;
-        SDKPlugins.version = config.pluginVersion;
-        if (config.plugins) {
-            if (config.plugins.storage) {
-                SDKPlugins.instance.StorageProvider = config.plugins.storage;
-                SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
-            }
-            if (config.plugins.device) {
-                SDKPlugins.instance.DeviceProvider = config.plugins.device;
-            }
-        }
-        RxAVClient.printWelcome();
+        RxAVClient.instance.initialize(config);
     }
     static restoreSettings(): Observable<boolean> {
         return SDKPlugins.instance.LocalStorageControllerInstance.load().map(provider => {
@@ -123,11 +82,11 @@ export class RxAVClient {
         return pjson.version;
     }
     public static serverUrl() {
-        return currentConfig.serverUrl;
+        return RxAVClient.instance.currentConfiguration.serverUrl;
     }
     public static currentConfig() {
-        if (currentConfig.serverUrl == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
-        return currentConfig;
+        if (RxAVClient.instance.currentConfiguration.serverUrl == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
+        return RxAVClient.instance.currentConfiguration;
     }
     public static isNode() {
         return RxAVClient.currentConfig().isNode;
@@ -138,10 +97,10 @@ export class RxAVClient {
     protected static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
         // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
-        RxAVClient.printLog(`pluginVersion:${currentConfig.pluginVersion}`);
-        RxAVClient.printLog(`environment:node?${currentConfig.isNode}`);
-        RxAVClient.printLog(`region:${currentConfig.region}`);
-        RxAVClient.printLog(`server url:${currentConfig.serverUrl}`);
+        RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
+        RxAVClient.printLog(`environment:node?${RxAVClient.instance.currentConfiguration.isNode}`);
+        RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
+        RxAVClient.printLog(`server url:${RxAVClient.instance.currentConfiguration.serverUrl}`);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     }
     public static printLog(message?: any, ...optionalParams: any[]) {
@@ -163,10 +122,116 @@ export class RxAVClient {
         return cmd;
     }
 
-    public static request(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): Observable<{ [key: string]: any }> {
+    public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): Observable<{ [key: string]: any }> {
         let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });
     }
+
+
+    private static _avClientInstance: RxAVClient;
+
+    static get instance(): RxAVClient {
+        if (RxAVClient._avClientInstance == null)
+            RxAVClient._avClientInstance = new RxAVClient();
+        return RxAVClient._avClientInstance;
+    }
+
+    appRouterState: AppRouterState;
+    currentConfiguration: {
+        applicationId?: string,
+        applicationKey?: string,
+        serverUrl?: string,
+        region?: string,
+        isNode?: boolean,
+        sdkVersion?: string,
+        log?: boolean,
+        pluginVersion?: number,
+        runtime?: string
+    } = {};
+
+
+    public initialize(config: {
+        appId: string,
+        appKey: string,
+        region?: string,
+        serverUrl?: string,
+        log?: boolean,
+        pluginVersion?: number,
+        plugins?: {
+            storage?: IStorage,
+            device?: IDeviceInfo
+        }
+    }) {
+        this.appRouterState = new AppRouterState(config.appId);
+        this.currentConfiguration.applicationId = config.appId;
+        this.currentConfiguration.applicationKey = config.appKey;
+        this.currentConfiguration.log = config.log;
+        this.currentConfiguration.region = 'cn';
+        this.currentConfiguration.serverUrl = 'https://api.leancloud.cn/1.1';
+
+        if (config.region != null) {
+            this.currentConfiguration.region = config.region;
+            if (this.currentConfiguration.region.toLowerCase() == 'us') {
+                this.currentConfiguration.serverUrl = 'https://us-api.leancloud.cn/1.1';
+            }
+        }
+
+        this.currentConfiguration.serverUrl = config.serverUrl != null ? config.serverUrl : this.currentConfiguration.serverUrl;
+
+        if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
+            this.currentConfiguration.isNode = true;
+        }
+
+        this.currentConfiguration.log = config.log;
+        this.currentConfiguration.pluginVersion = config.pluginVersion;
+        SDKPlugins.version = config.pluginVersion;
+        if (config.plugins) {
+            if (config.plugins.storage) {
+                SDKPlugins.instance.StorageProvider = config.plugins.storage;
+                SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
+            }
+            if (config.plugins.device) {
+                SDKPlugins.instance.DeviceProvider = config.plugins.device;
+            }
+        }
+        RxAVClient.printWelcome();
+    }
+
+    public request(url: string, method?: string, headers?: { [key: string]: any }, data?: { [key: string]: any }): Observable<{ [key: string]: any }> {
+        let httpRequest = new HttpRequest();
+        httpRequest.url = url;
+        httpRequest.method = "GET";
+        httpRequest.headers = {};
+        if (method)
+            httpRequest.method = method;
+        if (data)
+            httpRequest.data = data;
+        if (headers)
+            httpRequest.headers = headers;
+        return SDKPlugins.instance.HttpClient.execute(httpRequest);
+    }
+}
+
+
+export class AppRouterState {
+    constructor(appId: string) {
+        let prefix = appId.substring(0, 8).toLowerCase();
+        this.TTL = -1;
+        this.ApiServer = `${prefix}.api.lncld.net`;
+        this.EngineServer = `${prefix}.engine.lncld.net`;
+        this.PushServer = `${prefix}.push.lncld.net`;
+        this.RealtimeRouterServer = `${prefix}.rtm.lncld.net`;
+        this.StatsServer = `${prefix}.stats.lncld.net`;
+        this.Source = "initial";
+    }
+    public TTL: number
+    public ApiServer: string;
+    public EngineServer: string;
+    public PushServer: string;
+    public RealtimeRouterServer: string;
+    public StatsServer: string;
+    public Source: string;
+    public FetchedAt: Date;
 }

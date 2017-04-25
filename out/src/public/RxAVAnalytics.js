@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var rxjs_1 = require("rxjs");
-var SDKPlugins_1 = require("../internal/SDKPlugins");
+const rxjs_1 = require("rxjs");
+const SDKPlugins_1 = require("../internal/SDKPlugins");
 /**
  * 统计服务的操作接口
  * 当前版本只支持启动发送，也就是每一次启动之后，需要主动调用 report 接口去把上一次统计的数据发送到云端
@@ -10,8 +10,8 @@ var SDKPlugins_1 = require("../internal/SDKPlugins");
  * @export
  * @class RxAVAnalytics
  */
-var RxAVAnalytics = (function () {
-    function RxAVAnalytics(mutableData) {
+class RxAVAnalytics {
+    constructor(mutableData) {
         if (mutableData && mutableData != null) {
             this.enable = mutableData.enable;
             this.sessionId = mutableData.sessionId;
@@ -21,38 +21,26 @@ var RxAVAnalytics = (function () {
             this.events = mutableData.events;
         }
     }
-    Object.defineProperty(RxAVAnalytics, "_analyticsController", {
-        get: function () {
-            return SDKPlugins_1.SDKPlugins.instance.AnalyticsControllerInstance;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RxAVAnalytics.setCurrentAnalytics = function (analytics) {
+    static get _analyticsController() {
+        return SDKPlugins_1.SDKPlugins.instance.AnalyticsControllerInstance;
+    }
+    static setCurrentAnalytics(analytics) {
         RxAVAnalytics._CurrentAnalytics = analytics;
-    };
-    Object.defineProperty(RxAVAnalytics, "_toolController", {
-        get: function () {
-            return SDKPlugins_1.SDKPlugins.instance.ToolControllerInstance;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(RxAVAnalytics, "currentAnalytics", {
-        /**
-         * 获取本地对话的统计对象
-         *
-         * @readonly
-         * @static
-         *
-         * @memberOf RxAVAnalytics
-         */
-        get: function () {
-            return RxAVAnalytics._CurrentAnalytics;
-        },
-        enumerable: true,
-        configurable: true
-    });
+    }
+    static get _toolController() {
+        return SDKPlugins_1.SDKPlugins.instance.ToolControllerInstance;
+    }
+    /**
+     * 获取本地对话的统计对象
+     *
+     * @readonly
+     * @static
+     *
+     * @memberOf RxAVAnalytics
+     */
+    static get currentAnalytics() {
+        return RxAVAnalytics._CurrentAnalytics;
+    }
     /**
      * 初始化统计对象，初始化成功之后可以通过 {RxAVAnalytics.currentAnalytics} 实例对象来记录统计数据
      *
@@ -61,33 +49,33 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.init = function () {
-        return RxAVAnalytics._analyticsController.getPolicy().flatMap(function (instance) {
+    static init() {
+        return RxAVAnalytics._analyticsController.getPolicy().flatMap(instance => {
             RxAVAnalytics.setCurrentAnalytics(instance);
             return instance.startSesstion();
-        }).map(function (started) {
+        }).map(started => {
             return started && RxAVAnalytics.currentAnalytics.enable;
         });
-    };
+    }
     /**
      * 标记本次应用打开来自于用户手动从图标点开进入
      *
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.trackAppOpened = function () {
+    trackAppOpened() {
         this.trackEvent('!AV!AppOpen', '!AV!AppOpen', null);
-    };
+    }
     /**
      * 标记本次应用打开来自于用户点击推送通知打开进入
      *
-     * @param {any} 推送内容包含的参数字典
+     * @param {any} pushData :{ [key: string]: any } 推送内容包含的参数字典
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.trackAppOpenedWithPush = function (pushData) {
+    trackAppOpenedWithPush(pushData) {
         this.trackEvent('!AV!PushOpen', '!AV!PushOpen', pushData);
-    };
+    }
     /**
      * 记录一次自定义事件
      *
@@ -98,9 +86,9 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.trackEvent = function (name, tag, attributes) {
-        var newEvent = new RxAVAnalyticEvent();
-        newEvent.eventId = "event_" + RxAVAnalytics._toolController.newObjectId();
+    trackEvent(name, tag, attributes) {
+        let newEvent = new RxAVAnalyticEvent();
+        newEvent.eventId = `event_${RxAVAnalytics._toolController.newObjectId()}`;
         newEvent.attributes = attributes;
         newEvent.name = name;
         newEvent.du = 0;
@@ -109,7 +97,7 @@ var RxAVAnalytics = (function () {
         newEvent.sessionId = this.sessionId;
         this.events.event.push(newEvent);
         return newEvent.eventId;
-    };
+    }
     /**
      * 开始记录一次持续性事件
      *
@@ -120,9 +108,9 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.beginEevent = function (name, tag, attributes) {
+    beginEevent(name, tag, attributes) {
         return this.trackEvent(name, tag, attributes);
-    };
+    }
     /**
      * 结束记录一次自定义事件
      *
@@ -131,19 +119,19 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.endEvent = function (eventId, attributes) {
-        var begunEvent = this.events.event.find(function (e) {
+    endEvent(eventId, attributes) {
+        let begunEvent = this.events.event.find(e => {
             return e.eventId == eventId;
         });
         if (begunEvent != null) {
             begunEvent.du = RxAVAnalytics._toolController.getTimestamp('ms') - begunEvent.ts;
             if (attributes && attributes != null) {
-                for (var key in attributes) {
+                for (let key in attributes) {
                     begunEvent.attributes[key] = attributes[key];
                 }
             }
         }
-    };
+    }
     /**
      * 记录一个页面的访问时间
      *
@@ -153,15 +141,15 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.trackPage = function (name, duration) {
-        var newActivity = new RxAVAnalyticActivity();
-        newActivity.activityId = "activity_" + RxAVAnalytics._toolController.newObjectId();
+    trackPage(name, duration) {
+        let newActivity = new RxAVAnalyticActivity();
+        newActivity.activityId = `activity_${RxAVAnalytics._toolController.newObjectId()}`;
         newActivity.ts = RxAVAnalytics._toolController.getTimestamp('ms');
         newActivity.du = duration;
         newActivity.name = name;
         this.events.terminate.activities.push(newActivity);
         return newActivity.activityId;
-    };
+    }
     /**
      * 开始记录一个页面的持续性访问
      *
@@ -170,9 +158,9 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.beginPage = function (name) {
+    beginPage(name) {
         return this.trackPage(name, 0);
-    };
+    }
     /**
      * 结束记录一个页面的持续性访问
      *
@@ -180,14 +168,14 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.endPage = function (activityId) {
-        var begunPage = this.events.terminate.activities.find(function (a) {
+    endPage(activityId) {
+        let begunPage = this.events.terminate.activities.find(a => {
             return a.activityId == activityId;
         });
         if (begunPage != null) {
             begunPage.du = RxAVAnalytics._toolController.getTimestamp('ms') - begunPage.ts;
         }
-    };
+    }
     /**
      *  如果实现了本地缓存的接口，那么可以将本地统计数据保存在本地的缓存内
      *
@@ -195,16 +183,16 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.save = function () {
+    save() {
         this.closeSesstion();
         if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
-            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(RxAVAnalytics.analyticsCacheKey, this).map(function (iStorage) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.set(RxAVAnalytics.analyticsCacheKey, this).map(iStorage => {
                 return iStorage != null;
             });
         }
         else
             return rxjs_1.Observable.from([false]);
-    };
+    }
     /**
      * 主动发送本次统计数据
      *
@@ -212,37 +200,36 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.send = function () {
+    send() {
         if (!this.enable) {
             return rxjs_1.Observable.from([false]);
         }
         return RxAVAnalytics._analyticsController.send(this, null);
-    };
+    }
     /**
      *
      * 停止 session
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.prototype.closeSesstion = function () {
+    closeSesstion() {
         this.events.terminate.duration = RxAVAnalytics._toolController.getTimestamp('ms') - this.events.launch.date;
-    };
-    RxAVAnalytics.prototype.startSesstion = function () {
-        var _this = this;
-        return rxjs_1.Observable.fromPromise(RxAVAnalytics._analyticsController.deviceProvider.getDevice()).map(function (deviceInfo) {
-            _this.device = deviceInfo;
-            _this.resetData();
+    }
+    startSesstion() {
+        return rxjs_1.Observable.fromPromise(RxAVAnalytics._analyticsController.deviceProvider.getDevice()).map(deviceInfo => {
+            this.device = deviceInfo;
+            this.resetData();
             return true;
         });
-    };
-    RxAVAnalytics.prototype.resetData = function () {
-        this.sessionId = "session_" + RxAVAnalytics._toolController.newObjectId();
+    }
+    resetData() {
+        this.sessionId = `session_${RxAVAnalytics._toolController.newObjectId()}`;
         this.events = {
             event: [],
             launch: new RxAVAnalyticLaunch(this.sessionId),
             terminate: new RxAVAnalyticTerminate(this.sessionId)
         };
-    };
+    }
     /**
      * 将上一次对话的统计数据报告给服务端
      *
@@ -250,60 +237,50 @@ var RxAVAnalytics = (function () {
      *
      * @memberOf RxAVAnalytics
      */
-    RxAVAnalytics.report = function () {
-        return RxAVAnalytics.restore().flatMap(function (data) {
+    static report() {
+        return RxAVAnalytics.restore().flatMap(data => {
             return data.send();
         });
-    };
-    RxAVAnalytics.restore = function () {
+    }
+    static restore() {
         if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
-            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVAnalytics.analyticsCacheKey).map(function (cacheData) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVAnalytics.analyticsCacheKey).map(cacheData => {
                 var cacheModel = new RxAVAnalytics(cacheData);
                 return cacheModel;
             });
         }
-    };
-    RxAVAnalytics.prototype.encodeForSendServer = function () {
+    }
+    encodeForSendServer() {
         return {
             device: this.device,
             events: this.events
         };
-    };
-    return RxAVAnalytics;
-}());
+    }
+}
 RxAVAnalytics.analyticsCacheKey = 'LastAnalyticsData';
 exports.RxAVAnalytics = RxAVAnalytics;
-var RxAVAnalyticDevice = (function () {
-    function RxAVAnalyticDevice() {
-    }
-    return RxAVAnalyticDevice;
-}());
+class RxAVAnalyticDevice {
+}
 exports.RxAVAnalyticDevice = RxAVAnalyticDevice;
-var RxAVAnalyticLaunch = (function () {
-    function RxAVAnalyticLaunch(sessionId) {
+class RxAVAnalyticLaunch {
+    constructor(sessionId) {
         this.date = RxAVAnalytics._toolController.getTimestamp('ms');
         this.sessionId = sessionId;
     }
-    return RxAVAnalyticLaunch;
-}());
+}
 exports.RxAVAnalyticLaunch = RxAVAnalyticLaunch;
-var RxAVAnalyticTerminate = (function () {
-    function RxAVAnalyticTerminate(sessionId) {
+class RxAVAnalyticTerminate {
+    constructor(sessionId) {
         this.activities = [];
         this.sessionId = sessionId;
     }
-    return RxAVAnalyticTerminate;
-}());
+}
 exports.RxAVAnalyticTerminate = RxAVAnalyticTerminate;
-var RxAVAnalyticActivity = (function () {
-    function RxAVAnalyticActivity() {
-    }
-    return RxAVAnalyticActivity;
-}());
+class RxAVAnalyticActivity {
+}
 exports.RxAVAnalyticActivity = RxAVAnalyticActivity;
-var RxAVAnalyticEvent = (function () {
-    function RxAVAnalyticEvent() {
+class RxAVAnalyticEvent {
+    constructor() {
     }
-    return RxAVAnalyticEvent;
-}());
+}
 exports.RxAVAnalyticEvent = RxAVAnalyticEvent;
