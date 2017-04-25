@@ -40,7 +40,7 @@ export declare class RxAVInstallation extends RxAVObject {
      *
      * @memberOf RxAVInstallation
      */
-    readonly timeZone: any;
+    readonly timeZone: string;
     constructor();
     /**
      * 保存当前的 {RxAVInstallation} 到云端

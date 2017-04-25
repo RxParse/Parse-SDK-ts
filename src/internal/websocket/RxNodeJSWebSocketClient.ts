@@ -1,25 +1,27 @@
+//import WebSocket from 'ws';
+var WebSocket = require('ws');
+import { IRxWebSocketClient } from './IRxWebSocketClient';
 import { Observable, Observer, Subject } from 'rxjs';
-import { HttpRequest } from './HttpRequest';
-import { HttpResponse } from './HttpResponse';
-import { IRxHttpClient } from './iRxHttpClient';
-import { RxAVClient } from '../../public/RxAVClient';
-const WebSocket = require('ws');
-export class RxWebSocketClient implements IRxHttpClient {
+
+export class RxNodeJSWebSocketClient implements IRxWebSocketClient {
     wsc: any;
     url: string;
     protocols: string | string[];
-    socket: Subject<any>;
     listeners: any = {};
-    constructor(url: string, protocols?: string | string[]) {
+    onMessage: Observable<any>;
+    socket: Subject<any>;
+    onClosed: Observable<{ wasClean: boolean; code: number; reason: string; }>;
+
+    open(url: string, protocols?: string | string[]): Observable<boolean> {
         this.url = url;
         this.protocols = protocols;
-    }
-    open() {
         let rtn = new Promise<boolean>((resolve, reject) => {
             this.wsc = new WebSocket(this.url, this.protocols);
             this.wsc.on('open', () => {
                 console.log('opened');
+                this.onMessage = new Subject<any>();
                 this.socket = new Subject<any>();
+                this.onMessage = this.socket.asObservable();
                 resolve(true);
             });
             this.wsc.on('error', (error) => {
@@ -40,21 +42,22 @@ export class RxWebSocketClient implements IRxHttpClient {
         });
         return Observable.fromPromise(rtn);
     }
-    execute(httpRequest: HttpRequest): Observable<HttpResponse> {
-        let rawReq = JSON.stringify(httpRequest.data);
+    close(code?: number, data?: any): void {
+        throw new Error('Method not implemented.');
+    }
+    send(data: any, options?: any): Observable<any> {
+        let rawReq = JSON.stringify(data);
         this.wsc.send(rawReq);
-        console.log('websocket=>', httpRequest.data);
-
-        let rtn = new Promise<HttpResponse>((resolve, reject) => {
-            let fId = httpRequest.data.i.toString();
+        console.log('websocket=>', data);
+        let rtn = new Promise<any>((resolve, reject) => {
+            let fId = data.i.toString();
             this.listeners[fId] = (response) => {
-                let resp = new HttpResponse();
-                resp.body = response;
-                resp.satusCode = 200;
+                let resp = {};
+                resp['body'] = response;
+                resp['satusCode'] = 200;
                 resolve(resp);
             };
         });
-
         return Observable.fromPromise(rtn);
     }
 }

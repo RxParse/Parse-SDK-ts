@@ -1,7 +1,7 @@
 import { Observable, Subject } from 'rxjs';
 import { RxAVClient, RxAVObject, RxAVUser } from '../RxLeanCloud';
 import { AVCommand } from '../internal/command/AVCommand';
-import { RxWebSocketClient } from '../internal/httpClient/RxWebSocketClient';
+import { RxWebSocketClient } from '../internal/websocket/RxWebSocketClient';
 export class RxAVRealtime {
 
     private static singleton: RxAVRealtime;
@@ -15,6 +15,14 @@ export class RxAVRealtime {
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
     clientId: string;
+    /**
+     * 客户端打开链接
+     * 
+     * @param {string} clientId 当前客户端应用内唯一标识
+     * @returns {Observable<boolean>} 
+     * 
+     * @memberOf RxAVRealtime
+     */
     public connect(clientId: string): Observable<boolean> {
         this.clientId = clientId;
         let pushRouter = `https://${RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
@@ -36,7 +44,7 @@ export class RxAVRealtime {
                 };
                 return this.wsc.execute(sessionOpenCmd).map(response => {
                     this.messages = new Subject<RxAVIMMessage>();
-                    this.wsc.socket.subscribe(data => {
+                    this.wsc.rxWebSocketClient.onMessage.subscribe(data => {
                         if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                             if (data.cmd == 'direct') {
                                 let newMessage = new RxAVIMMessage();
@@ -53,6 +61,15 @@ export class RxAVRealtime {
         });
     }
 
+    /**
+     * 
+     * 
+     * @param {string} convId 
+     * @param {{ [key: string]: any }} data 
+     * @returns 
+     * 
+     * @memberOf RxAVRealtime
+     */
     public send(convId: string, data: { [key: string]: any }) {
         let mimeType = 'text';
         let iMessage = new RxAVIMMessage();

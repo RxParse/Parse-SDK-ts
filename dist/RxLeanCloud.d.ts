@@ -9,4 +9,5 @@ export { RxAVRole } from './public/RxAVRole';
 export { RxLeanEngine } from './public/RxLeanEngine';
 export { RxAVInstallation } from './public/RxAVInstallation';
 export { RxAVPush } from './public/RxAVPush';
+export { RxAVRealtime } from './public/RxAVRealtime';
 export { RxAVAnalytics, RxAVAnalyticDevice } from './public/RxAVAnalytics';

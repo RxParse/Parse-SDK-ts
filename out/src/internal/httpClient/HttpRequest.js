@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var HttpRequest = (function () {
-    function HttpRequest() {
-    }
+class HttpRequest {
+    constructor() { }
     ;
-    return HttpRequest;
-}());
+}
 exports.HttpRequest = HttpRequest;

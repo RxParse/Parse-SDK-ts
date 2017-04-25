@@ -1,23 +1,24 @@
 "use strict";
-var AVCommand_1 = require('../../command/AVCommand');
-var SDKPlugins_1 = require('../../SDKPlugins');
-var ObjectController = (function () {
-    function ObjectController(commandRunner) {
+Object.defineProperty(exports, "__esModule", { value: true });
+const AVCommand_1 = require("../../command/AVCommand");
+const SDKPlugins_1 = require("../../SDKPlugins");
+class ObjectController {
+    constructor(commandRunner) {
         this._commandRunner = commandRunner;
     }
-    ObjectController.prototype.fetch = function (state, sessionToken) {
-        var cmd = new AVCommand_1.AVCommand({
-            relativeUrl: "/classes/" + state.className + "/" + state.objectId,
+    fetch(state, sessionToken) {
+        let cmd = new AVCommand_1.AVCommand({
+            relativeUrl: `/classes/${state.className}/${state.objectId}`,
             method: 'GET',
             data: null,
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(cmd).map(function (res) {
-            var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
+        return this._commandRunner.runRxCommand(cmd).map(res => {
+            let serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
             return serverState;
         });
-    };
-    ObjectController.prototype.clearReadonlyFields = function (dictionary) {
+    }
+    clearReadonlyFields(dictionary) {
         if (Object.prototype.hasOwnProperty.call(dictionary, 'objectId')) {
             delete dictionary['objectId'];
         }
@@ -27,76 +28,75 @@ var ObjectController = (function () {
         if (Object.prototype.hasOwnProperty.call(dictionary, 'updatedAt')) {
             delete dictionary['updatedAt'];
         }
-    };
-    ObjectController.prototype.clearRelationFields = function (dictionary) {
-        for (var key in dictionary) {
-            var v = dictionary[key];
+    }
+    clearRelationFields(dictionary) {
+        for (let key in dictionary) {
+            let v = dictionary[key];
             if (Object.prototype.hasOwnProperty.call(v, '__type')) {
                 if (v['__type'] == 'Relation') {
                     delete dictionary[key];
                 }
             }
         }
-    };
-    ObjectController.prototype.copyToMutable = function (dictionary) {
-        var newDictionary = {};
-        for (var key in dictionary) {
+    }
+    copyToMutable(dictionary) {
+        let newDictionary = {};
+        for (let key in dictionary) {
             newDictionary[key] = dictionary[key];
         }
         return newDictionary;
-    };
-    ObjectController.prototype.packForSave = function (dictionary) {
-        var mutableDictionary = this.copyToMutable(dictionary);
+    }
+    packForSave(dictionary) {
+        let mutableDictionary = this.copyToMutable(dictionary);
         this.clearReadonlyFields(mutableDictionary);
         this.clearRelationFields(mutableDictionary);
         return mutableDictionary;
-    };
-    ObjectController.prototype.save = function (state, dictionary, sessionToken) {
-        var mutableDictionary = this.packForSave(dictionary);
-        var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
-        var cmd = new AVCommand_1.AVCommand({
-            relativeUrl: state.objectId == null ? "/classes/" + state.className : "/classes/" + state.className + "/" + state.objectId,
+    }
+    save(state, dictionary, sessionToken) {
+        let mutableDictionary = this.packForSave(dictionary);
+        let encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
+        let cmd = new AVCommand_1.AVCommand({
+            relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
             method: state.objectId == null ? 'POST' : 'PUT',
             data: encoded,
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(cmd).map(function (res) {
-            var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
-            serverState = serverState.mutatedClone(function (s) {
+        return this._commandRunner.runRxCommand(cmd).map(res => {
+            let serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins_1.SDKPlugins.instance.Decoder);
+            serverState = serverState.mutatedClone((s) => {
                 s.isNew = res.satusCode == 201;
             });
             return serverState;
         });
-    };
-    ObjectController.prototype.batchSave = function (states, dictionaries, sessionToken) {
-        var _this = this;
-        var cmdArray = [];
-        states.map(function (state, i, a) {
-            var mutableDictionary = _this.packForSave(dictionaries[i]);
-            var encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
-            var cmd = new AVCommand_1.AVCommand({
-                relativeUrl: state.objectId == null ? "/1.1/classes/" + state.className : "/1.1/classes/" + state.className + "/" + state.objectId,
+    }
+    batchSave(states, dictionaries, sessionToken) {
+        let cmdArray = [];
+        states.map((state, i, a) => {
+            let mutableDictionary = this.packForSave(dictionaries[i]);
+            let encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
+            let cmd = new AVCommand_1.AVCommand({
+                relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
                 data: encoded,
                 sessionToken: sessionToken
             });
             cmdArray.push(cmd);
         });
-        return this.executeBatchCommands(cmdArray, sessionToken).map(function (batchRes) {
-            return batchRes.map(function (res) {
-                var serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res, SDKPlugins_1.SDKPlugins.instance.Decoder);
-                serverState = serverState.mutatedClone(function (s) {
+        return this.executeBatchCommands(cmdArray, sessionToken).map(batchRes => {
+            return batchRes.map(res => {
+                let serverState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(res, SDKPlugins_1.SDKPlugins.instance.Decoder);
+                serverState = serverState.mutatedClone((s) => {
                     s.isNew = res['satusCode'] == 201;
                 });
                 return serverState;
             });
         });
-    };
-    ObjectController.prototype.executeBatchCommands = function (requests, sessionToken) {
-        var rtn = [];
-        var batchSize = requests.length;
-        var encodedRequests = requests.map(function (cmd, i, a) {
-            var r = {
+    }
+    executeBatchCommands(requests, sessionToken) {
+        let rtn = [];
+        let batchSize = requests.length;
+        let encodedRequests = requests.map((cmd, i, a) => {
+            let r = {
                 method: cmd.method,
                 path: cmd.relativeUrl
             };
@@ -105,27 +105,26 @@ var ObjectController = (function () {
             }
             return r;
         });
-        var batchRequest = new AVCommand_1.AVCommand({
+        let batchRequest = new AVCommand_1.AVCommand({
             relativeUrl: '/batch',
             method: 'POST',
             data: { requests: encodedRequests }
         });
-        return this._commandRunner.runRxCommand(batchRequest).map(function (res) {
-            var resultsArray = res.body;
-            var resultLength = resultsArray.length;
+        return this._commandRunner.runRxCommand(batchRequest).map(res => {
+            let resultsArray = res.body;
+            let resultLength = resultsArray.length;
             if (resultLength != batchSize) {
-                throw new Error("Batch command result count expected: \" + " + batchSize + " + \" but was: \" + " + resultLength + " + \".");
+                throw new Error(`Batch command result count expected: " + ${batchSize} + " but was: " + ${resultLength} + ".`);
             }
-            for (var i = 0; i < batchSize; i++) {
-                var result = resultsArray[i];
+            for (let i = 0; i < batchSize; i++) {
+                let result = resultsArray[i];
                 if (Object.prototype.hasOwnProperty.call(result, 'success')) {
-                    var subBody = result.success;
+                    let subBody = result.success;
                     rtn.push(subBody);
                 }
             }
             return rtn;
         });
-    };
-    return ObjectController;
-}());
+    }
+}
 exports.ObjectController = ObjectController;

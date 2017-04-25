@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './iRxHttpClient';
-import axios, { AxiosRequestConfig, AxiosPromise } from 'axios';
+import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
 import * as superagent from 'superagent';
 import { RxAVClient } from '../../public/RxAVClient';
 
@@ -65,18 +65,25 @@ export class RxHttpClient implements IRxHttpClient {
     }
 
 
-    RxExecuteAxios(httpRequest: HttpRequest): AxiosPromise {
+    RxExecuteAxios(httpRequest: HttpRequest): Promise<AxiosResponse> {
         let method = httpRequest.method.toUpperCase();
         let useData = false;
         if (method == 'PUT' || 'POST') {
             useData = true;
         }
-        return axios({
-            method: method,
-            url: httpRequest.url,
-            data: useData ? httpRequest.data : null,
-            headers: httpRequest.headers
+        return new Promise<AxiosResponse>((resovle, reject) => {
+            axios({
+                method: method,
+                url: httpRequest.url,
+                data: useData ? httpRequest.data : null,
+                headers: httpRequest.headers
+            }).then(response => {
+                resovle(response);
+            }).catch(error => {
+                reject(error);
+            });
         });
+
     }
     RxExecuteSuperagent(httpRequest: HttpRequest): Promise<superagent.Response> {
         let method = httpRequest.method.toUpperCase();

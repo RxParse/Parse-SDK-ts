@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var RxAVUser_1 = require("./RxAVUser");
-var RxAVRole_1 = require("./RxAVRole");
+const RxAVUser_1 = require("./RxAVUser");
+const RxAVRole_1 = require("./RxAVRole");
 var PUBLIC_KEY = '*';
 /**
  *
@@ -9,33 +9,28 @@ var PUBLIC_KEY = '*';
  * @export
  * @class RxAVACL
  */
-var RxAVACL = (function () {
+class RxAVACL {
     /**
      * Creates an instance of RxAVACL.
      * @param {...any[]} arg
      *
      * @memberOf RxAVACL
      */
-    function RxAVACL() {
-        var arg = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            arg[_i] = arguments[_i];
-        }
-        var _this = this;
+    constructor(...arg) {
         this.permissionsById = {};
         if (arg.length > 0) {
-            arg.forEach(function (currentItem) {
+            arg.forEach(currentItem => {
                 if (currentItem instanceof RxAVUser_1.RxAVUser) {
-                    _this.setReadAccess(currentItem, true);
-                    _this.setWriteAccess(currentItem, true);
+                    this.setReadAccess(currentItem, true);
+                    this.setWriteAccess(currentItem, true);
                 }
                 else if (currentItem instanceof RxAVRole_1.RxAVRole) {
-                    _this.setReadAccess(currentItem, true);
-                    _this.setWriteAccess(currentItem, true);
+                    this.setReadAccess(currentItem, true);
+                    this.setWriteAccess(currentItem, true);
                 }
                 else if (typeof currentItem === 'string') {
-                    _this.setRoleWriteAccess(currentItem, true);
-                    _this.setRoleReadAccess(currentItem, true);
+                    this.setRoleWriteAccess(currentItem, true);
+                    this.setRoleReadAccess(currentItem, true);
                 }
                 else if (currentItem !== undefined) {
                     throw new TypeError('RxAVACL.constructor need RxAVUser or RxAVRole.');
@@ -87,13 +82,13 @@ var RxAVACL = (function () {
         //     );
         // }
     }
-    RxAVACL.prototype.toJSON = function () {
-        var permissions = {};
-        for (var p in this.permissionsById) {
+    toJSON() {
+        let permissions = {};
+        for (let p in this.permissionsById) {
             permissions[p] = this.permissionsById[p];
         }
         return permissions;
-    };
+    }
     /**
      * 判断两个 ACL 对象是否相等
      *
@@ -102,16 +97,16 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.equals = function (other) {
+    equals(other) {
         if (!(other instanceof RxAVACL)) {
             return false;
         }
-        var users = Object.keys(this.permissionsById);
-        var otherUsers = Object.keys(other.permissionsById);
+        let users = Object.keys(this.permissionsById);
+        let otherUsers = Object.keys(other.permissionsById);
         if (users.length !== otherUsers.length) {
             return false;
         }
-        for (var u in this.permissionsById) {
+        for (let u in this.permissionsById) {
             if (!other.permissionsById[u]) {
                 return false;
             }
@@ -123,17 +118,17 @@ var RxAVACL = (function () {
             }
         }
         return true;
-    };
-    RxAVACL.prototype._setAccess = function (accessType, userId, allowed) {
+    }
+    _setAccess(accessType, userId, allowed) {
         if (userId instanceof RxAVUser_1.RxAVUser) {
             userId = userId.objectId;
         }
         else if (userId instanceof RxAVRole_1.RxAVRole) {
-            var name_1 = userId.name;
-            if (!name_1) {
+            const name = userId.name;
+            if (!name) {
                 throw new TypeError('Role must have a name');
             }
-            userId = 'role:' + name_1;
+            userId = 'role:' + name;
         }
         if (typeof userId !== 'string') {
             throw new TypeError('userId must be a string.');
@@ -141,7 +136,7 @@ var RxAVACL = (function () {
         if (typeof allowed !== 'boolean') {
             throw new TypeError('allowed must be either true or false.');
         }
-        var permissions = this.permissionsById[userId];
+        let permissions = this.permissionsById[userId];
         if (!permissions) {
             if (!allowed) {
                 // The user already doesn't have this permission, so no action is needed
@@ -161,8 +156,8 @@ var RxAVACL = (function () {
                 delete this.permissionsById[userId];
             }
         }
-    };
-    RxAVACL.prototype._getAccess = function (accessType, userId) {
+    }
+    _getAccess(accessType, userId) {
         if (userId instanceof RxAVUser_1.RxAVUser) {
             userId = userId.objectId;
             if (!userId) {
@@ -170,18 +165,18 @@ var RxAVACL = (function () {
             }
         }
         else if (userId instanceof RxAVRole_1.RxAVRole) {
-            var name_2 = userId.name;
-            if (!name_2) {
+            const name = userId.name;
+            if (!name) {
                 throw new TypeError('Role must have a name');
             }
-            userId = 'role:' + name_2;
+            userId = 'role:' + name;
         }
-        var permissions = this.permissionsById[userId];
+        let permissions = this.permissionsById[userId];
         if (!permissions) {
             return false;
         }
         return !!permissions[accessType];
-    };
+    }
     /**
      * 查找 Write 权限
      *
@@ -189,17 +184,17 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.findWriteAccess = function () {
-        var rtn = false;
-        for (var key in this.permissionsById) {
-            var permisstion = this.permissionsById[key];
+    findWriteAccess() {
+        let rtn = false;
+        for (let key in this.permissionsById) {
+            let permisstion = this.permissionsById[key];
             if (permisstion['write']) {
                 rtn = true;
                 break;
             }
         }
         return rtn;
-    };
+    }
     /**
      * 设置 Read 权限
      *
@@ -208,9 +203,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.setReadAccess = function (userId, allowed) {
+    setReadAccess(userId, allowed) {
         this._setAccess('read', userId, allowed);
-    };
+    }
     /**
      * 获取 Read 权限
      *
@@ -219,9 +214,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.getReadAccess = function (userId) {
+    getReadAccess(userId) {
         return this._getAccess('read', userId);
-    };
+    }
     /**
      * 设置 Write 权限
      *
@@ -230,9 +225,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.setWriteAccess = function (userId, allowed) {
+    setWriteAccess(userId, allowed) {
         this._setAccess('write', userId, allowed);
-    };
+    }
     /**
      * 获取 Write 权限
      *
@@ -241,9 +236,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.getWriteAccess = function (userId) {
+    getWriteAccess(userId) {
         return this._getAccess('write', userId);
-    };
+    }
     /**
      * 设置所有人的 Read 权限
      *
@@ -251,9 +246,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.setPublicReadAccess = function (allowed) {
+    setPublicReadAccess(allowed) {
         this.setReadAccess(PUBLIC_KEY, allowed);
-    };
+    }
     /**
      *  获取所有人的 Read 权限
      *
@@ -261,9 +256,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.getPublicReadAccess = function () {
+    getPublicReadAccess() {
         return this.getReadAccess(PUBLIC_KEY);
-    };
+    }
     /**
      * 设置所有人的 Write 权限
      *
@@ -271,9 +266,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.setPublicWriteAccess = function (allowed) {
+    setPublicWriteAccess(allowed) {
         this.setWriteAccess(PUBLIC_KEY, allowed);
-    };
+    }
     /**
      * 获取所有人的 Write 权限
      *
@@ -281,9 +276,9 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.getPublicWriteAccess = function () {
+    getPublicWriteAccess() {
         return this.getWriteAccess(PUBLIC_KEY);
-    };
+    }
     /**
      * 设置角色的 Read 权限
      *
@@ -292,7 +287,7 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.getRoleReadAccess = function (role) {
+    getRoleReadAccess(role) {
         if (role instanceof RxAVRole_1.RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -301,7 +296,7 @@ var RxAVACL = (function () {
             throw new TypeError('role must be a RxAVRole or a String');
         }
         return this.getReadAccess('role:' + role);
-    };
+    }
     /**
      *  获取角色的 Write 权限
      *
@@ -310,7 +305,7 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.getRoleWriteAccess = function (role) {
+    getRoleWriteAccess(role) {
         if (role instanceof RxAVRole_1.RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -319,7 +314,7 @@ var RxAVACL = (function () {
             throw new TypeError('role must be a RxAVRole or a String');
         }
         return this.getWriteAccess('role:' + role);
-    };
+    }
     /**
      * 设置角色的 Read 权限
      *
@@ -328,7 +323,7 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.setRoleReadAccess = function (role, allowed) {
+    setRoleReadAccess(role, allowed) {
         if (role instanceof RxAVRole_1.RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -337,7 +332,7 @@ var RxAVACL = (function () {
             throw new TypeError('role must be a RxAVRole or a String');
         }
         this.setReadAccess('role:' + role, allowed);
-    };
+    }
     /**
      * 设置角色 Write 权限
      *
@@ -346,7 +341,7 @@ var RxAVACL = (function () {
      *
      * @memberOf RxAVACL
      */
-    RxAVACL.prototype.setRoleWriteAccess = function (role, allowed) {
+    setRoleWriteAccess(role, allowed) {
         if (role instanceof RxAVRole_1.RxAVRole) {
             // Normalize to the String name
             role = role.name;
@@ -355,7 +350,6 @@ var RxAVACL = (function () {
             throw new TypeError('role must be a RxAVRole or a String');
         }
         this.setWriteAccess('role:' + role, allowed);
-    };
-    return RxAVACL;
-}());
+    }
+}
 exports.RxAVACL = RxAVACL;

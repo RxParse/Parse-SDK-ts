@@ -1,11 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var crypto_1 = require("crypto");
-var ToolController = (function () {
-    function ToolController() {
-    }
+const crypto_1 = require("crypto");
+class ToolController {
     // Returns a new random hex string of the given even size.
-    ToolController.prototype.randomHexString = function (size) {
+    randomHexString(size) {
         if (size === 0) {
             throw new Error('Zero-length randomHexString is useless.');
         }
@@ -13,37 +11,37 @@ var ToolController = (function () {
             throw new Error('randomHexString size must be divisible by 2.');
         }
         return crypto_1.randomBytes(size / 2).toString('hex');
-    };
-    ToolController.prototype.randomHexStringWithPrefix = function (prefix, size) {
+    }
+    randomHexStringWithPrefix(prefix, size) {
         return prefix + this.randomHexString(size);
-    };
+    }
     // Returns a new random alphanumeric string of the given size.
     //
     // Note: to simplify implementation, the result has slight modulo bias,
     // because chars length of 62 doesn't divide the number of all bytes
     // (256) evenly. Such bias is acceptable for most cases when the output
     // length is long enough and doesn't need to be uniform.
-    ToolController.prototype.randomString = function (size) {
+    randomString(size) {
         if (size === 0) {
             throw new Error('Zero-length randomString is useless.');
         }
-        var chars = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+        let chars = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
             'abcdefghijklmnopqrstuvwxyz' +
             '0123456789');
-        var objectId = '';
-        var bytes = crypto_1.randomBytes(size);
-        for (var i = 0; i < bytes.length; ++i) {
+        let objectId = '';
+        let bytes = crypto_1.randomBytes(size);
+        for (let i = 0; i < bytes.length; ++i) {
             objectId += chars[bytes.readUInt8(i) % chars.length];
         }
         return objectId;
-    };
+    }
     // Returns a new random alphanumeric string suitable for object ID.
-    ToolController.prototype.newObjectId = function () {
+    newObjectId() {
         //TODO: increase length to better protect against collisions.
         return this.randomString(10);
-    };
-    ToolController.prototype.getTimestamp = function (unit) {
-        var unitLower = unit.toLowerCase();
+    }
+    getTimestamp(unit) {
+        let unitLower = unit.toLowerCase();
         if (unitLower == 'seconds' || unitLower == 'second' || unitLower == 's') {
             return Math.floor(Date.now());
         }
@@ -51,24 +49,23 @@ var ToolController = (function () {
             return new Date().getTime();
             //return Math.floor(Date.now() / 1000);
         }
-    };
+    }
     // Returns a new random hex string suitable for secure tokens.
-    ToolController.prototype.newToken = function () {
+    newToken() {
         return this.randomHexString(32);
-    };
-    ToolController.prototype.md5Hash = function (string) {
+    }
+    md5Hash(string) {
         return crypto_1.createHash('md5').update(string).digest('hex');
-    };
-    ToolController.prototype.newMobilePhoneNumber = function () {
-        var prefix = ['138', '139', '188', '186', '189', '171', '170'];
-        var chars = ('0123456789');
-        var mobile = prefix[Math.floor(Math.random() * prefix.length)];
-        var bytes = crypto_1.randomBytes(8);
-        for (var i = 0; i < bytes.length; ++i) {
+    }
+    newMobilePhoneNumber() {
+        let prefix = ['138', '139', '188', '186', '189', '171', '170'];
+        let chars = ('0123456789');
+        let mobile = prefix[Math.floor(Math.random() * prefix.length)];
+        let bytes = crypto_1.randomBytes(8);
+        for (let i = 0; i < bytes.length; ++i) {
             mobile += chars[bytes.readUInt8(i) % chars.length];
         }
         return mobile;
-    };
-    return ToolController;
-}());
+    }
+}
 exports.ToolController = ToolController;

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var chai = require("chai");
-var RxLeanCloud_1 = require("../../src/RxLeanCloud");
-var randomUsername = '';
+const chai = require("chai");
+const RxLeanCloud_1 = require("../../src/RxLeanCloud");
+let randomUsername = '';
 describe('RxLeanEngine', function () {
-    before(function () {
+    before(() => {
         RxLeanCloud_1.RxAVClient.init({
             appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
             appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
@@ -13,16 +13,16 @@ describe('RxLeanEngine', function () {
             pluginVersion: 2
         });
     });
-    it('RxLeanEngine#callFunction', function (done) {
+    it('RxLeanEngine#callFunction', done => {
         if (RxLeanCloud_1.RxAVClient.currentConfig().region.toLowerCase() == 'us') {
             done();
             console.log('Hello,LeanEngine in US.');
             return;
         }
-        RxLeanCloud_1.RxLeanEngine.callFunction('testDic').subscribe(function (data) {
+        RxLeanCloud_1.RxLeanEngine.callFunction('testDic').subscribe(data => {
             console.log('cloud function result', data);
             done();
-        }, function (error) {
+        }, error => {
             /** error 的格式如下：
              * {statusCode: -1,error: { code: 0, error: 'Server error' }}
              * statusCode:是本次 http 请求的应答的响应码，LeanCloud 云端会返回标准的 Http Status，一般错误可以从这里查找原因

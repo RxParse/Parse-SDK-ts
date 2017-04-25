@@ -1,15 +1,16 @@
 "use strict";
-var MutableObjectState_1 = require('../object/state/MutableObjectState');
-var AVObjectDecoder = (function () {
-    function AVObjectDecoder() {
+Object.defineProperty(exports, "__esModule", { value: true });
+const MutableObjectState_1 = require("../object/state/MutableObjectState");
+class AVObjectDecoder {
+    constructor() {
     }
-    AVObjectDecoder.prototype.decode = function (serverResult, decoder) {
-        var state = new MutableObjectState_1.MutableObjectState();
+    decode(serverResult, decoder) {
+        let state = new MutableObjectState_1.MutableObjectState();
         this.handlerServerResult(state, serverResult, decoder);
         return state;
-    };
-    AVObjectDecoder.prototype.handlerServerResult = function (state, serverResult, decoder) {
-        var mutableData = {};
+    }
+    handlerServerResult(state, serverResult, decoder) {
+        let mutableData = {};
         if (serverResult.createdAt) {
             state.createdAt = serverResult.createdAt;
             state.updatedAt = serverResult.createdAt;
@@ -23,12 +24,12 @@ var AVObjectDecoder = (function () {
             state.objectId = serverResult.objectId;
             delete serverResult.objectId;
         }
-        for (var key in serverResult) {
+        for (let key in serverResult) {
             var value = serverResult[key];
             if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
                 if (value['__type'] == 'Pointer') {
-                    var rxAVObject = decoder.decodeItem(value);
-                    var serverState = this.decode(value, decoder);
+                    let rxAVObject = decoder.decodeItem(value);
+                    let serverState = this.decode(value, decoder);
                     rxAVObject.handleFetchResult(serverState);
                     mutableData[key] = rxAVObject;
                 }
@@ -43,7 +44,6 @@ var AVObjectDecoder = (function () {
         state.serverData = mutableData;
         state.isNew = true;
         return state;
-    };
-    return AVObjectDecoder;
-}());
+    }
+}
 exports.AVObjectDecoder = AVObjectDecoder;

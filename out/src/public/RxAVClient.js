@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var SDKPlugins_1 = require("../internal/SDKPlugins");
-var AVCommand_1 = require("../internal/command/AVCommand");
-var StorageController_1 = require("../internal/storage/controller/StorageController");
-var HttpRequest_1 = require("../internal/httpClient/HttpRequest");
+const SDKPlugins_1 = require("../internal/SDKPlugins");
+const AVCommand_1 = require("../internal/command/AVCommand");
+const StorageController_1 = require("../internal/storage/controller/StorageController");
+const HttpRequest_1 = require("../internal/httpClient/HttpRequest");
 var pjson = require('../package.json');
 // var providers: {
 //     storage?: IStorage,
@@ -15,8 +15,8 @@ var pjson = require('../package.json');
  * @export
  * @class RxAVClient
  */
-var RxAVClient = (function () {
-    function RxAVClient() {
+class RxAVClient {
+    constructor() {
         this.currentConfiguration = {};
     }
     /**
@@ -39,16 +39,16 @@ var RxAVClient = (function () {
      *
      * @memberOf RxAVClient
      */
-    RxAVClient.init = function (config) {
+    static init(config) {
         RxAVClient.instance.initialize(config);
-    };
-    RxAVClient.restoreSettings = function () {
-        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.load().map(function (provider) {
+    }
+    static restoreSettings() {
+        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.load().map(provider => {
             return provider != null;
         });
-    };
-    RxAVClient.headers = function () {
-        var config = RxAVClient.currentConfig();
+    }
+    static headers() {
+        let config = RxAVClient.currentConfig();
         if (RxAVClient._headers == null) {
             RxAVClient._headers = {
                 'X-LC-Id': config.applicationId,
@@ -60,42 +60,34 @@ var RxAVClient = (function () {
             }
         }
         return RxAVClient._headers;
-    };
-    Object.defineProperty(RxAVClient, "sdk_version", {
-        get: function () {
-            return pjson.version;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RxAVClient.serverUrl = function () {
+    }
+    static get sdk_version() {
+        return pjson.version;
+    }
+    static serverUrl() {
         return RxAVClient.instance.currentConfiguration.serverUrl;
-    };
-    RxAVClient.currentConfig = function () {
+    }
+    static currentConfig() {
         if (RxAVClient.instance.currentConfiguration.serverUrl == null)
             throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
         return RxAVClient.instance.currentConfiguration;
-    };
-    RxAVClient.isNode = function () {
+    }
+    static isNode() {
         return RxAVClient.currentConfig().isNode;
-    };
-    RxAVClient.inLeanEngine = function () {
+    }
+    static inLeanEngine() {
         return false;
-    };
-    RxAVClient.printWelcome = function () {
+    }
+    static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
         // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
-        RxAVClient.printLog("pluginVersion:" + RxAVClient.instance.currentConfiguration.pluginVersion);
-        RxAVClient.printLog("environment:node?" + RxAVClient.instance.currentConfiguration.isNode);
-        RxAVClient.printLog("region:" + RxAVClient.instance.currentConfiguration.region);
-        RxAVClient.printLog("server url:" + RxAVClient.instance.currentConfiguration.serverUrl);
+        RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
+        RxAVClient.printLog(`environment:node?${RxAVClient.instance.currentConfiguration.isNode}`);
+        RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
+        RxAVClient.printLog(`server url:${RxAVClient.instance.currentConfiguration.serverUrl}`);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
-    };
-    RxAVClient.printLog = function (message) {
-        var optionalParams = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            optionalParams[_i - 1] = arguments[_i];
-        }
+    }
+    static printLog(message, ...optionalParams) {
         if (RxAVClient.currentConfig().log) {
             console.log('===================================');
             if (optionalParams.length > 0)
@@ -103,32 +95,28 @@ var RxAVClient = (function () {
             else
                 console.log(message);
         }
-    };
-    RxAVClient.generateAVCommand = function (relativeUrl, method, data, sessionToken) {
-        var cmd = new AVCommand_1.AVCommand({
+    }
+    static generateAVCommand(relativeUrl, method, data, sessionToken) {
+        let cmd = new AVCommand_1.AVCommand({
             relativeUrl: relativeUrl,
             method: method,
             data: data,
             sessionToken: sessionToken
         });
         return cmd;
-    };
-    RxAVClient.runCommand = function (relativeUrl, method, data, sessionToken) {
-        var cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
-        return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(function (res) {
+    }
+    static runCommand(relativeUrl, method, data, sessionToken) {
+        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
+        return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });
-    };
-    Object.defineProperty(RxAVClient, "instance", {
-        get: function () {
-            if (RxAVClient._avClientInstance == null)
-                RxAVClient._avClientInstance = new RxAVClient();
-            return RxAVClient._avClientInstance;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    RxAVClient.prototype.initialize = function (config) {
+    }
+    static get instance() {
+        if (RxAVClient._avClientInstance == null)
+            RxAVClient._avClientInstance = new RxAVClient();
+        return RxAVClient._avClientInstance;
+    }
+    initialize(config) {
         this.appRouterState = new AppRouterState(config.appId);
         this.currentConfiguration.applicationId = config.appId;
         this.currentConfiguration.applicationKey = config.appKey;
@@ -158,9 +146,9 @@ var RxAVClient = (function () {
             }
         }
         RxAVClient.printWelcome();
-    };
-    RxAVClient.prototype.request = function (url, method, headers, data) {
-        var httpRequest = new HttpRequest_1.HttpRequest();
+    }
+    request(url, method, headers, data) {
+        let httpRequest = new HttpRequest_1.HttpRequest();
         httpRequest.url = url;
         httpRequest.method = "GET";
         httpRequest.headers = {};
@@ -171,21 +159,19 @@ var RxAVClient = (function () {
         if (headers)
             httpRequest.headers = headers;
         return SDKPlugins_1.SDKPlugins.instance.HttpClient.execute(httpRequest);
-    };
-    return RxAVClient;
-}());
+    }
+}
 exports.RxAVClient = RxAVClient;
-var AppRouterState = (function () {
-    function AppRouterState(appId) {
-        var prefix = appId.substring(0, 8).toLowerCase();
+class AppRouterState {
+    constructor(appId) {
+        let prefix = appId.substring(0, 8).toLowerCase();
         this.TTL = -1;
-        this.ApiServer = prefix + ".api.lncld.net";
-        this.EngineServer = prefix + ".engine.lncld.net";
-        this.PushServer = prefix + ".push.lncld.net";
-        this.RealtimeRouterServer = prefix + ".rtm.lncld.net";
-        this.StatsServer = prefix + ".stats.lncld.net";
+        this.ApiServer = `${prefix}.api.lncld.net`;
+        this.EngineServer = `${prefix}.engine.lncld.net`;
+        this.PushServer = `${prefix}.push.lncld.net`;
+        this.RealtimeRouterServer = `${prefix}.rtm.lncld.net`;
+        this.StatsServer = `${prefix}.stats.lncld.net`;
         this.Source = "initial";
     }
-    return AppRouterState;
-}());
+}
 exports.AppRouterState = AppRouterState;

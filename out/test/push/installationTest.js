@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var RxLeanCloud_1 = require("../../src/RxLeanCloud");
+const RxLeanCloud_1 = require("../../src/RxLeanCloud");
 describe('RxAVInstallation', function () {
-    before(function () {
+    before(() => {
         RxLeanCloud_1.RxAVClient.init({
             appId: '6j2LjkhAnnDTeefTLFQTFJXx-gzGzoHsz',
             appKey: 'mrChsHGwIAytLHopODLpqiHo',
@@ -11,12 +11,12 @@ describe('RxAVInstallation', function () {
             pluginVersion: 2
         });
     });
-    it('RxAVInstallation#save', function (done) {
-        var installation = new RxLeanCloud_1.RxAVInstallation();
+    it('RxAVInstallation#save', done => {
+        let installation = new RxLeanCloud_1.RxAVInstallation();
         installation.deviceType = 'ios';
         installation.deviceToken = '0dd8d2697841d7292dc6cce7ba8172ba77ae62f454ecf5974830e0469431efe9';
         installation.channels = ['public', 'fuck'];
-        installation.save().subscribe(function (s) {
+        installation.save().subscribe(s => {
             done();
         });
     });
