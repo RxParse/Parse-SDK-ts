@@ -10,7 +10,15 @@ export class RxNodeJSWebSocketClient implements IRxWebSocketClient {
     listeners: any = {};
     onMessage: Observable<any>;
     socket: Subject<any>;
-    state: string;
+    _state: string;
+
+    get state() {
+        return this._state;
+    }
+    set state(nextState: string) {
+        this._state = nextState;
+        this.onState.next(this.state);
+    }
     onState: Subject<string>;
 
     open(url: string, protocols?: string | string[]): Observable<boolean> {
@@ -18,12 +26,11 @@ export class RxNodeJSWebSocketClient implements IRxWebSocketClient {
         this.protocols = protocols;
         let rtn = new Promise<boolean>((resolve, reject) => {
             this.wsc = new WebSocket(this.url, this.protocols);
-
+            this.onState = new Subject<any>();
+            this.socket = new Subject<any>();
             this.state = 'connecting';
             this.wsc.on('open', () => {
                 this.state = 'connected';
-                this.onState = new Subject<any>();
-                this.socket = new Subject<any>();
                 this.onMessage = this.socket.asObservable();
                 resolve(true);
             });
@@ -48,12 +55,11 @@ export class RxNodeJSWebSocketClient implements IRxWebSocketClient {
             this.wsc.on('close', () => {
                 console.log('websocket connection closed');
                 this.state = 'closed';
-                this.onState.next('close');
             });
         });
         return Observable.fromPromise(rtn);
     }
-    
+
     close(code?: number, data?: any): void {
         this.wsc.close(code, data);
     }

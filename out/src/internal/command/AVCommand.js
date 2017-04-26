@@ -11,9 +11,11 @@ class AVCommand extends HttpRequest_1.HttpRequest {
             let apiVersion = '1.1';
             if (this.relativeUrl == null || typeof this.relativeUrl == 'undefined')
                 throw new Error('command must have a relative url.');
-            this.url = `${RxLeanCloud_1.RxAVClient.instance.currentConfiguration.server.api}/${apiVersion}`;
             if (RxLeanCloud_1.RxAVClient.instance.currentConfiguration.region == 'cn') {
                 this.url = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.ApiServer}/${apiVersion}${this.relativeUrl}`;
+                if (RxLeanCloud_1.RxAVClient.instance.currentConfiguration.server.api != null) {
+                    this.url = `https://${RxLeanCloud_1.RxAVClient.instance.currentConfiguration.server.api}/${apiVersion}${this.relativeUrl}`;
+                }
                 if (this.relativeUrl.startsWith('/push') || this.relativeUrl.startsWith('/installations')) {
                     this.url = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.PushServer}/${apiVersion}${this.relativeUrl}`;
                     if (RxLeanCloud_1.RxAVClient.instance.currentConfiguration.server.push != null) {

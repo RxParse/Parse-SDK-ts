@@ -7,6 +7,7 @@ export declare class RxNodeJSWebSocketClient implements IRxWebSocketClient {
     listeners: any;
     onMessage: Observable<any>;
     socket: Subject<any>;
+    _state: string;
     state: string;
     onState: Subject<string>;
     open(url: string, protocols?: string | string[]): Observable<boolean>;

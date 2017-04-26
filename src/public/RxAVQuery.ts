@@ -3,8 +3,8 @@ import { IQueryController } from '../internal/query/controller/IQueryController'
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
-import { Observable } from 'rxjs';
-
+import { Observable, Subject } from 'rxjs';
+import { RxAVRealtime } from '../RxLeanCloud';
 /**
  * 针对 RxAVObject 的查询构建类
  * 
@@ -309,5 +309,108 @@ export /**
             result['keys'] = this._select.join(',');
         }
         return result;
+    }
+    public get where() {
+        return this._where;
+    }
+    get RxWebSocketController() {
+        return SDKPlugins.instance.WebSocketController;
+    }
+    protected createSubscription(query: RxAVQuery, sessionToken: string): Observable<RxAVLiveQuery> {
+        return RxAVClient.runCommand(`/LiveQuery/subscribe`, 'POST', {
+            query: {
+                where: query.where,
+                className: query.className
+            }
+        }, sessionToken).map(res => {
+            let subscriptionId = res.id;
+            let queryId = res.query_id;
+
+            let rtn = new RxAVLiveQuery(subscriptionId);
+            rtn.queryId = queryId;
+            rtn.query = query;
+            return rtn;
+        });
+    }
+    subscribe(): Observable<RxAVLiveQuery> {
+        let rtn: RxAVLiveQuery;
+
+        return this.createSubscription(this, RxAVUser.currentSessionToken).flatMap(liveQuerySubscription => {
+            rtn = liveQuerySubscription;
+            return RxAVRealtime.instance.open();
+        }).flatMap(success => {
+            this.RxWebSocketController.rxWebSocketClient.onState.subscribe(state => {
+                console.log(state);
+            });
+            let liveQueryLogIn = new AVCommand();
+            liveQueryLogIn.data = {
+                cmd: 'login',
+                op: 'open',
+                appId: RxAVClient.instance.currentConfiguration.applicationId,
+                installationId: rtn.id,
+                service: 1,
+                i: RxAVRealtime.instance.cmdId
+            };
+            return this.RxWebSocketController.execute(liveQueryLogIn);
+        }).flatMap(logInResp => {
+            return this.RxWebSocketController.rxWebSocketClient.onMessage.map(data => {
+                console.log('livequery<=', data);
+                if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
+                    if (data.cmd == 'data') {
+                        console.log('livequery', data);
+                        let ids = data.ids;
+                        let msg: Array<{ object: any, op: string, query_id: string }> = data.msg;
+                        msg.filter(item => {
+                            return item.query_id == rtn.queryId;
+                        }).forEach(item => {
+                            rtn.push(item.op, item.object);
+                        });
+                        rtn.sendAck(ids);
+                    }
+                }
+                return rtn;
+            });
+        });
+    }
+}
+
+import { AVCommand } from '../internal/command/AVCommand';
+import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
+export class RxAVLiveQuery {
+
+    constructor(id?: string) {
+        this.id = id;
+        this.on = new Subject<{ scope: string, object: RxAVObject }>();
+    }
+    get RxWebSocketController() {
+        return SDKPlugins.instance.WebSocketController;
+    }
+    push(op: string, object: any) {
+        let objectState = SDKPlugins.instance.ObjectDecoder.decode(object, SDKPlugins.instance.Decoder);
+        let rxObject = new RxAVObject(this.query.className);
+        rxObject.handleFetchResult(objectState);
+
+        this.on.next(
+            {
+                scope: op,
+                object: rxObject
+            });
+    }
+    id: string;
+    queryId: string;
+    on: Subject<{ scope: string, object: RxAVObject }>;
+    query: RxAVQuery;
+
+    sendAck(ids?: Array<string>) {
+        let ackCmd = new AVCommand()
+            .attribute('appId', RxAVClient.instance.currentConfiguration.applicationId)
+            .attribute('cmd', 'ack')
+            .attribute('installationId', this.id)
+            .attribute('service', 1);
+
+        if (ids) {
+            ackCmd = ackCmd.attribute('ids', ids);
+        }
+        this.RxWebSocketController.execute(ackCmd);
     }
 }

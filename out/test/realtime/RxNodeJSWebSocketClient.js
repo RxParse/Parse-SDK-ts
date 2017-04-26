@@ -7,16 +7,23 @@ class RxNodeJSWebSocketClient {
     constructor() {
         this.listeners = {};
     }
+    get state() {
+        return this._state;
+    }
+    set state(nextState) {
+        this._state = nextState;
+        this.onState.next(this.state);
+    }
     open(url, protocols) {
         this.url = url;
         this.protocols = protocols;
         let rtn = new Promise((resolve, reject) => {
             this.wsc = new WebSocket(this.url, this.protocols);
+            this.onState = new rxjs_1.Subject();
+            this.socket = new rxjs_1.Subject();
             this.state = 'connecting';
             this.wsc.on('open', () => {
                 this.state = 'connected';
-                this.onState = new rxjs_1.Subject();
-                this.socket = new rxjs_1.Subject();
                 this.onMessage = this.socket.asObservable();
                 resolve(true);
             });
@@ -38,7 +45,6 @@ class RxNodeJSWebSocketClient {
             this.wsc.on('close', () => {
                 console.log('websocket connection closed');
                 this.state = 'closed';
-                this.onState.next('close');
             });
         });
         return rxjs_1.Observable.fromPromise(rtn);

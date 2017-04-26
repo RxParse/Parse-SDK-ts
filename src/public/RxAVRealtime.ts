@@ -38,7 +38,6 @@ export class RxAVRealtime {
         return RxAVClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
             console.log('pushRouterState', this.pushRouterState);
-
             return this.RxWebSocketController.open(this.pushRouterState.server);
         });
     }
