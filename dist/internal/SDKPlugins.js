@@ -14,6 +14,7 @@ const AVObjectDecoder_1 = require("./encoding/AVObjectDecoder");
 const LeanEngineDecoder_1 = require("./LeanEngine/encoding/LeanEngineDecoder");
 const StorageController_1 = require("./storage/controller/StorageController");
 const AnalyticsController_1 = require("./analytics/controller/AnalyticsController");
+const RxWebSocketController_1 = require("./websocket/controller/RxWebSocketController");
 const RxAVClient_1 = require("../public/RxAVClient");
 class SDKPlugins {
     constructor(version) {
@@ -72,6 +73,12 @@ class SDKPlugins {
     get hasStorage() {
         return this.StorageProvider != null;
     }
+    get StorageProvider() {
+        return this._StorageProvider;
+    }
+    set StorageProvider(provider) {
+        this._StorageProvider = provider;
+    }
     set LocalStorageControllerInstance(controller) {
         this._StorageController = controller;
     }
@@ -86,17 +93,27 @@ class SDKPlugins {
     set AnalyticsControllerInstance(controller) {
         this._AnalyticsController = controller;
     }
-    get StorageProvider() {
-        return this._StorageProvider;
-    }
-    set StorageProvider(provider) {
-        this._StorageProvider = provider;
-    }
     get DeviceProvider() {
         return this._DevicePorvider;
     }
     set DeviceProvider(provider) {
         this._DevicePorvider = provider;
+    }
+    get WebSocketProvider() {
+        return this._WebSocketProvider;
+    }
+    set WebSocketProvider(provider) {
+        this._WebSocketProvider = provider;
+    }
+    get WebSocketController() {
+        if (this._RxWebSocketController == null) {
+            if (this._WebSocketProvider != null) {
+                return new RxWebSocketController_1.RxWebSocketController(this._WebSocketProvider);
+            }
+        }
+    }
+    set WebSocketController(provider) {
+        this._RxWebSocketController = provider;
     }
     generateAVCommand(relativeUrl, method, data) {
         let request = new HttpRequest_1.HttpRequest();

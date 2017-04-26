@@ -5,6 +5,7 @@ import { IAVCommandRunner } from '../internal/command/IAVCommandRunner';
 import { AVCommandRunner } from '../internal/command/AVCommandRunner';
 import { IStorage } from '../internal/storage/IStorage';
 import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
+import { IRxWebSocketClient } from '../internal/websocket/IRxWebSocketClient';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
 import { HttpRequest } from '../internal/httpClient/HttpRequest';
@@ -52,7 +53,8 @@ export class RxAVClient {
         pluginVersion?: number,
         plugins?: {
             storage?: IStorage,
-            device?: IDeviceInfo
+            device?: IDeviceInfo,
+            websocket?: IRxWebSocketClient
         }
     }): void {
         RxAVClient.instance.initialize(config);
@@ -161,7 +163,8 @@ export class RxAVClient {
         pluginVersion?: number,
         plugins?: {
             storage?: IStorage,
-            device?: IDeviceInfo
+            device?: IDeviceInfo,
+            websocket?: IRxWebSocketClient
         }
     }) {
         this.appRouterState = new AppRouterState(config.appId);
@@ -194,6 +197,9 @@ export class RxAVClient {
             }
             if (config.plugins.device) {
                 SDKPlugins.instance.DeviceProvider = config.plugins.device;
+            }
+            if (config.plugins.websocket) {
+                SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
             }
         }
         RxAVClient.printWelcome();

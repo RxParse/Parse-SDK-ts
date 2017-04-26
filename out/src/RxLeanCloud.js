@@ -20,6 +20,7 @@ var RxAVPush_1 = require("./public/RxAVPush");
 exports.RxAVPush = RxAVPush_1.RxAVPush;
 var RxAVRealtime_1 = require("./public/RxAVRealtime");
 exports.RxAVRealtime = RxAVRealtime_1.RxAVRealtime;
+exports.RxAVIMMessage = RxAVRealtime_1.RxAVIMMessage;
 //export { RxAVAnalytics, RxAVAnalyticDevice, RxAVAnalyticEvent, RxAVAnalyticActivity, RxAVAnalyticTerminate, RxAVAnalyticLaunch } from './public/RxAVAnalytics';
 var RxAVAnalytics_1 = require("./public/RxAVAnalytics");
 exports.RxAVAnalytics = RxAVAnalytics_1.RxAVAnalytics;

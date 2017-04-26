@@ -1,6 +1,6 @@
 //import WebSocket from 'ws';
 var WebSocket = require('ws');
-import { IRxWebSocketClient } from './IRxWebSocketClient';
+import { IRxWebSocketClient } from '../../src/RxLeanCloud';
 import { Observable, Observer, Subject } from 'rxjs';
 
 export class RxNodeJSWebSocketClient implements IRxWebSocketClient {

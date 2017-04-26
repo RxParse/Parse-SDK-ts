@@ -1,4 +1,4 @@
-import { IRxWebSocketClient } from './IRxWebSocketClient';
+import { IRxWebSocketClient } from '../../src/RxLeanCloud';
 import { Observable, Subject } from 'rxjs';
 export declare class RxNodeJSWebSocketClient implements IRxWebSocketClient {
     wsc: any;

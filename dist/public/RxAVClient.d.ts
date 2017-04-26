@@ -1,6 +1,7 @@
 import { AVCommand } from '../internal/command/AVCommand';
 import { IStorage } from '../internal/storage/IStorage';
 import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
+import { IRxWebSocketClient } from '../internal/websocket/IRxWebSocketClient';
 import { Observable } from 'rxjs';
 /**
  * SDK 核心类，包含了基础的功能模块
@@ -39,6 +40,7 @@ export declare class RxAVClient {
         plugins?: {
             storage?: IStorage;
             device?: IDeviceInfo;
+            websocket?: IRxWebSocketClient;
         };
     }): void;
     static restoreSettings(): Observable<boolean>;
@@ -97,6 +99,7 @@ export declare class RxAVClient {
         plugins?: {
             storage?: IStorage;
             device?: IDeviceInfo;
+            websocket?: IRxWebSocketClient;
         };
     }): void;
     request(url: string, method?: string, headers?: {
