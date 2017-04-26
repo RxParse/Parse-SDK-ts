@@ -10,15 +10,19 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     rxWebSocketClient: IRxWebSocketClient;
     url: string;
     protocols: string | string[];
+
     constructor(_rxWebSocketClient: IRxWebSocketClient) {
         this.rxWebSocketClient = _rxWebSocketClient;
     }
+
     open(url: string, protocols?: string | string[]): Observable<boolean> {
+        if(this.rxWebSocketClient.state == 'connected') return Observable.from([true]);
         console.log(url, 'connecting...');
         this.url = url;
         this.protocols = protocols;
         return this.rxWebSocketClient.open(this.url, this.protocols);
     }
+
     execute(httpRequest: HttpRequest): Observable<HttpResponse> {
         return this.rxWebSocketClient.send(httpRequest.data).map(response => {
             let resp = new HttpResponse();

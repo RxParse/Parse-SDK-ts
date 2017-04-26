@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const HttpRequest_1 = require("./httpClient/HttpRequest");
 const RxHttpClient_1 = require("./httpClient/RxHttpClient");
 const AVCommandRunner_1 = require("./command/AVCommandRunner");
 const ObjectController_1 = require("./object/controller/ObjectController");
@@ -15,7 +14,6 @@ const LeanEngineDecoder_1 = require("./LeanEngine/encoding/LeanEngineDecoder");
 const StorageController_1 = require("./storage/controller/StorageController");
 const AnalyticsController_1 = require("./analytics/controller/AnalyticsController");
 const RxWebSocketController_1 = require("./websocket/controller/RxWebSocketController");
-const RxAVClient_1 = require("../public/RxAVClient");
 class SDKPlugins {
     constructor(version) {
         this._version = 1;
@@ -114,15 +112,6 @@ class SDKPlugins {
     }
     set WebSocketController(provider) {
         this._RxWebSocketController = provider;
-    }
-    generateAVCommand(relativeUrl, method, data) {
-        let request = new HttpRequest_1.HttpRequest();
-        request.method = method;
-        let encodeData = SDKPlugins.instance.Encoder.encode(data);
-        request.data = encodeData;
-        request.url = RxAVClient_1.RxAVClient.serverUrl() + relativeUrl;
-        request.headers = RxAVClient_1.RxAVClient.headers();
-        return request;
     }
     get Encoder() {
         if (this._encoder == null) {

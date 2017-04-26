@@ -12,15 +12,16 @@ class RxNodeJSWebSocketClient {
         this.protocols = protocols;
         let rtn = new Promise((resolve, reject) => {
             this.wsc = new WebSocket(this.url, this.protocols);
+            this.state = 'connecting';
             this.wsc.on('open', () => {
-                console.log('opened');
-                this.onMessage = new rxjs_1.Subject();
+                this.state = 'connected';
+                this.onState = new rxjs_1.Subject();
                 this.socket = new rxjs_1.Subject();
                 this.onMessage = this.socket.asObservable();
                 resolve(true);
             });
             this.wsc.on('error', (error) => {
-                console.log('error');
+                this.state = 'disconnected';
                 reject(error);
             });
             this.wsc.on('message', (data, flags) => {
@@ -34,11 +35,16 @@ class RxNodeJSWebSocketClient {
                 }
                 this.socket.next(rawResp);
             });
+            this.wsc.on('close', () => {
+                console.log('websocket connection closed');
+                this.state = 'closed';
+                this.onState.next('close');
+            });
         });
         return rxjs_1.Observable.fromPromise(rtn);
     }
     close(code, data) {
-        throw new Error('Method not implemented.');
+        this.wsc.close(code, data);
     }
     send(data, options) {
         let rawReq = JSON.stringify(data);

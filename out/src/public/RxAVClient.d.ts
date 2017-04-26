@@ -35,6 +35,14 @@ export declare class RxAVClient {
         appKey: string;
         region?: string;
         serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         log?: boolean;
         pluginVersion?: number;
         plugins?: {
@@ -51,11 +59,17 @@ export declare class RxAVClient {
         [key: string]: any;
     };
     static readonly sdk_version: string;
-    static serverUrl(): string;
     static currentConfig(): {
         applicationId?: string;
         applicationKey?: string;
-        serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         region?: string;
         isNode?: boolean;
         sdkVersion?: string;
@@ -81,7 +95,14 @@ export declare class RxAVClient {
     currentConfiguration: {
         applicationId?: string;
         applicationKey?: string;
-        serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         region?: string;
         isNode?: boolean;
         sdkVersion?: string;
@@ -94,6 +115,14 @@ export declare class RxAVClient {
         appKey: string;
         region?: string;
         serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         log?: boolean;
         pluginVersion?: number;
         plugins?: {

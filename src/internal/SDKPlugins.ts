@@ -178,16 +178,6 @@ export /**
         this._RxWebSocketController = provider;
     }
 
-    generateAVCommand(relativeUrl: string, method: string, data: { [key: string]: any }): HttpRequest {
-        let request: HttpRequest = new HttpRequest();
-        request.method = method;
-        let encodeData = SDKPlugins.instance.Encoder.encode(data);
-        request.data = encodeData;
-        request.url = RxAVClient.serverUrl() + relativeUrl;
-        request.headers = RxAVClient.headers();
-        return request;
-    }
-
     get Encoder() {
         if (this._encoder == null) {
             this._encoder = new AVEncoder();

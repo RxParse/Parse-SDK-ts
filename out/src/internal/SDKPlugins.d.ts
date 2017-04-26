@@ -1,4 +1,3 @@
-import { HttpRequest } from './httpClient/HttpRequest';
 import { IRxHttpClient } from './httpClient/iRxHttpClient';
 import { IAVCommandRunner } from './command/IAVCommandRunner';
 import { IObjectController } from './object/controller/iObjectController';
@@ -51,9 +50,6 @@ export declare class SDKPlugins {
     DeviceProvider: IDeviceInfo;
     WebSocketProvider: IRxWebSocketClient;
     WebSocketController: IRxWebSocketController;
-    generateAVCommand(relativeUrl: string, method: string, data: {
-        [key: string]: any;
-    }): HttpRequest;
     readonly Encoder: IAVEncoder;
     readonly Decoder: IAVDecoder;
     readonly ObjectDecoder: IAVObjectDecoder;

@@ -10,24 +10,29 @@ export class RxNodeJSWebSocketClient implements IRxWebSocketClient {
     listeners: any = {};
     onMessage: Observable<any>;
     socket: Subject<any>;
-    onClosed: Observable<{ wasClean: boolean; code: number; reason: string; }>;
+    state: string;
+    onState: Subject<string>;
 
     open(url: string, protocols?: string | string[]): Observable<boolean> {
         this.url = url;
         this.protocols = protocols;
         let rtn = new Promise<boolean>((resolve, reject) => {
             this.wsc = new WebSocket(this.url, this.protocols);
+
+            this.state = 'connecting';
             this.wsc.on('open', () => {
-                console.log('opened');
-                this.onMessage = new Subject<any>();
+                this.state = 'connected';
+                this.onState = new Subject<any>();
                 this.socket = new Subject<any>();
                 this.onMessage = this.socket.asObservable();
                 resolve(true);
             });
+
             this.wsc.on('error', (error) => {
-                console.log('error');
+                this.state = 'disconnected';
                 reject(error);
             });
+
             this.wsc.on('message', (data, flags) => {
                 let rawResp = JSON.parse(data);
                 console.log('websocket<=', data);
@@ -39,12 +44,20 @@ export class RxNodeJSWebSocketClient implements IRxWebSocketClient {
                 }
                 this.socket.next(rawResp);
             });
+
+            this.wsc.on('close', () => {
+                console.log('websocket connection closed');
+                this.state = 'closed';
+                this.onState.next('close');
+            });
         });
         return Observable.fromPromise(rtn);
     }
+    
     close(code?: number, data?: any): void {
-        throw new Error('Method not implemented.');
+        this.wsc.close(code, data);
     }
+
     send(data: any, options?: any): Observable<any> {
         let rawReq = JSON.stringify(data);
         this.wsc.send(rawReq);
