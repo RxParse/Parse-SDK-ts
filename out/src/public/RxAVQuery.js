@@ -294,12 +294,11 @@ class RxAVQuery {
                 i: RxLeanCloud_2.RxAVRealtime.instance.cmdId
             };
             return this.RxWebSocketController.execute(liveQueryLogIn);
-        }).flatMap(logInResp => {
-            return this.RxWebSocketController.rxWebSocketClient.onMessage.map(data => {
+        }).map(logInResp => {
+            this.RxWebSocketController.rxWebSocketClient.onMessage.subscribe(data => {
                 console.log('livequery<=', data);
                 if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                     if (data.cmd == 'data') {
-                        console.log('livequery', data);
                         let ids = data.ids;
                         let msg = data.msg;
                         msg.filter(item => {
@@ -310,8 +309,8 @@ class RxAVQuery {
                         rtn.sendAck(ids);
                     }
                 }
-                return rtn;
             });
+            return rtn;
         });
     }
 }
@@ -329,10 +328,12 @@ class RxAVLiveQuery {
         let objectState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(object, SDKPlugins_1.SDKPlugins.instance.Decoder);
         let rxObject = new RxLeanCloud_1.RxAVObject(this.query.className);
         rxObject.handleFetchResult(objectState);
-        this.on.next({
+        let notice = {
             scope: op,
             object: rxObject
-        });
+        };
+        console.log('notice', notice);
+        this.on.next(notice);
     }
     sendAck(ids) {
         let ackCmd = new AVCommand_1.AVCommand()

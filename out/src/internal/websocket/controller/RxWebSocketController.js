@@ -20,6 +20,8 @@ class RxWebSocketController {
             resp.body = response;
             resp.satusCode = 200;
             return resp;
+        }).catch(error => {
+            return rxjs_1.Observable.throw(error);
         });
     }
 }

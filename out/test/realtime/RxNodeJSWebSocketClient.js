@@ -25,19 +25,23 @@ class RxNodeJSWebSocketClient {
             this.wsc.on('open', () => {
                 this.state = 'connected';
                 this.onMessage = this.socket.asObservable();
-                resolve(true);
+                if (resolve)
+                    resolve(true);
             });
             this.wsc.on('error', (error) => {
                 this.state = 'disconnected';
-                reject(error);
+                if (reject)
+                    reject(error);
             });
             this.wsc.on('message', (data, flags) => {
                 let rawResp = JSON.parse(data);
                 console.log('websocket<=', data);
                 for (var listener in this.listeners) {
-                    if (rawResp.i.toString() == listener) {
-                        this.listeners[listener](rawResp);
-                        delete this.listeners[listener];
+                    if (Object.prototype.hasOwnProperty.call(rawResp, 'i')) {
+                        if (rawResp.i.toString() == listener) {
+                            this.listeners[listener](rawResp);
+                            delete this.listeners[listener];
+                        }
                     }
                 }
                 this.socket.next(rawResp);
@@ -57,13 +61,15 @@ class RxNodeJSWebSocketClient {
         this.wsc.send(rawReq);
         console.log('websocket=>', data);
         let rtn = new Promise((resolve, reject) => {
-            let fId = data.i.toString();
-            this.listeners[fId] = (response) => {
-                let resp = {};
-                resp['body'] = response;
-                resp['satusCode'] = 200;
-                resolve(resp);
-            };
+            if (Object.prototype.hasOwnProperty.call(data, 'i')) {
+                let fId = data.i.toString();
+                this.listeners[fId] = (response) => {
+                    let resp = {};
+                    resp['body'] = response;
+                    resp['satusCode'] = 200;
+                    resolve(resp);
+                };
+            }
         });
         return rxjs_1.Observable.fromPromise(rtn);
     }

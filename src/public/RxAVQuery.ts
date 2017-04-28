@@ -334,7 +334,6 @@ export /**
     }
     subscribe(): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery;
-
         return this.createSubscription(this, RxAVUser.currentSessionToken).flatMap(liveQuerySubscription => {
             rtn = liveQuerySubscription;
             return RxAVRealtime.instance.open();
@@ -352,12 +351,11 @@ export /**
                 i: RxAVRealtime.instance.cmdId
             };
             return this.RxWebSocketController.execute(liveQueryLogIn);
-        }).flatMap(logInResp => {
-            return this.RxWebSocketController.rxWebSocketClient.onMessage.map(data => {
+        }).map(logInResp => {
+            this.RxWebSocketController.rxWebSocketClient.onMessage.subscribe(data => {
                 console.log('livequery<=', data);
                 if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                     if (data.cmd == 'data') {
-                        console.log('livequery', data);
                         let ids = data.ids;
                         let msg: Array<{ object: any, op: string, query_id: string }> = data.msg;
                         msg.filter(item => {
@@ -368,8 +366,8 @@ export /**
                         rtn.sendAck(ids);
                     }
                 }
-                return rtn;
             });
+            return rtn;
         });
     }
 }
@@ -390,11 +388,12 @@ export class RxAVLiveQuery {
         let rxObject = new RxAVObject(this.query.className);
         rxObject.handleFetchResult(objectState);
 
-        this.on.next(
-            {
-                scope: op,
-                object: rxObject
-            });
+        let notice = {
+            scope: op,
+            object: rxObject
+        };
+        console.log('notice', notice);
+        this.on.next(notice);
     }
     id: string;
     queryId: string;

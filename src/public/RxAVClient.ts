@@ -90,7 +90,7 @@ export class RxAVClient {
     public static get sdk_version(): string {
         return pjson.version;
     }
-    
+
     public static currentConfig() {
         if (RxAVClient.instance.currentConfiguration == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
         return RxAVClient.instance.currentConfiguration;
@@ -185,6 +185,13 @@ export class RxAVClient {
             websocket?: IRxWebSocketClient
         }
     }) {
+        // 注册全局未捕获异常处理器
+        process.on('uncaughtException', function (err) {
+            console.error("Caught exception:", err.stack);
+        });
+        process.on('unhandledRejection', function (reason, p) {
+            console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
+        });
         this.appRouterState = new AppRouterState(config.appId);
         this.currentConfiguration.applicationId = config.appId;
         this.currentConfiguration.applicationKey = config.appKey;

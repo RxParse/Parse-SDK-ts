@@ -27,19 +27,15 @@ describe('RxAVLiveQuery', () => {
         let query = new RxLeanCloud_1.RxAVQuery('TodoLiveQuery');
         query.equalTo('name', 'livequery');
         let subscription = query.subscribe();
-        subscription.subscribe(subs => {
-            subs.on.subscribe(pushData => {
-                console.log(pushData.scope, pushData.object.objectId);
-                chai.assert.isNotNull(pushData.scope);
-                chai.assert.isNotNull(pushData.object);
-                done();
-            });
-        });
-        //save a tofo for test
-        let lqTodo = new RxLeanCloud_1.RxAVObject('TodoLiveQuery');
-        lqTodo.set('name', 'livequery');
-        lqTodo.save().subscribe(success => {
-            console.log('test data saved waiting for LiveQuery push data...', lqTodo.objectId);
+        subscription.flatMap(subs => {
+            //save a tofo for test
+            console.log('subs', subs);
+            return subs.on.asObservable();
+        }).subscribe(pushData => {
+            console.log('pushData.scope', pushData.scope, 'pushData.object.objectId', pushData.object.objectId);
+            chai.assert.isNotNull(pushData.scope);
+            chai.assert.isNotNull(pushData.object);
+            done();
         });
     });
 });

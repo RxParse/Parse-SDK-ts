@@ -16,7 +16,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     }
 
     open(url: string, protocols?: string | string[]): Observable<boolean> {
-        if(this.rxWebSocketClient.state == 'connected') return Observable.from([true]);
+        if (this.rxWebSocketClient.state == 'connected') return Observable.from([true]);
         console.log(url, 'connecting...');
         this.url = url;
         this.protocols = protocols;
@@ -29,6 +29,8 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
             resp.body = response;
             resp.satusCode = 200;
             return resp;
+        }).catch(error => {
+            return Observable.throw(error);
         });
     }
 }
