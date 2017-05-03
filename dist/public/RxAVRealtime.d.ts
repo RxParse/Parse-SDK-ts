@@ -1,9 +1,9 @@
 import { Observable, Subject } from 'rxjs';
-import { RxWebSocketClient } from '../internal/websocket/RxWebSocketClient';
+import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
 export declare class RxAVRealtime {
     private static singleton;
     static readonly instance: RxAVRealtime;
-    wsc: RxWebSocketClient;
+    readonly RxWebSocketController: IRxWebSocketController;
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
     clientId: string;
@@ -47,6 +47,7 @@ export interface IRxAVIMMessage {
     offline: boolean;
     deserialize(data: any): any;
     serialize(): string;
+    validate(): boolean;
 }
 export declare class RxAVIMMessage implements IRxAVIMMessage {
     convId: string;
@@ -57,5 +58,8 @@ export declare class RxAVIMMessage implements IRxAVIMMessage {
     offline: boolean;
     deserialize(data: any): void;
     serialize(): string;
-    toJson(): string;
+    validate(): boolean;
+    toJson(): any;
+    static initValidators(): void;
+    static validators: Array<(msgMap: any, dataMapRef: any) => boolean>;
 }

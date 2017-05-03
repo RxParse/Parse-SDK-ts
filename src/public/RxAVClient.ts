@@ -5,11 +5,11 @@ import { IAVCommandRunner } from '../internal/command/IAVCommandRunner';
 import { AVCommandRunner } from '../internal/command/AVCommandRunner';
 import { IStorage } from '../internal/storage/IStorage';
 import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
+import { IRxWebSocketClient } from '../internal/websocket/IRxWebSocketClient';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
 import { HttpRequest } from '../internal/httpClient/HttpRequest';
 var pjson = require('../package.json');
-
 
 // var providers: {
 //     storage?: IStorage,
@@ -48,11 +48,20 @@ export class RxAVClient {
         appKey: string,
         region?: string,
         serverUrl?: string,
+        server?: {
+            api?: string,
+            pushRouter?: string,
+            rtm?: string,
+            push?: string,
+            stats?: string,
+            engine?: string
+        },
         log?: boolean,
         pluginVersion?: number,
         plugins?: {
             storage?: IStorage,
-            device?: IDeviceInfo
+            device?: IDeviceInfo,
+            websocket?: IRxWebSocketClient
         }
     }): void {
         RxAVClient.instance.initialize(config);
@@ -81,11 +90,9 @@ export class RxAVClient {
     public static get sdk_version(): string {
         return pjson.version;
     }
-    public static serverUrl() {
-        return RxAVClient.instance.currentConfiguration.serverUrl;
-    }
+
     public static currentConfig() {
-        if (RxAVClient.instance.currentConfiguration.serverUrl == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
+        if (RxAVClient.instance.currentConfiguration == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
         return RxAVClient.instance.currentConfiguration;
     }
     public static isNode() {
@@ -96,11 +103,9 @@ export class RxAVClient {
     }
     protected static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
         RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
         RxAVClient.printLog(`environment:node?${RxAVClient.instance.currentConfiguration.isNode}`);
         RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
-        RxAVClient.printLog(`server url:${RxAVClient.instance.currentConfiguration.serverUrl}`);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     }
     public static printLog(message?: any, ...optionalParams: any[]) {
@@ -142,7 +147,14 @@ export class RxAVClient {
     currentConfiguration: {
         applicationId?: string,
         applicationKey?: string,
-        serverUrl?: string,
+        server?: {
+            api?: string,
+            pushRouter?: string,
+            rtm?: string,
+            push?: string,
+            stats?: string,
+            engine?: string
+        },
         region?: string,
         isNode?: boolean,
         sdkVersion?: string,
@@ -157,28 +169,54 @@ export class RxAVClient {
         appKey: string,
         region?: string,
         serverUrl?: string,
+        server?: {
+            api?: string,
+            pushRouter?: string,
+            rtm?: string,
+            push?: string,
+            stats?: string,
+            engine?: string
+        },
         log?: boolean,
         pluginVersion?: number,
         plugins?: {
             storage?: IStorage,
-            device?: IDeviceInfo
+            device?: IDeviceInfo,
+            websocket?: IRxWebSocketClient
         }
     }) {
+        // 注册全局未捕获异常处理器
+        process.on('uncaughtException', function (err) {
+            console.error("Caught exception:", err.stack);
+        });
+        process.on('unhandledRejection', function (reason, p) {
+            console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
+        });
         this.appRouterState = new AppRouterState(config.appId);
         this.currentConfiguration.applicationId = config.appId;
         this.currentConfiguration.applicationKey = config.appKey;
         this.currentConfiguration.log = config.log;
-        this.currentConfiguration.region = 'cn';
-        this.currentConfiguration.serverUrl = 'https://api.leancloud.cn/1.1';
+
+
+        if (config.server == null) {
+            this.currentConfiguration.server = {
+                api: 'https://api.leancloud.cn/1.1'
+            };
+        }
+        if (config.region == null) {
+            config.region = 'cn';
+        }
 
         if (config.region != null) {
             this.currentConfiguration.region = config.region;
-            if (this.currentConfiguration.region.toLowerCase() == 'us') {
-                this.currentConfiguration.serverUrl = 'https://us-api.leancloud.cn/1.1';
+            if (config.region.toLowerCase() == 'us') {
+                config.server.api = 'https://us-api.leancloud.cn/1.1';
             }
         }
 
-        this.currentConfiguration.serverUrl = config.serverUrl != null ? config.serverUrl : this.currentConfiguration.serverUrl;
+        if (config.server != null) {
+            this.currentConfiguration.server = config.server;
+        }
 
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             this.currentConfiguration.isNode = true;
@@ -194,6 +232,9 @@ export class RxAVClient {
             }
             if (config.plugins.device) {
                 SDKPlugins.instance.DeviceProvider = config.plugins.device;
+            }
+            if (config.plugins.websocket) {
+                SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
             }
         }
         RxAVClient.printWelcome();

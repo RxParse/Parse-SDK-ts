@@ -144,6 +144,9 @@ class RxAVClient {
             if (config.plugins.device) {
                 SDKPlugins_1.SDKPlugins.instance.DeviceProvider = config.plugins.device;
             }
+            if (config.plugins.websocket) {
+                SDKPlugins_1.SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
+            }
         }
         RxAVClient.printWelcome();
     }

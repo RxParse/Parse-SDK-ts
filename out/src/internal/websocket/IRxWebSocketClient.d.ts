@@ -1,11 +1,8 @@
 import { Observable } from 'rxjs';
 export interface IRxWebSocketClient {
+    state: string;
+    onState: Observable<string>;
     onMessage: Observable<any>;
-    onClosed: Observable<{
-        wasClean: boolean;
-        code: number;
-        reason: string;
-    }>;
     open(url: string, protocols?: string | string[]): Observable<boolean>;
     close(code?: number, data?: any): void;
     send(data: any, options?: any): Observable<any>;

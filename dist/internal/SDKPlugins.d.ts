@@ -14,6 +14,8 @@ import { IStorage } from './storage/IStorage';
 import { IStorageController } from './storage/controller/IStorageController';
 import { IDeviceInfo } from './analytics/IDeviceInfo';
 import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
+import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
+import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
 export declare class SDKPlugins {
     private _version;
     private _HttpClient;
@@ -31,6 +33,8 @@ export declare class SDKPlugins {
     private _StorageProvider;
     private _AnalyticsController;
     private _DevicePorvider;
+    private _WebSocketProvider;
+    private _RxWebSocketController;
     private static _sdkPluginsInstance;
     constructor(version?: number);
     readonly HttpClient: IRxHttpClient;
@@ -42,9 +46,11 @@ export declare class SDKPlugins {
     readonly ToolControllerInstance: IToolController;
     LocalStorageControllerInstance: IStorageController;
     readonly hasStorage: boolean;
-    AnalyticsControllerInstance: IAnalyticsController;
     StorageProvider: IStorage;
+    AnalyticsControllerInstance: IAnalyticsController;
     DeviceProvider: IDeviceInfo;
+    WebSocketProvider: IRxWebSocketClient;
+    WebSocketController: IRxWebSocketController;
     generateAVCommand(relativeUrl: string, method: string, data: {
         [key: string]: any;
     }): HttpRequest;

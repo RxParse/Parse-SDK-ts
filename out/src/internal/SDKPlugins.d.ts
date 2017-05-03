@@ -1,4 +1,3 @@
-import { HttpRequest } from './httpClient/HttpRequest';
 import { IRxHttpClient } from './httpClient/iRxHttpClient';
 import { IAVCommandRunner } from './command/IAVCommandRunner';
 import { IObjectController } from './object/controller/iObjectController';
@@ -14,6 +13,8 @@ import { IStorage } from './storage/IStorage';
 import { IStorageController } from './storage/controller/IStorageController';
 import { IDeviceInfo } from './analytics/IDeviceInfo';
 import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
+import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
+import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
 export declare class SDKPlugins {
     private _version;
     private _HttpClient;
@@ -31,6 +32,8 @@ export declare class SDKPlugins {
     private _StorageProvider;
     private _AnalyticsController;
     private _DevicePorvider;
+    private _WebSocketProvider;
+    private _RxWebSocketController;
     private static _sdkPluginsInstance;
     constructor(version?: number);
     readonly HttpClient: IRxHttpClient;
@@ -42,12 +45,11 @@ export declare class SDKPlugins {
     readonly ToolControllerInstance: IToolController;
     LocalStorageControllerInstance: IStorageController;
     readonly hasStorage: boolean;
-    AnalyticsControllerInstance: IAnalyticsController;
     StorageProvider: IStorage;
+    AnalyticsControllerInstance: IAnalyticsController;
     DeviceProvider: IDeviceInfo;
-    generateAVCommand(relativeUrl: string, method: string, data: {
-        [key: string]: any;
-    }): HttpRequest;
+    WebSocketProvider: IRxWebSocketClient;
+    WebSocketController: IRxWebSocketController;
     readonly Encoder: IAVEncoder;
     readonly Decoder: IAVDecoder;
     readonly ObjectDecoder: IAVObjectDecoder;

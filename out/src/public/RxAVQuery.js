@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const RxLeanCloud_1 = require("../RxLeanCloud");
 const SDKPlugins_1 = require("../internal/SDKPlugins");
+const rxjs_1 = require("rxjs");
+const RxLeanCloud_2 = require("../RxLeanCloud");
 /**
  * 针对 RxAVObject 的查询构建类
  *
@@ -252,5 +254,97 @@ class RxAVQuery {
         }
         return result;
     }
+    get where() {
+        return this._where;
+    }
+    get RxWebSocketController() {
+        return SDKPlugins_1.SDKPlugins.instance.WebSocketController;
+    }
+    createSubscription(query, sessionToken) {
+        return RxLeanCloud_1.RxAVClient.runCommand(`/LiveQuery/subscribe`, 'POST', {
+            query: {
+                where: query.where,
+                className: query.className
+            }
+        }, sessionToken).map(res => {
+            let subscriptionId = res.id;
+            let queryId = res.query_id;
+            let rtn = new RxAVLiveQuery(subscriptionId);
+            rtn.queryId = queryId;
+            rtn.query = query;
+            return rtn;
+        });
+    }
+    subscribe() {
+        let rtn;
+        return this.createSubscription(this, RxLeanCloud_1.RxAVUser.currentSessionToken).flatMap(liveQuerySubscription => {
+            rtn = liveQuerySubscription;
+            return RxLeanCloud_2.RxAVRealtime.instance.open();
+        }).flatMap(success => {
+            this.RxWebSocketController.rxWebSocketClient.onState.subscribe(state => {
+                console.log(state);
+            });
+            let liveQueryLogIn = new AVCommand_1.AVCommand();
+            liveQueryLogIn.data = {
+                cmd: 'login',
+                op: 'open',
+                appId: RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId,
+                installationId: rtn.id,
+                service: 1,
+                i: RxLeanCloud_2.RxAVRealtime.instance.cmdId
+            };
+            return this.RxWebSocketController.execute(liveQueryLogIn);
+        }).map(logInResp => {
+            this.RxWebSocketController.rxWebSocketClient.onMessage.subscribe(data => {
+                console.log('livequery<=', data);
+                if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
+                    if (data.cmd == 'data') {
+                        let ids = data.ids;
+                        let msg = data.msg;
+                        msg.filter(item => {
+                            return item.query_id == rtn.queryId;
+                        }).forEach(item => {
+                            rtn.push(item.op, item.object);
+                        });
+                        rtn.sendAck(ids);
+                    }
+                }
+            });
+            return rtn;
+        });
+    }
 }
 exports.RxAVQuery = RxAVQuery;
+const AVCommand_1 = require("../internal/command/AVCommand");
+class RxAVLiveQuery {
+    constructor(id) {
+        this.id = id;
+        this.on = new rxjs_1.Subject();
+    }
+    get RxWebSocketController() {
+        return SDKPlugins_1.SDKPlugins.instance.WebSocketController;
+    }
+    push(op, object) {
+        let objectState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(object, SDKPlugins_1.SDKPlugins.instance.Decoder);
+        let rxObject = new RxLeanCloud_1.RxAVObject(this.query.className);
+        rxObject.handleFetchResult(objectState);
+        let notice = {
+            scope: op,
+            object: rxObject
+        };
+        console.log('notice', notice);
+        this.on.next(notice);
+    }
+    sendAck(ids) {
+        let ackCmd = new AVCommand_1.AVCommand()
+            .attribute('appId', RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId)
+            .attribute('cmd', 'ack')
+            .attribute('installationId', this.id)
+            .attribute('service', 1);
+        if (ids) {
+            ackCmd = ackCmd.attribute('ids', ids);
+        }
+        this.RxWebSocketController.execute(ackCmd);
+    }
+}
+exports.RxAVLiveQuery = RxAVLiveQuery;

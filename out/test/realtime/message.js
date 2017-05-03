@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai = require("chai");
 const RxLeanCloud_1 = require("../../src/RxLeanCloud");
+const RxNodeJSWebSocketClient_1 = require("./RxNodeJSWebSocketClient");
 describe('AVRealtime', () => {
     before(done => {
         RxLeanCloud_1.RxAVClient.init({
@@ -9,7 +10,10 @@ describe('AVRealtime', () => {
             appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
             region: 'cn',
             log: true,
-            pluginVersion: 2
+            pluginVersion: 2,
+            plugins: {
+                websocket: new RxNodeJSWebSocketClient_1.RxNodeJSWebSocketClient()
+            }
         });
         let realtime = RxLeanCloud_1.RxAVRealtime.instance;
         realtime.connect('junwu').subscribe(success => {
@@ -21,6 +25,8 @@ describe('AVRealtime', () => {
         RESTSendMessage('test');
         realtime.messages.subscribe(message => {
             console.log(message.serialize());
+            let msgMap = message.toJson();
+            console.log('msgMap', msgMap);
             done();
         });
     });
@@ -35,7 +41,7 @@ describe('AVRealtime', () => {
         });
     });
 });
-function RESTSendMessage(text) {
+function RESTSendMessage(text, attrs) {
     var request = require("request");
     let textMessage = {
         _lctype: -1,

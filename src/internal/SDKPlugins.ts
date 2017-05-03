@@ -33,6 +33,10 @@ import { IDeviceInfo } from './analytics/IDeviceInfo';
 import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
 import { AnalyticsController } from './analytics/controller/AnalyticsController';
 
+import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
+import { RxWebSocketController } from './websocket/controller/RxWebSocketController';
+import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
+
 import { RxAVClient } from '../public/RxAVClient';
 
 export /**
@@ -55,6 +59,8 @@ export /**
     private _StorageProvider: IStorage;
     private _AnalyticsController: IAnalyticsController;
     private _DevicePorvider: IDeviceInfo;
+    private _WebSocketProvider: IRxWebSocketClient;
+    private _RxWebSocketController: IRxWebSocketController;
     private static _sdkPluginsInstance: SDKPlugins;
 
     constructor(version?: number) {
@@ -121,6 +127,13 @@ export /**
     get hasStorage() {
         return this.StorageProvider != null;
     }
+    get StorageProvider() {
+        return this._StorageProvider;
+    }
+
+    set StorageProvider(provider: IStorage) {
+        this._StorageProvider = provider;
+    }
 
     set LocalStorageControllerInstance(controller: IStorageController) {
         this._StorageController = controller;
@@ -139,14 +152,6 @@ export /**
         this._AnalyticsController = controller;
     }
 
-    get StorageProvider() {
-        return this._StorageProvider;
-    }
-
-    set StorageProvider(provider: IStorage) {
-        this._StorageProvider = provider;
-    }
-
     get DeviceProvider() {
         return this._DevicePorvider;
     }
@@ -154,14 +159,23 @@ export /**
         this._DevicePorvider = provider;
     }
 
-    generateAVCommand(relativeUrl: string, method: string, data: { [key: string]: any }): HttpRequest {
-        let request: HttpRequest = new HttpRequest();
-        request.method = method;
-        let encodeData = SDKPlugins.instance.Encoder.encode(data);
-        request.data = encodeData;
-        request.url = RxAVClient.serverUrl() + relativeUrl;
-        request.headers = RxAVClient.headers();
-        return request;
+    get WebSocketProvider() {
+        return this._WebSocketProvider;
+    }
+    set WebSocketProvider(provider: IRxWebSocketClient) {
+        this._WebSocketProvider = provider;
+    }
+
+    get WebSocketController() {
+        if (this._RxWebSocketController == null) {
+            if (this._WebSocketProvider != null) {
+                return new RxWebSocketController(this._WebSocketProvider);
+            }
+        }
+    }
+
+    set WebSocketController(provider: IRxWebSocketController) {
+        this._RxWebSocketController = provider;
     }
 
     get Encoder() {

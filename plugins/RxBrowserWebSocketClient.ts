@@ -1,5 +1,6 @@
-import { IRxWebSocketClient } from './IRxWebSocketClient';
 import { Observable, Observer, Subject } from 'rxjs';
+import { IRxWebSocketClient } from 'leancloud-typescript-rx-sdk';
+
 
 export class RxBrowserWebSocketClient implements IRxWebSocketClient {
     wsc: WebSocket;

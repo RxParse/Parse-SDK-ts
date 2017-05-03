@@ -1,6 +1,7 @@
 import * as chai from 'chai';
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVRole, RxAVUser, RxAVACL, RxAVRealtime } from '../../src/RxLeanCloud';
 import * as random from "../utils/random";
+import { RxNodeJSWebSocketClient } from './RxNodeJSWebSocketClient';
 
 describe('AVRealtime', () => {
     before(done => {
@@ -9,7 +10,10 @@ describe('AVRealtime', () => {
             appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
             region: 'cn',
             log: true,
-            pluginVersion: 2
+            pluginVersion: 2,
+            plugins: {
+                websocket: new RxNodeJSWebSocketClient()
+            }
         });
 
         let realtime = RxAVRealtime.instance;
@@ -23,6 +27,8 @@ describe('AVRealtime', () => {
         RESTSendMessage('test');
         realtime.messages.subscribe(message => {
             console.log(message.serialize());
+            let msgMap = message.toJson();
+            console.log('msgMap', msgMap);
             done();
         });
     });
@@ -40,7 +46,7 @@ describe('AVRealtime', () => {
 
 });
 
-function RESTSendMessage(text: string) {
+function RESTSendMessage(text: string, attrs?: any) {
     var request = require("request");
     let textMessage = {
         _lctype: -1,

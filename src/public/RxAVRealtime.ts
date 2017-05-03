@@ -1,7 +1,9 @@
 import { Observable, Subject } from 'rxjs';
-import { RxAVClient, RxAVObject, RxAVUser } from '../RxLeanCloud';
+import { RxAVClient } from './RxAVClient';
+import { SDKPlugins } from '../internal/SDKPlugins';
 import { AVCommand } from '../internal/command/AVCommand';
-import { RxWebSocketClient } from '../internal/websocket/RxWebSocketClient';
+import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
+
 export class RxAVRealtime {
 
     private static singleton: RxAVRealtime;
@@ -11,12 +13,37 @@ export class RxAVRealtime {
             RxAVRealtime.singleton = new RxAVRealtime();
         return RxAVRealtime.singleton;
     }
-    wsc: RxWebSocketClient;
+    get RxWebSocketController() {
+        return SDKPlugins.instance.WebSocketController;
+    }
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
     clientId: string;
+
     /**
-     * 客户端打开链接
+     * 打开与 Push Server 的 WebSocket
+     * 
+     * @returns {Observable<boolean>} 
+     * 
+     * @memberOf RxAVRealtime
+     */
+    public open(): Observable<boolean> {
+        if (RxAVClient.instance.currentConfiguration.server.rtm != null)
+            return this.RxWebSocketController.open(RxAVClient.instance.currentConfiguration.server.rtm);
+
+        let pushRouter = `https://${RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
+        if (RxAVClient.instance.currentConfiguration.server.pushRouter != null)
+            pushRouter = RxAVClient.instance.currentConfiguration.server.pushRouter;
+
+        return RxAVClient.instance.request(pushRouter).flatMap(response => {
+            this.pushRouterState = response.body;
+            console.log('pushRouterState', this.pushRouterState);
+            return this.RxWebSocketController.open(this.pushRouterState.server);
+        });
+    }
+
+    /**
+     * 客户端打开聊天 v2 协议
      * 
      * @param {string} clientId 当前客户端应用内唯一标识
      * @returns {Observable<boolean>} 
@@ -25,13 +52,7 @@ export class RxAVRealtime {
      */
     public connect(clientId: string): Observable<boolean> {
         this.clientId = clientId;
-        let pushRouter = `https://${RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
-        return RxAVClient.instance.request(pushRouter).flatMap(response => {
-            this.pushRouterState = response.body;
-            console.log('pushRouterState', this.pushRouterState);
-            this.wsc = new RxWebSocketClient(this.pushRouterState.server);
-            return this.wsc.open();
-        }).flatMap(opened => {
+        return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand();
                 sessionOpenCmd.data = {
@@ -42,9 +63,10 @@ export class RxAVRealtime {
                     i: this.cmdId,
                     ua: 'ts-sdk',
                 };
-                return this.wsc.execute(sessionOpenCmd).map(response => {
+                return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
+                    RxAVIMMessage.initValidators();
                     this.messages = new Subject<RxAVIMMessage>();
-                    this.wsc.rxWebSocketClient.onMessage.subscribe(data => {
+                    this.RxWebSocketController.rxWebSocketClient.onMessage.subscribe(data => {
                         if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                             if (data.cmd == 'direct') {
                                 let newMessage = new RxAVIMMessage();
@@ -146,7 +168,7 @@ export class RxAVRealtime {
             .attribute('level', level ? level : 1)
             .attribute('msg', iMessage.serialize());
 
-        return this.wsc.execute(msgCmd).map(response => {
+        return this.RxWebSocketController.execute(msgCmd).map(response => {
             if (Object.prototype.hasOwnProperty.call(response.body, 'uid')) {
                 iMessage.id = response.body.uid;
             }
@@ -168,7 +190,7 @@ export class RxAVRealtime {
         if (tots) {
             ackCmd = ackCmd.attribute('tots', tots);
         }
-        this.wsc.execute(ackCmd);
+        this.RxWebSocketController.execute(ackCmd);
     }
 
     private makeCommand() {
@@ -183,7 +205,7 @@ export class RxAVRealtime {
     private cmdIdAutomation() {
         return this.idSeed++;
     }
-    private get cmdId() {
+    get cmdId() {
         return this.cmdIdAutomation();
     }
 }
@@ -197,6 +219,7 @@ export interface IRxAVIMMessage {
     offline: boolean;
     deserialize(data: any);
     serialize(): string;
+    validate(): boolean;
 }
 
 export class RxAVIMMessage implements IRxAVIMMessage {
@@ -230,8 +253,81 @@ export class RxAVIMMessage implements IRxAVIMMessage {
     public serialize(): string {
         return this.content;
     }
-
-    public toJson() {
-        return JSON.stringify(this);
+    validate(): boolean {
+        return true;
     }
+    public toJson() {
+        var rtn: any = {};
+        for (let key in this) {
+            rtn[key] = this[key];
+        }
+
+        try {
+            let msgMap = JSON.parse(this.content);
+            for (let index = 0; index < RxAVIMMessage.validators.length; index++) {
+                var validator = RxAVIMMessage.validators[index];
+                if (validator(this.content, rtn)) {
+                    break;
+                }
+            }
+        } catch (error) {
+
+        }
+        return rtn;
+    }
+
+    public static initValidators() {
+        RxAVIMMessage.validators = [];
+        let commonSet = (msgMap: any, dataMapRef: any): void => {
+            if (Object.prototype.hasOwnProperty.call(msgMap, '_lcattrs')) {
+                let attrs = msgMap['_lcattrs'];
+                for (let key in attrs) {
+                    dataMapRef[key] = attrs[key];
+                }
+            }
+        };
+
+        let textValidator = (msgStr: any, dataMapRef: any): boolean => {
+            let msgMap = JSON.parse(msgStr);
+            if (Object.prototype.hasOwnProperty.call(msgMap, '_lctype')) {
+                let valid = msgMap['_lctype'] == -1;
+                if (valid) {
+                    dataMapRef.type = 'text';
+                    dataMapRef.text = msgMap['_lctext'];
+                    commonSet(msgMap, dataMapRef);
+                }
+                return valid;
+            }
+            return false;
+        };
+
+
+        let imageValidator = (msgStr: any, dataMapRef: any): boolean => {
+            let msgMap = JSON.parse(msgStr);
+            if (Object.prototype.hasOwnProperty.call(msgMap, '_lctype')) {
+                let valid = msgMap['_lctype'] == -2;
+                commonSet(msgMap, dataMapRef);
+                if (valid) {
+                    dataMapRef.type = 'image';
+                    let fileInfo = msgMap['_lcfile'];
+                    if (Object.prototype.hasOwnProperty.call(fileInfo, 'url')) {
+                        dataMapRef.url = fileInfo.url;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(fileInfo, 'objId')) {
+                        dataMapRef.fileId = fileInfo.objId;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(fileInfo, 'metaData')) {
+                        dataMapRef.metaData = fileInfo.metaData;
+                    }
+                }
+                return valid;
+            }
+            return false;
+        };
+
+        RxAVIMMessage.validators.push(textValidator);
+        RxAVIMMessage.validators.push(imageValidator);
+    }
+
+    public static validators: Array<(msgMap: any, dataMapRef: any) => boolean>;
 }
