@@ -66,7 +66,8 @@ export class RxAVRealtime {
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();
                     this.messages = new Subject<RxAVIMMessage>();
-                    this.RxWebSocketController.rxWebSocketClient.onMessage.subscribe(data => {
+                    this.RxWebSocketController.onMessage.subscribe(message => {
+                        let data = JSON.parse(message);
                         if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                             if (data.cmd == 'direct') {
                                 let newMessage = new RxAVIMMessage();

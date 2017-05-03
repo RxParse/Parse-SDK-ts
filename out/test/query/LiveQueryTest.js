@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai = require("chai");
 const RxLeanCloud_1 = require("../../src/RxLeanCloud");
-const RxNodeJSWebSocketClient_1 = require("../realtime/RxNodeJSWebSocketClient");
+const NodeJSWebSocketClient_1 = require("../realtime/NodeJSWebSocketClient");
 describe('RxAVLiveQuery', () => {
     before(done => {
         RxLeanCloud_1.RxAVClient.init({
@@ -10,18 +10,15 @@ describe('RxAVLiveQuery', () => {
             appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
             region: 'cn',
             log: true,
-            server: {
-                api: 'api.leancloud.cn',
-                rtm: 'wss://rtm51.avoscloud.com/'
-            },
+            server: {},
             plugins: {
-                websocket: new RxNodeJSWebSocketClient_1.RxNodeJSWebSocketClient()
+                websocket: new NodeJSWebSocketClient_1.NodeJSWebSocketClient()
             }
         });
-        let realtime = RxLeanCloud_1.RxAVRealtime.instance;
-        realtime.connect('junwu').subscribe(success => {
-            done();
-        });
+        // let realtime = RxAVRealtime.instance;
+        // realtime.connect('junwu').subscribe(success => {
+        // });
+        done();
     });
     it('RxAVLiveQuery#subscribe', done => {
         let query = new RxLeanCloud_1.RxAVQuery('TodoLiveQuery');

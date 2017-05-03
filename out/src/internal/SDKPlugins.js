@@ -106,9 +106,21 @@ class SDKPlugins {
     get WebSocketController() {
         if (this._RxWebSocketController == null) {
             if (this._WebSocketProvider != null) {
-                return new RxWebSocketController_1.RxWebSocketController(this._WebSocketProvider);
+                this._RxWebSocketController = new RxWebSocketController_1.RxWebSocketController(this._WebSocketProvider);
+            }
+            else {
+                throw new Error(`you musy set the websocket when RxAVClient.init{
+                    ...
+                    plugins?: {
+                    storage?: IStorage,
+                    device?: IDeviceInfo,
+                    websocket?: IWebSocketClient
+                    }
+                    ...
+                    }`);
             }
         }
+        return this._RxWebSocketController;
     }
     set WebSocketController(provider) {
         this._RxWebSocketController = provider;

@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVRole, RxAVUser, RxAVACL, RxAVRealtime } from '../../src/RxLeanCloud';
 import * as random from "../utils/random";
-import { RxNodeJSWebSocketClient } from './RxNodeJSWebSocketClient';
+import { NodeJSWebSocketClient } from './NodeJSWebSocketClient';
 
 describe('AVRealtime', () => {
     before(done => {
@@ -12,7 +12,7 @@ describe('AVRealtime', () => {
             log: true,
             pluginVersion: 2,
             plugins: {
-                websocket: new RxNodeJSWebSocketClient()
+                websocket: new NodeJSWebSocketClient()
             }
         });
 

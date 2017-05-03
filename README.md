@@ -39,8 +39,8 @@ npm install leancloud-typescript-rx-sdk --save
 因为 RxJS 可以很好解决异步和事件组合的问题。大多数 BaaS 或者 PaaS 的使用者都是倾向于服务端是一个所见即所用的东西（正如 LeanCloud 这些年以来一直致力于实现的目标一样），
 因此大多数用户都是客户端编程经验丰富，而经验丰富的客户端工程师对于异步和事件都不会陌生，而在 Rx 的编程理念中，致力于在这两者事件找到一种结合：
 
-异步：await Task  = Observable.subscribe
-事件: event.emit  = Observable.subscribe
+- 异步：await Task  = Observable.subscribe
+- 事件: event.emit  = Observable.subscribe
 
 也就是不管是主动和被动的行为都视为我作为一个客户端订阅了这两种行为的结果，这就是两者的共同点。
 
