@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai = require("chai");
 const RxLeanCloud_1 = require("../../src/RxLeanCloud");
-const RxNodeJSWebSocketClient_1 = require("./RxNodeJSWebSocketClient");
+const NodeJSWebSocketClient_1 = require("./NodeJSWebSocketClient");
 describe('AVRealtime', () => {
     before(done => {
         RxLeanCloud_1.RxAVClient.init({
@@ -12,7 +12,7 @@ describe('AVRealtime', () => {
             log: true,
             pluginVersion: 2,
             plugins: {
-                websocket: new RxNodeJSWebSocketClient_1.RxNodeJSWebSocketClient()
+                websocket: new NodeJSWebSocketClient_1.NodeJSWebSocketClient()
             }
         });
         let realtime = RxLeanCloud_1.RxAVRealtime.instance;

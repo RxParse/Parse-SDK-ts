@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime } from '../../src/RxLeanCloud';
-import { RxNodeJSWebSocketClient } from '../realtime/RxNodeJSWebSocketClient';
+import { NodeJSWebSocketClient } from '../realtime/NodeJSWebSocketClient';
 
 describe('RxAVLiveQuery', () => {
     before(done => {
@@ -10,18 +10,17 @@ describe('RxAVLiveQuery', () => {
             region: 'cn',
             log: true,
             server: {
-                api: 'api.leancloud.cn',
-                rtm: 'wss://rtm51.avoscloud.com/'
             },
             plugins: {
-                websocket: new RxNodeJSWebSocketClient()
+                websocket: new NodeJSWebSocketClient()
             }
         });
 
-        let realtime = RxAVRealtime.instance;
-        realtime.connect('junwu').subscribe(success => {
-            done();
-        });
+        // let realtime = RxAVRealtime.instance;
+        // realtime.connect('junwu').subscribe(success => {
+
+        // });
+        done();
     });
     it('RxAVLiveQuery#subscribe', done => {
         let query = new RxAVQuery('TodoLiveQuery');

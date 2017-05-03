@@ -13,7 +13,7 @@ import { IStorage } from './storage/IStorage';
 import { IStorageController } from './storage/controller/IStorageController';
 import { IDeviceInfo } from './analytics/IDeviceInfo';
 import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
-import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
+import { IWebSocketClient } from './websocket/IWebSocketClient';
 import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
 export declare class SDKPlugins {
     private _version;
@@ -48,7 +48,7 @@ export declare class SDKPlugins {
     StorageProvider: IStorage;
     AnalyticsControllerInstance: IAnalyticsController;
     DeviceProvider: IDeviceInfo;
-    WebSocketProvider: IRxWebSocketClient;
+    WebSocketProvider: IWebSocketClient;
     WebSocketController: IRxWebSocketController;
     readonly Encoder: IAVEncoder;
     readonly Decoder: IAVDecoder;

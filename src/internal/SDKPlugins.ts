@@ -34,6 +34,7 @@ import { IAnalyticsController } from './analytics/controller/IAnalyticsControlle
 import { AnalyticsController } from './analytics/controller/AnalyticsController';
 
 import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
+import { IWebSocketClient } from './websocket/IWebSocketClient';
 import { RxWebSocketController } from './websocket/controller/RxWebSocketController';
 import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
 
@@ -59,7 +60,7 @@ export /**
     private _StorageProvider: IStorage;
     private _AnalyticsController: IAnalyticsController;
     private _DevicePorvider: IDeviceInfo;
-    private _WebSocketProvider: IRxWebSocketClient;
+    private _WebSocketProvider: IWebSocketClient;
     private _RxWebSocketController: IRxWebSocketController;
     private static _sdkPluginsInstance: SDKPlugins;
 
@@ -162,16 +163,27 @@ export /**
     get WebSocketProvider() {
         return this._WebSocketProvider;
     }
-    set WebSocketProvider(provider: IRxWebSocketClient) {
+    set WebSocketProvider(provider: IWebSocketClient) {
         this._WebSocketProvider = provider;
     }
 
     get WebSocketController() {
         if (this._RxWebSocketController == null) {
             if (this._WebSocketProvider != null) {
-                return new RxWebSocketController(this._WebSocketProvider);
+                this._RxWebSocketController = new RxWebSocketController(this._WebSocketProvider);
+            } else {
+                throw new Error(`you musy set the websocket when invoke RxAVClient.init{
+                    ...
+                    plugins?: {
+                        ...
+                        websocket?: IWebSocketClient
+                        ...
+                    }
+                    ...
+                    }`);
             }
         }
+        return this._RxWebSocketController;
     }
 
     set WebSocketController(provider: IRxWebSocketController) {

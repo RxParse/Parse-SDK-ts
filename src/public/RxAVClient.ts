@@ -6,6 +6,7 @@ import { AVCommandRunner } from '../internal/command/AVCommandRunner';
 import { IStorage } from '../internal/storage/IStorage';
 import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
 import { IRxWebSocketClient } from '../internal/websocket/IRxWebSocketClient';
+import { IWebSocketClient } from '../internal/websocket/IWebSocketClient';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
 import { HttpRequest } from '../internal/httpClient/HttpRequest';
@@ -61,7 +62,7 @@ export class RxAVClient {
         plugins?: {
             storage?: IStorage,
             device?: IDeviceInfo,
-            websocket?: IRxWebSocketClient
+            websocket?: IWebSocketClient
         }
     }): void {
         RxAVClient.instance.initialize(config);
@@ -182,7 +183,7 @@ export class RxAVClient {
         plugins?: {
             storage?: IStorage,
             device?: IDeviceInfo,
-            websocket?: IRxWebSocketClient
+            websocket?: IWebSocketClient
         }
     }) {
         // 注册全局未捕获异常处理器
