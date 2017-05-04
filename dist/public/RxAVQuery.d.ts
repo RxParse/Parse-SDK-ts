@@ -1,7 +1,7 @@
 import { RxAVObject } from '../RxLeanCloud';
 import { IQueryController } from '../internal/query/controller/IQueryController';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 /**
  * 针对 RxAVObject 的查询构建类
  *
@@ -75,4 +75,22 @@ export declare class RxAVQuery {
     buildParameters(includeClassName?: boolean): {
         [key: string]: any;
     };
+    readonly where: any;
+    readonly RxWebSocketController: IRxWebSocketController;
+    protected createSubscription(query: RxAVQuery, sessionToken: string): Observable<RxAVLiveQuery>;
+    subscribe(): Observable<RxAVLiveQuery>;
+}
+import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
+export declare class RxAVLiveQuery {
+    constructor(id?: string);
+    readonly RxWebSocketController: IRxWebSocketController;
+    push(op: string, object: any): void;
+    id: string;
+    queryId: string;
+    on: Subject<{
+        scope: string;
+        object: RxAVObject;
+    }>;
+    query: RxAVQuery;
+    sendAck(ids?: Array<string>): void;
 }

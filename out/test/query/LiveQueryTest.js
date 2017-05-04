@@ -26,6 +26,11 @@ describe('RxAVLiveQuery', () => {
         let subscription = query.subscribe();
         subscription.flatMap(subs => {
             //save a tofo for test
+            let todo = new RxLeanCloud_1.RxAVObject('TodoLiveQuery');
+            todo.set('name', 'livequery');
+            todo.save().subscribe(result => {
+                console.log('save a tofo for test,', result);
+            });
             console.log('subs', subs);
             return subs.on.asObservable();
         }).subscribe(pushData => {

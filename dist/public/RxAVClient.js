@@ -64,11 +64,8 @@ class RxAVClient {
     static get sdk_version() {
         return pjson.version;
     }
-    static serverUrl() {
-        return RxAVClient.instance.currentConfiguration.serverUrl;
-    }
     static currentConfig() {
-        if (RxAVClient.instance.currentConfiguration.serverUrl == null)
+        if (RxAVClient.instance.currentConfiguration == null)
             throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
         return RxAVClient.instance.currentConfiguration;
     }
@@ -80,11 +77,9 @@ class RxAVClient {
     }
     static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        // RxAVClient.printLog(`version:${currentConfig.sdkVersion}`);
         RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
         RxAVClient.printLog(`environment:node?${RxAVClient.instance.currentConfiguration.isNode}`);
         RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
-        RxAVClient.printLog(`server url:${RxAVClient.instance.currentConfiguration.serverUrl}`);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     }
     static printLog(message, ...optionalParams) {
@@ -117,19 +112,34 @@ class RxAVClient {
         return RxAVClient._avClientInstance;
     }
     initialize(config) {
+        // 注册全局未捕获异常处理器
+        process.on('uncaughtException', function (err) {
+            console.error("Caught exception:", err.stack);
+        });
+        process.on('unhandledRejection', function (reason, p) {
+            console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
+        });
         this.appRouterState = new AppRouterState(config.appId);
         this.currentConfiguration.applicationId = config.appId;
         this.currentConfiguration.applicationKey = config.appKey;
         this.currentConfiguration.log = config.log;
-        this.currentConfiguration.region = 'cn';
-        this.currentConfiguration.serverUrl = 'https://api.leancloud.cn/1.1';
+        if (config.server == null) {
+            this.currentConfiguration.server = {
+                api: 'https://api.leancloud.cn'
+            };
+        }
+        if (config.region == null) {
+            config.region = 'cn';
+        }
         if (config.region != null) {
             this.currentConfiguration.region = config.region;
-            if (this.currentConfiguration.region.toLowerCase() == 'us') {
-                this.currentConfiguration.serverUrl = 'https://us-api.leancloud.cn/1.1';
+            if (config.region.toLowerCase() == 'us') {
+                config.server.api = 'https://us-api.leancloud.cn';
             }
         }
-        this.currentConfiguration.serverUrl = config.serverUrl != null ? config.serverUrl : this.currentConfiguration.serverUrl;
+        if (config.server != null) {
+            this.currentConfiguration.server = config.server;
+        }
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             this.currentConfiguration.isNode = true;
         }
@@ -167,8 +177,10 @@ class RxAVClient {
 exports.RxAVClient = RxAVClient;
 class AppRouterState {
     constructor(appId) {
-        let prefix = appId.substring(0, 8).toLowerCase();
+        let appDomain = appId.substring(0, 8).toLowerCase();
         this.TTL = -1;
+        let protocol = 'https://';
+        let prefix = `${protocol}${appDomain}`;
         this.ApiServer = `${prefix}.api.lncld.net`;
         this.EngineServer = `${prefix}.engine.lncld.net`;
         this.PushServer = `${prefix}.push.lncld.net`;

@@ -1,6 +1,5 @@
 export { IStorage } from './internal/storage/IStorage';
 export { IDeviceInfo } from './internal/analytics/IDeviceInfo';
-export { IRxWebSocketClient } from './internal/websocket/IRxWebSocketClient';
 export { IWebSocketClient } from './internal/websocket/IWebSocketClient';
 export { RxAVObject } from './public/RxAVObject';
 export { RxAVClient } from './public/RxAVClient';

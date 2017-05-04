@@ -31,7 +31,7 @@ export class RxAVRealtime {
         if (RxAVClient.instance.currentConfiguration.server.rtm != null)
             return this.RxWebSocketController.open(RxAVClient.instance.currentConfiguration.server.rtm);
 
-        let pushRouter = `https://${RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
+        let pushRouter = `${RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
         if (RxAVClient.instance.currentConfiguration.server.pushRouter != null)
             pushRouter = RxAVClient.instance.currentConfiguration.server.pushRouter;
 

@@ -26,7 +26,7 @@ class RxAVRealtime {
     open() {
         if (RxAVClient_1.RxAVClient.instance.currentConfiguration.server.rtm != null)
             return this.RxWebSocketController.open(RxAVClient_1.RxAVClient.instance.currentConfiguration.server.rtm);
-        let pushRouter = `https://${RxAVClient_1.RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
+        let pushRouter = `${RxAVClient_1.RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
         if (RxAVClient_1.RxAVClient.instance.currentConfiguration.server.pushRouter != null)
             pushRouter = RxAVClient_1.RxAVClient.instance.currentConfiguration.server.pushRouter;
         return RxAVClient_1.RxAVClient.instance.request(pushRouter).flatMap(response => {
