@@ -6,6 +6,7 @@ var RxAVClient_1 = require("./public/RxAVClient");
 exports.RxAVClient = RxAVClient_1.RxAVClient;
 var RxAVQuery_1 = require("./public/RxAVQuery");
 exports.RxAVQuery = RxAVQuery_1.RxAVQuery;
+exports.RxAVLiveQuery = RxAVQuery_1.RxAVLiveQuery;
 var RxAVUser_1 = require("./public/RxAVUser");
 exports.RxAVUser = RxAVUser_1.RxAVUser;
 var RxAVACL_1 = require("./public/RxAVACL");

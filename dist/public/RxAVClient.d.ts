@@ -1,7 +1,7 @@
 import { AVCommand } from '../internal/command/AVCommand';
 import { IStorage } from '../internal/storage/IStorage';
 import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
-import { IRxWebSocketClient } from '../internal/websocket/IRxWebSocketClient';
+import { IWebSocketClient } from '../internal/websocket/IWebSocketClient';
 import { Observable } from 'rxjs';
 /**
  * SDK 核心类，包含了基础的功能模块
@@ -35,12 +35,20 @@ export declare class RxAVClient {
         appKey: string;
         region?: string;
         serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         log?: boolean;
         pluginVersion?: number;
         plugins?: {
             storage?: IStorage;
             device?: IDeviceInfo;
-            websocket?: IRxWebSocketClient;
+            websocket?: IWebSocketClient;
         };
     }): void;
     static restoreSettings(): Observable<boolean>;
@@ -51,11 +59,17 @@ export declare class RxAVClient {
         [key: string]: any;
     };
     static readonly sdk_version: string;
-    static serverUrl(): string;
     static currentConfig(): {
         applicationId?: string;
         applicationKey?: string;
-        serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         region?: string;
         isNode?: boolean;
         sdkVersion?: string;
@@ -81,7 +95,14 @@ export declare class RxAVClient {
     currentConfiguration: {
         applicationId?: string;
         applicationKey?: string;
-        serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         region?: string;
         isNode?: boolean;
         sdkVersion?: string;
@@ -94,12 +115,20 @@ export declare class RxAVClient {
         appKey: string;
         region?: string;
         serverUrl?: string;
+        server?: {
+            api?: string;
+            pushRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
         log?: boolean;
         pluginVersion?: number;
         plugins?: {
             storage?: IStorage;
             device?: IDeviceInfo;
-            websocket?: IRxWebSocketClient;
+            websocket?: IWebSocketClient;
         };
     }): void;
     request(url: string, method?: string, headers?: {

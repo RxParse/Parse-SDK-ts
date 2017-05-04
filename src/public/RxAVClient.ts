@@ -201,7 +201,7 @@ export class RxAVClient {
 
         if (config.server == null) {
             this.currentConfiguration.server = {
-                api: 'https://api.leancloud.cn/1.1'
+                api: 'https://api.leancloud.cn'
             };
         }
         if (config.region == null) {
@@ -211,7 +211,7 @@ export class RxAVClient {
         if (config.region != null) {
             this.currentConfiguration.region = config.region;
             if (config.region.toLowerCase() == 'us') {
-                config.server.api = 'https://us-api.leancloud.cn/1.1';
+                config.server.api = 'https://us-api.leancloud.cn';
             }
         }
 
@@ -259,8 +259,10 @@ export class RxAVClient {
 
 export class AppRouterState {
     constructor(appId: string) {
-        let prefix = appId.substring(0, 8).toLowerCase();
+        let appDomain = appId.substring(0, 8).toLowerCase();
         this.TTL = -1;
+        let protocol = 'https://';
+        let prefix = `${protocol}${appDomain}`;
         this.ApiServer = `${prefix}.api.lncld.net`;
         this.EngineServer = `${prefix}.engine.lncld.net`;
         this.PushServer = `${prefix}.push.lncld.net`;

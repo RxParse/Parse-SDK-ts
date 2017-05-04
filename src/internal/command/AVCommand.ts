@@ -13,29 +13,29 @@ export class AVCommand extends HttpRequest {
             this.relativeUrl = options.relativeUrl;
             let apiVersion = '1.1';
             if (this.relativeUrl == null || typeof this.relativeUrl == 'undefined') throw new Error('command must have a relative url.');
-
+            let protocol = 'https://';
             if (RxAVClient.instance.currentConfiguration.region == 'cn') {
-                this.url = `https://${RxAVClient.instance.appRouterState.ApiServer}/${apiVersion}${this.relativeUrl}`;
+                this.url = `${RxAVClient.instance.appRouterState.ApiServer}/${apiVersion}${this.relativeUrl}`;
                 if (RxAVClient.instance.currentConfiguration.server.api != null) {
-                    this.url = `https://${RxAVClient.instance.currentConfiguration.server.api}/${apiVersion}${this.relativeUrl}`;
+                    this.url = `${RxAVClient.instance.currentConfiguration.server.api}/${apiVersion}${this.relativeUrl}`;
                 }
                 if (this.relativeUrl.startsWith('/push') || this.relativeUrl.startsWith('/installations')) {
-                    this.url = `https://${RxAVClient.instance.appRouterState.PushServer}/${apiVersion}${this.relativeUrl}`;
+                    this.url = `${RxAVClient.instance.appRouterState.PushServer}/${apiVersion}${this.relativeUrl}`;
                     if (RxAVClient.instance.currentConfiguration.server.push != null) {
-                        this.url = `https://${RxAVClient.instance.currentConfiguration.server.push}/${apiVersion}${this.relativeUrl}`;
+                        this.url = `${RxAVClient.instance.currentConfiguration.server.push}/${apiVersion}${this.relativeUrl}`;
                     }
                 } else if (this.relativeUrl.startsWith('/stats')
                     || this.relativeUrl.startsWith('/always_collect')
                     || this.relativeUrl.startsWith('/statistics')) {
-                    this.url = `https://${RxAVClient.instance.appRouterState.StatsServer}/${apiVersion}${this.relativeUrl}`;
+                    this.url = `${RxAVClient.instance.appRouterState.StatsServer}/${apiVersion}${this.relativeUrl}`;
                     if (RxAVClient.instance.currentConfiguration.server.stats != null) {
-                        this.url = `https://${RxAVClient.instance.currentConfiguration.server.stats}/${apiVersion}${this.relativeUrl}`;
+                        this.url = `${RxAVClient.instance.currentConfiguration.server.stats}/${apiVersion}${this.relativeUrl}`;
                     }
                 } else if (this.relativeUrl.startsWith('/functions')
                     || this.relativeUrl.startsWith('/call')) {
-                    this.url = `https://${RxAVClient.instance.appRouterState.EngineServer}/${apiVersion}${this.relativeUrl}`;
+                    this.url = `${RxAVClient.instance.appRouterState.EngineServer}/${apiVersion}${this.relativeUrl}`;
                     if (RxAVClient.instance.currentConfiguration.server.engine != null) {
-                        this.url = `https://${RxAVClient.instance.currentConfiguration.server.engine}/${apiVersion}${this.relativeUrl}`;
+                        this.url = `${RxAVClient.instance.currentConfiguration.server.engine}/${apiVersion}${this.relativeUrl}`;
                     }
                 }
             }

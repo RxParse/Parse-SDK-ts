@@ -8,7 +8,15 @@ export declare class RxAVRealtime {
     pushRouterState: any;
     clientId: string;
     /**
-     * 客户端打开链接
+     * 打开与 Push Server 的 WebSocket
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVRealtime
+     */
+    open(): Observable<boolean>;
+    /**
+     * 客户端打开聊天 v2 协议
      *
      * @param {string} clientId 当前客户端应用内唯一标识
      * @returns {Observable<boolean>}
@@ -36,7 +44,7 @@ export declare class RxAVRealtime {
     private makeCommand();
     private idSeed;
     private cmdIdAutomation();
-    private readonly cmdId;
+    readonly cmdId: number;
 }
 export interface IRxAVIMMessage {
     convId: string;

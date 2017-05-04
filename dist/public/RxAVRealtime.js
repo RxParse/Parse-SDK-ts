@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const rxjs_1 = require("rxjs");
-const RxLeanCloud_1 = require("../RxLeanCloud");
+const RxAVClient_1 = require("./RxAVClient");
 const SDKPlugins_1 = require("../internal/SDKPlugins");
 const AVCommand_1 = require("../internal/command/AVCommand");
 class RxAVRealtime {
@@ -17,7 +17,26 @@ class RxAVRealtime {
         return SDKPlugins_1.SDKPlugins.instance.WebSocketController;
     }
     /**
-     * 客户端打开链接
+     * 打开与 Push Server 的 WebSocket
+     *
+     * @returns {Observable<boolean>}
+     *
+     * @memberOf RxAVRealtime
+     */
+    open() {
+        if (RxAVClient_1.RxAVClient.instance.currentConfiguration.server.rtm != null)
+            return this.RxWebSocketController.open(RxAVClient_1.RxAVClient.instance.currentConfiguration.server.rtm);
+        let pushRouter = `${RxAVClient_1.RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
+        if (RxAVClient_1.RxAVClient.instance.currentConfiguration.server.pushRouter != null)
+            pushRouter = RxAVClient_1.RxAVClient.instance.currentConfiguration.server.pushRouter;
+        return RxAVClient_1.RxAVClient.instance.request(pushRouter).flatMap(response => {
+            this.pushRouterState = response.body;
+            console.log('pushRouterState', this.pushRouterState);
+            return this.RxWebSocketController.open(this.pushRouterState.server);
+        });
+    }
+    /**
+     * 客户端打开聊天 v2 协议
      *
      * @param {string} clientId 当前客户端应用内唯一标识
      * @returns {Observable<boolean>}
@@ -26,18 +45,13 @@ class RxAVRealtime {
      */
     connect(clientId) {
         this.clientId = clientId;
-        let pushRouter = `https://${RxLeanCloud_1.RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
-        return RxLeanCloud_1.RxAVClient.instance.request(pushRouter).flatMap(response => {
-            this.pushRouterState = response.body;
-            console.log('pushRouterState', this.pushRouterState);
-            return this.RxWebSocketController.open(this.pushRouterState.server);
-        }).flatMap(opened => {
+        return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand_1.AVCommand();
                 sessionOpenCmd.data = {
                     cmd: 'session',
                     op: 'open',
-                    appId: RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId,
+                    appId: RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId,
                     peerId: clientId,
                     i: this.cmdId,
                     ua: 'ts-sdk',
@@ -45,7 +59,8 @@ class RxAVRealtime {
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();
                     this.messages = new rxjs_1.Subject();
-                    this.RxWebSocketController.rxWebSocketClient.onMessage.subscribe(data => {
+                    this.RxWebSocketController.onMessage.subscribe(message => {
+                        let data = JSON.parse(message);
                         if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                             if (data.cmd == 'direct') {
                                 let newMessage = new RxAVIMMessage();
@@ -161,7 +176,7 @@ class RxAVRealtime {
     }
     makeCommand() {
         let cmd = new AVCommand_1.AVCommand();
-        cmd.attribute('appId', RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId);
+        cmd.attribute('appId', RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId);
         cmd.attribute('peerId', this.clientId);
         cmd.attribute('i', this.cmdId);
         return cmd;
@@ -206,11 +221,16 @@ class RxAVIMMessage {
         for (let key in this) {
             rtn[key] = this[key];
         }
-        for (let index = 0; index < RxAVIMMessage.validators.length; index++) {
-            var validator = RxAVIMMessage.validators[index];
-            if (validator(this.content, rtn)) {
-                break;
+        try {
+            let msgMap = JSON.parse(this.content);
+            for (let index = 0; index < RxAVIMMessage.validators.length; index++) {
+                var validator = RxAVIMMessage.validators[index];
+                if (validator(this.content, rtn)) {
+                    break;
+                }
             }
+        }
+        catch (error) {
         }
         return rtn;
     }

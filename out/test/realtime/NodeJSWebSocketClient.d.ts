@@ -15,7 +15,6 @@ export declare class NodeJSWebSocketClient implements IWebSocketClient {
         type: string;
         target: NodeJSWebSocketClient;
     }) => void;
-    protocol: string;
     readyState: number;
     wsc: any;
     open(url: string, protocols?: string | string[]): void;
