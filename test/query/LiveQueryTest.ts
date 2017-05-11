@@ -1,20 +1,24 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime } from '../../src/RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime, RxAVApp } from '../../src/RxLeanCloud';
 import { NodeJSWebSocketClient } from '../realtime/NodeJSWebSocketClient';
 
 describe('RxAVLiveQuery', () => {
     before(done => {
-        RxAVClient.init({
-            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
-            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
-            region: 'cn',
-            log: true,
+
+        let app = new RxAVApp({
+            appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
+            appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
             server: {
-            },
+                rtm: `wss://rtm51.leancloud.cn`
+            }
+        });
+
+        RxAVClient.init({
+            log: true,
             plugins: {
                 websocket: new NodeJSWebSocketClient()
             }
-        });
+        }).add(app);
 
         // let realtime = RxAVRealtime.instance;
         // realtime.connect('junwu').subscribe(success => {

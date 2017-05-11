@@ -1,12 +1,17 @@
 import { Observable, Subject } from 'rxjs';
+import { RxAVApp } from './RxAVClient';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
 export declare class RxAVRealtime {
+    constructor(options?: any);
+    protected _app: RxAVApp;
+    readonly app: RxAVApp;
     private static singleton;
     static readonly instance: RxAVRealtime;
     readonly RxWebSocketController: IRxWebSocketController;
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
-    clientId: string;
+    private _clientId;
+    readonly clientId: string;
     /**
      * 打开与 Push Server 的 WebSocket
      *

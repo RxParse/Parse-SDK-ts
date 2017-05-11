@@ -4,7 +4,7 @@ import { IObjectState } from '../internal/object/state/IObjectState';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
 import { Observable, Subject } from 'rxjs';
-import { RxAVRealtime } from '../RxLeanCloud';
+import { RxAVRealtime, RxAVApp } from '../RxLeanCloud';
 /**
  * 针对 RxAVObject 的查询构建类
  * 
@@ -16,14 +16,23 @@ export /**
  */
     class RxAVQuery {
 
-    constructor(objectClass: string | RxAVObject) {
+    constructor(objectClass: string | RxAVObject, options?: any) {
         if (typeof objectClass === 'string') {
             this.className = objectClass;
         } else if (objectClass instanceof RxAVObject) {
             this.className = objectClass.className;
+            this._app = objectClass.state.app;
         }
         else {
             throw new Error('A RxAVQuery must be constructed with a RxAVObject or class name.');
+        }
+        this._app = RxAVClient.instance.currentApp;
+        if (options) {
+            if (options.app) {
+                if (options.app instanceof RxAVApp) {
+                    this._app = options.app;
+                }
+            }
         }
         this._where = {};
         this._include = [];
@@ -33,6 +42,10 @@ export /**
     }
 
     className: string;
+    protected _app: RxAVApp;
+    get app() {
+        return this._app;
+    }
     protected _where: any;
     protected _include: Array<string>;
     protected _select: Array<string>;
@@ -322,7 +335,7 @@ export /**
                 where: query.where,
                 className: query.className
             }
-        }, sessionToken).map(res => {
+        }, sessionToken, this.app).map(res => {
             let subscriptionId = res.id;
             let queryId = res.query_id;
 
@@ -347,7 +360,7 @@ export /**
             liveQueryLogIn.data = {
                 cmd: 'login',
                 op: 'open',
-                appId: RxAVClient.instance.currentConfiguration.applicationId,
+                appId: RxAVClient.instance.currentApp.appId,
                 installationId: rtn.id,
                 service: 1,
                 i: RxAVRealtime.instance.cmdId
@@ -405,7 +418,7 @@ export class RxAVLiveQuery {
 
     sendAck(ids?: Array<string>) {
         let ackCmd = new AVCommand()
-            .attribute('appId', RxAVClient.instance.currentConfiguration.applicationId)
+            .attribute('appId', RxAVClient.instance.currentApp.appId)
             .attribute('cmd', 'ack')
             .attribute('installationId', this.id)
             .attribute('service', 1);

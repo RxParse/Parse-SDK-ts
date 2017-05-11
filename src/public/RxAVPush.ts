@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { RxAVClient, RxAVObject, RxAVQuery, RxAVUser } from '../RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVQuery, RxAVUser, RxAVApp } from '../RxLeanCloud';
 
 /**
  * 一条推送消息
@@ -56,7 +56,7 @@ export class RxAVPush {
         }
         return push.send();
     }
-    
+
     /**
      * 向 RxAVUser 发送推送消息
      * 
@@ -87,7 +87,7 @@ export class RxAVPush {
      */
     public send(): Observable<boolean> {
         let data = this.encode();
-        return RxAVClient.runCommand('/push', 'POST', data, RxAVUser.currentSessionToken).map(body => {
+        return RxAVClient.runCommand('/push', 'POST', data, RxAVUser.currentSessionToken, this.query.app).map(body => {
             return true;
         });
     }

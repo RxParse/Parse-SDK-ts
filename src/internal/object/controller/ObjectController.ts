@@ -14,6 +14,7 @@ export class ObjectController implements IObjectController {
 
     fetch(state: IObjectState, sessionToken: string): Observable<IObjectState> {
         let cmd = new AVCommand({
+            app: state.app,
             relativeUrl: `/classes/${state.className}/${state.objectId}`,
             method: 'GET',
             data: null,
@@ -65,6 +66,7 @@ export class ObjectController implements IObjectController {
         let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
 
         let cmd = new AVCommand({
+            app: state.app,
             relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
             method: state.objectId == null ? 'POST' : 'PUT',
             data: encoded,
@@ -88,6 +90,7 @@ export class ObjectController implements IObjectController {
             let mutableDictionary = this.packForSave(dictionaries[i]);
             let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
             let cmd = new AVCommand({
+                app: state.app,
                 relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
                 data: encoded,

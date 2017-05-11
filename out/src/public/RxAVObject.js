@@ -16,10 +16,18 @@ class RxAVObject {
      * @constructor
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
-    constructor(className) {
+    constructor(className, options) {
         this.estimatedData = {};
         this._isDirty = true;
-        this.state = new MutableObjectState_1.MutableObjectState({ className: className });
+        let app = RxLeanCloud_1.RxAVClient.instance.currentApp;
+        if (options) {
+            if (options.app) {
+                if (options.app instanceof RxLeanCloud_1.RxAVApp) {
+                    app = options.app;
+                }
+            }
+        }
+        this.state = new MutableObjectState_1.MutableObjectState({ className: className, app: app });
         this.className = className;
     }
     static get _objectController() {

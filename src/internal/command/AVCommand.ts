@@ -1,5 +1,5 @@
 import { HttpRequest } from '../httpClient/HttpRequest';
-import { RxAVClient, RxAVUser } from '../../RxLeanCloud';
+import { RxAVClient, RxAVUser, RxAVApp } from '../../RxLeanCloud';
 
 export class AVCommand extends HttpRequest {
     relativeUrl: string;
@@ -11,37 +11,32 @@ export class AVCommand extends HttpRequest {
         this.data = {};
         if (options != null) {
             this.relativeUrl = options.relativeUrl;
+            
             let apiVersion = '1.1';
             if (this.relativeUrl == null || typeof this.relativeUrl == 'undefined') throw new Error('command must have a relative url.');
             let protocol = 'https://';
-            if (RxAVClient.instance.currentConfiguration.region == 'cn') {
-                this.url = `${RxAVClient.instance.appRouterState.ApiServer}/${apiVersion}${this.relativeUrl}`;
-                if (RxAVClient.instance.currentConfiguration.server.api != null) {
-                    this.url = `${RxAVClient.instance.currentConfiguration.server.api}/${apiVersion}${this.relativeUrl}`;
-                }
+            let app = RxAVClient.instance.currentApp;
+
+            if (options.app != null) {
+                app = options.app;
+            }
+
+            if (app.region == 'cn') {
+                this.url = `${app.api}/${apiVersion}${this.relativeUrl}`;
                 if (this.relativeUrl.startsWith('/push') || this.relativeUrl.startsWith('/installations')) {
-                    this.url = `${RxAVClient.instance.appRouterState.PushServer}/${apiVersion}${this.relativeUrl}`;
-                    if (RxAVClient.instance.currentConfiguration.server.push != null) {
-                        this.url = `${RxAVClient.instance.currentConfiguration.server.push}/${apiVersion}${this.relativeUrl}`;
-                    }
+                    this.url = `${app.push}/${apiVersion}${this.relativeUrl}`;
                 } else if (this.relativeUrl.startsWith('/stats')
                     || this.relativeUrl.startsWith('/always_collect')
                     || this.relativeUrl.startsWith('/statistics')) {
-                    this.url = `${RxAVClient.instance.appRouterState.StatsServer}/${apiVersion}${this.relativeUrl}`;
-                    if (RxAVClient.instance.currentConfiguration.server.stats != null) {
-                        this.url = `${RxAVClient.instance.currentConfiguration.server.stats}/${apiVersion}${this.relativeUrl}`;
-                    }
+                    this.url = `${app.stats}/${apiVersion}${this.relativeUrl}`;
                 } else if (this.relativeUrl.startsWith('/functions')
                     || this.relativeUrl.startsWith('/call')) {
-                    this.url = `${RxAVClient.instance.appRouterState.EngineServer}/${apiVersion}${this.relativeUrl}`;
-                    if (RxAVClient.instance.currentConfiguration.server.engine != null) {
-                        this.url = `${RxAVClient.instance.currentConfiguration.server.engine}/${apiVersion}${this.relativeUrl}`;
-                    }
+                    this.url = `${app.engine}/${apiVersion}${this.relativeUrl}`;
                 }
             }
             this.method = options.method;
             this.data = options.data;
-            this.headers = RxAVClient.headers();
+            this.headers = app.httpHeaders;
             if (options.headers != null) {
                 for (let key in options.headers) {
                     this.headers[key] = options.headers[key];

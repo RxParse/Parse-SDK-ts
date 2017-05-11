@@ -1,4 +1,5 @@
 import { IObjectState } from './IObjectState';
+import { RxAVApp } from '../../../public/RxAVClient';
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 export const has = function (obj: any, prop: any) {
     return _hasOwnProperty.call(obj, prop);
@@ -12,6 +13,7 @@ export /**
     objectId: string;
     updatedAt: Date;
     createdAt: Date;
+    app: RxAVApp;
     serverData: { [key: string]: any };
     containsKey(key: string): boolean {
         if (this.serverData == null) return false;
@@ -56,6 +58,9 @@ export /**
             }
             if (options.updatedAt != null) {
                 this.updatedAt = options.updatedAt;
+            }
+            if (options.app != null) {
+                this.app = options.app;
             }
         }
     }

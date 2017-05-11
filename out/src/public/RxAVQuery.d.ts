@@ -2,6 +2,7 @@ import { RxAVObject } from '../RxLeanCloud';
 import { IQueryController } from '../internal/query/controller/IQueryController';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
 import { Observable, Subject } from 'rxjs';
+import { RxAVApp } from '../RxLeanCloud';
 /**
  * 针对 RxAVObject 的查询构建类
  *
@@ -9,8 +10,10 @@ import { Observable, Subject } from 'rxjs';
  * @class RxAVQuery
  */
 export declare class RxAVQuery {
-    constructor(objectClass: string | RxAVObject);
+    constructor(objectClass: string | RxAVObject, options?: any);
     className: string;
+    protected _app: RxAVApp;
+    readonly app: RxAVApp;
     protected _where: any;
     protected _include: Array<string>;
     protected _select: Array<string>;

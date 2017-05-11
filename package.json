@@ -10,7 +10,8 @@
     "bingo": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js')",
     "ready": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js') && gulp",
     "pretest": "node out/test/utils/init.js",
-    "test": "mocha --timeout 30000 $(find out/test -name '*.js')"
+    "test": "mocha --timeout 30000 $(find out/test -name '*.js')",
+    "pckg": "tsc && gulp"
   },
   "author": "Wu Jun",
   "license": "MIT",

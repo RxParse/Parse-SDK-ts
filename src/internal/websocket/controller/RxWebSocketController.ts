@@ -27,6 +27,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
         this.onState = Observable.create(
             (obs: Observer<number>) => {
                 this.websocketClient.onopen = (event) => {
+                    console.log(url, 'connected.');
                     obs.next(this.websocketClient.readyState);
                 };
                 this.websocketClient.onerror = (event) => {

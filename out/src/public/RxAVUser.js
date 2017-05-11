@@ -133,7 +133,7 @@ class RxAVUser extends RxLeanCloud_1.RxAVObject {
      */
     isAuthenticated() {
         try {
-            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken).map(body => {
+            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken, this.state.app).map(body => {
                 return true;
             });
         }

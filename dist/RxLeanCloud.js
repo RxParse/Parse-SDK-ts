@@ -4,6 +4,7 @@ var RxAVObject_1 = require("./public/RxAVObject");
 exports.RxAVObject = RxAVObject_1.RxAVObject;
 var RxAVClient_1 = require("./public/RxAVClient");
 exports.RxAVClient = RxAVClient_1.RxAVClient;
+exports.RxAVApp = RxAVClient_1.RxAVApp;
 var RxAVQuery_1 = require("./public/RxAVQuery");
 exports.RxAVQuery = RxAVQuery_1.RxAVQuery;
 exports.RxAVLiveQuery = RxAVQuery_1.RxAVLiveQuery;

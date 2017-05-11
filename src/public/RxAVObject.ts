@@ -3,7 +3,7 @@ import { IObjectState } from '../internal/object/state/IObjectState';
 import { IObjectController } from '../internal/object/controller/iObjectController';
 import { IStorageController } from '../internal/storage/controller/IStorageController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { RxAVUser, RxAVACL, RxAVClient, RxAVQuery } from '../RxLeanCloud';
+import { RxAVUser, RxAVACL, RxAVClient, RxAVQuery, RxAVApp } from '../RxLeanCloud';
 import { Observable } from 'rxjs';
 
 /**
@@ -25,11 +25,20 @@ export class RxAVObject {
      * @constructor
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
-    constructor(className: string) {
+    constructor(className: string, options?: any) {
 
         this.estimatedData = {};
         this._isDirty = true;
-        this.state = new MutableObjectState({ className: className });
+
+        let app = RxAVClient.instance.currentApp;
+        if (options) {
+            if (options.app) {
+                if (options.app instanceof RxAVApp) {
+                    app = options.app;
+                }
+            }
+        }
+        this.state = new MutableObjectState({ className: className, app: app });
         this.className = className;
     }
 

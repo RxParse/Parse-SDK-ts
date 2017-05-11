@@ -1,6 +1,10 @@
 import { Observable, Subject } from 'rxjs';
+import { RxAVApp } from './RxAVClient';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
 export declare class RxAVRealtime {
+    constructor(options?: any);
+    protected _app: RxAVApp;
+    readonly app: RxAVApp;
     private static singleton;
     static readonly instance: RxAVRealtime;
     readonly RxWebSocketController: IRxWebSocketController;

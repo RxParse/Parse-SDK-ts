@@ -45,17 +45,9 @@ export class RxAVClient {
      * @memberOf RxAVClient
      */
     static init(config: {
-        appId: string,
-        appKey: string,
+        appId?: string,
+        appKey?: string,
         region?: string,
-        server?: {
-            api?: string,
-            pushRouter?: string,
-            rtm?: string,
-            push?: string,
-            stats?: string,
-            engine?: string
-        },
         log?: boolean,
         pluginVersion?: number,
         plugins?: {
@@ -63,75 +55,59 @@ export class RxAVClient {
             device?: IDeviceInfo,
             websocket?: IWebSocketClient
         }
-    }): void {
-        RxAVClient.instance.initialize(config);
+    }): RxAVClient {
+        return RxAVClient.instance.initialize(config);
     }
 
-    static currentApp: RxAVApp;
-    static remotes: Array<RxAVApp> = [];
-    static add(app: RxAVApp, replace?: boolean) {
-        RxAVClient.remotes.push(app);
-        if (replace) {
-            RxAVClient.currentApp = app;
+    /*
+    *  
+    */
+    currentApp: RxAVApp;
+    remotes: Array<RxAVApp> = [];
+    add(app: RxAVApp, replace?: boolean) {
+        this.remotes.push(app);
+        if (typeof replace == 'undefined' || replace) {
+            this.currentApp = app;
         }
+        return this as RxAVClient;
     }
 
-    static switch(shortname: string) {
-        let tempApp = RxAVClient.remotes.find(app => {
+    switch(shortname: string) {
+        let tempApp = this.remotes.find(app => {
             return app.shortname == shortname;
         });
         if (tempApp) {
-            RxAVClient.currentApp = tempApp;
+            this.currentApp = tempApp;
         }
+        return this as RxAVClient;
     }
 
-    protected static _headers: { [key: string]: any };
-    public static headers() {
-        let config = RxAVClient.currentConfig();
-        if (RxAVClient._headers == null) {
-            RxAVClient._headers = {
-                'X-LC-Id': config.applicationId,
-                'X-LC-Key': config.applicationKey,
-                'Content-Type': 'application/json'
-            }
-            if (RxAVClient.isNode()) {
-                RxAVClient._headers['User-Agent'] = 'ts-sdk/' + pjson.version;
-            }
-        }
-        return RxAVClient._headers;
-    }
-
-    public static get sdk_version(): string {
-        return pjson.version;
+    public headers() {
+        return this.currentApp.httpHeaders;
     }
 
     public get SDKVersion(): string {
         return pjson.version;
     }
 
-    public static currentConfig() {
-        if (RxAVClient.instance.currentConfiguration == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
-        return RxAVClient.instance.currentConfiguration;
-    }
-
-    public static isNode() {
-        return RxAVClient.currentConfig().isNode;
+    public isNode() {
+        return this.currentConfiguration.isNode;
     }
 
     public static inLeanEngine() {
         return false;
     }
 
-    protected static printWelcome() {
-        RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
-        RxAVClient.printLog(`environment:node?${RxAVClient.instance.currentConfiguration.isNode}`);
-        RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
-        RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
+    protected printWelcome() {
+        RxAVClient.printLog('=== LeanCloud-Typescript-Rx-SDK ===');
+        RxAVClient.printLog(`pluginVersion:${this.currentConfiguration.pluginVersion}`);
+        RxAVClient.printLog(`environment:node?${this.currentConfiguration.isNode}`);
+        RxAVClient.printLog(`region:${this.currentApp.region}`);
+        RxAVClient.printLog('=== Rx is great, Typescript is wonderful! ===');
     }
 
     public static printLog(message?: any, ...optionalParams: any[]) {
-        if (RxAVClient.currentConfig().log) {
+        if (RxAVClient.instance.currentConfiguration.log) {
             console.log('===================================');
             if (optionalParams.length > 0)
                 console.log(message, optionalParams);
@@ -139,8 +115,9 @@ export class RxAVClient {
         }
     }
 
-    protected static generateAVCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): AVCommand {
+    protected static generateAVCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: RxAVApp): AVCommand {
         let cmd = new AVCommand({
+            app: app,
             relativeUrl: relativeUrl,
             method: method,
             data: data,
@@ -149,7 +126,7 @@ export class RxAVClient {
         return cmd;
     }
 
-    public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string): Observable<{ [key: string]: any }> {
+    public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: RxAVApp): Observable<{ [key: string]: any }> {
         let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
@@ -164,19 +141,7 @@ export class RxAVClient {
         return RxAVClient._avClientInstance;
     }
 
-    appRouterState: AppRouterState;
     currentConfiguration: {
-        applicationId?: string,
-        applicationKey?: string,
-        server?: {
-            api?: string,
-            pushRouter?: string,
-            rtm?: string,
-            push?: string,
-            stats?: string,
-            engine?: string
-        },
-        region?: string,
         isNode?: boolean,
         sdkVersion?: string,
         log?: boolean,
@@ -186,18 +151,9 @@ export class RxAVClient {
 
 
     public initialize(config: {
-        appId: string,
-        appKey: string,
+        appId?: string,
+        appKey?: string,
         region?: string,
-        serverUrl?: string,
-        server?: {
-            api?: string,
-            pushRouter?: string,
-            rtm?: string,
-            push?: string,
-            stats?: string,
-            engine?: string
-        },
         log?: boolean,
         pluginVersion?: number,
         plugins?: {
@@ -213,36 +169,22 @@ export class RxAVClient {
         process.on('unhandledRejection', function (reason, p) {
             console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
         });
-        this.appRouterState = new AppRouterState(config.appId);
-        this.currentConfiguration.applicationId = config.appId;
-        this.currentConfiguration.applicationKey = config.appKey;
+
         this.currentConfiguration.log = config.log;
-
-        if (config.server == null) {
-            this.currentConfiguration.server = {
-                api: 'https://api.leancloud.cn'
-            };
-        }
-        if (config.region == null) {
-            config.region = 'cn';
-        }
-
-        if (config.region != null) {
-            this.currentConfiguration.region = config.region;
-            if (config.region.toLowerCase() == 'us') {
-                config.server.api = 'https://us-api.leancloud.cn';
-            }
-        }
-
-        if (config.server != null) {
-            this.currentConfiguration.server = config.server;
-        }
 
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             this.currentConfiguration.isNode = true;
         }
+        if (config.appId && config.appKey) {
+            let app = new RxAVApp({
+                appId: config.appId,
+                appKey: config.appKey,
+                shortname: 'default',
+            });
 
-        this.currentConfiguration.log = config.log;
+            this.add(app, true);
+        }
+
         this.currentConfiguration.pluginVersion = config.pluginVersion;
         SDKPlugins.version = config.pluginVersion;
         if (config.plugins) {
@@ -257,7 +199,7 @@ export class RxAVClient {
                 SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
             }
         }
-        RxAVClient.printWelcome();
+        return this as RxAVClient;
     }
 
     public request(url: string, method?: string, headers?: { [key: string]: any }, data?: { [key: string]: any }): Observable<{ [key: string]: any }> {
@@ -300,8 +242,106 @@ export class AppRouterState {
 }
 
 export class RxAVApp {
+
+    constructor(options: {
+        appId: string,
+        appKey: string,
+        region?: string,
+        shortname?: string,
+        server?: {
+            api?: string,
+            realtimeRouter?: string,
+            rtm?: string,
+            push?: string,
+            stats?: string,
+            engine?: string
+        },
+        additionalHeaders?: { [key: string]: any }
+    }) {
+        this.appId = options.appId;
+        this.appKey = options.appKey;
+
+        if (options.region)
+            this.region = options.region;
+        else this.region = 'cn';
+
+        this.server = options.server;
+        this.shortname = options.shortname;
+        this.additionalHeaders = options.additionalHeaders;
+
+        this.appRouterState = new AppRouterState(this.appId);
+    }
     shortname: string;
     appId: string;
     appKey: string;
     region?: string;
+    additionalHeaders?: { [key: string]: any };
+    appRouterState: AppRouterState;
+
+    server?: {
+        api?: string,
+        realtimeRouter?: string,
+        rtm?: string,
+        push?: string,
+        stats?: string,
+        engine?: string
+    };
+
+    get api() {
+        let root = this.region == 'cn' ? 'https://api.leancloud.cn' : 'https://us-api.leancloud.cn';
+        let url = this._getUrl('api');
+        return url || this.appRouterState.ApiServer || root;
+    }
+
+    get rtm() {
+        let url = this._getUrl('rtm');
+        return url;
+    }
+
+    get realtimeRouter() {
+        let url = this._getUrl('pushRouter');
+        return url || this.appRouterState.RealtimeRouterServer;
+    }
+
+    get engine() {
+        let url = this._getUrl('engine');
+        return url || this.appRouterState.EngineServer;
+    }
+
+    get stats() {
+        let url = this._getUrl('stats');
+        return url || this.appRouterState.StatsServer;
+    }
+
+    get push() {
+        let url = this._getUrl('push');
+        return url || this.appRouterState.PushServer;
+    }
+
+    get httpHeaders() {
+        let headers: { [key: string]: any } = {};
+        headers = {
+            'X-LC-Id': this.appId,
+            'X-LC-Key': this.appKey,
+            'Content-Type': 'application/json'
+        };
+        if (RxAVClient.instance.isNode()) {
+            headers['User-Agent'] = 'ts-sdk/' + pjson.version;
+        }
+        if (this.additionalHeaders) {
+            for (let key in this.additionalHeaders) {
+                headers[key] = this.additionalHeaders[key];
+            }
+        }
+        return headers;
+    }
+
+    private _getUrl(key: string) {
+        if (this.server) {
+            if (Object.prototype.hasOwnProperty.call(this.server, key)) {
+                return this.server[key];
+            }
+        }
+        return null;
+    }
 }

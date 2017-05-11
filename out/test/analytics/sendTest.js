@@ -11,7 +11,7 @@ class PCInfo {
         device.os = 'iOS';
         device.device_id = '665188eb-1a7e-4fd5-928e-cd334b0be54e';
         device.os_version = '10.11.0';
-        device.sdk_version = RxLeanCloud_1.RxAVClient.sdk_version;
+        device.sdk_version = RxLeanCloud_1.RxAVClient.instance.SDKVersion;
         return Promise.resolve(device);
     }
 }

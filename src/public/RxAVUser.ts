@@ -157,7 +157,7 @@ export class RxAVUser extends RxAVObject {
      */
     public isAuthenticated(): Observable<boolean> {
         try {
-            return !!this.sesstionToken && RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken).map(body => {
+            return !!this.sesstionToken && RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken,this.state.app).map(body => {
                 return true;
             });
         } catch (error) {

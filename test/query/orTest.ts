@@ -1,15 +1,16 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVQuery } from '../../src/RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVQuery, RxAVApp } from '../../src/RxLeanCloud';
 
 describe('RxAVQuery', () => {
     before(() => {
-        RxAVClient.init({
-            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
-            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
-            region: 'cn',
-            log: true,
-            pluginVersion: 2
+        let app = new RxAVApp({
+            appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
+            appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`
         });
+
+        RxAVClient.init({
+            log: true,
+        }).add(app);
     });
     it('RxAVQuery#or', done => {
         let dateQuery = new RxAVQuery('RxTodo');

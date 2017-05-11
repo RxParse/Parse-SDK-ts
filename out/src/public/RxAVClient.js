@@ -17,6 +17,7 @@ var pjson = require('../package.json');
  */
 class RxAVClient {
     constructor() {
+        this.remotes = [];
         this.currentConfiguration = {};
     }
     /**
@@ -40,53 +41,45 @@ class RxAVClient {
      * @memberOf RxAVClient
      */
     static init(config) {
-        RxAVClient.instance.initialize(config);
+        return RxAVClient.instance.initialize(config);
     }
-    static restoreSettings() {
-        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.load().map(provider => {
-            return provider != null;
-        });
-    }
-    static headers() {
-        let config = RxAVClient.currentConfig();
-        if (RxAVClient._headers == null) {
-            RxAVClient._headers = {
-                'X-LC-Id': config.applicationId,
-                'X-LC-Key': config.applicationKey,
-                'Content-Type': 'application/json'
-            };
-            if (RxAVClient.isNode()) {
-                RxAVClient._headers['User-Agent'] = 'ts-sdk/' + pjson.version;
-            }
+    add(app, replace) {
+        this.remotes.push(app);
+        if (typeof replace == 'undefined' || replace) {
+            this.currentApp = app;
         }
-        return RxAVClient._headers;
+        return this;
     }
-    static get sdk_version() {
-        return pjson.version;
+    switch(shortname) {
+        let tempApp = this.remotes.find(app => {
+            return app.shortname == shortname;
+        });
+        if (tempApp) {
+            this.currentApp = tempApp;
+        }
+        return this;
+    }
+    headers() {
+        return this.currentApp.httpHeaders;
     }
     get SDKVersion() {
         return pjson.version;
     }
-    static currentConfig() {
-        if (RxAVClient.instance.currentConfiguration == null)
-            throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
-        return RxAVClient.instance.currentConfiguration;
-    }
-    static isNode() {
-        return RxAVClient.currentConfig().isNode;
+    isNode() {
+        return this.currentConfiguration.isNode;
     }
     static inLeanEngine() {
         return false;
     }
-    static printWelcome() {
-        RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
-        RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
-        RxAVClient.printLog(`environment:node?${RxAVClient.instance.currentConfiguration.isNode}`);
-        RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
-        RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
+    printWelcome() {
+        RxAVClient.printLog('=== LeanCloud-Typescript-Rx-SDK ===');
+        RxAVClient.printLog(`pluginVersion:${this.currentConfiguration.pluginVersion}`);
+        RxAVClient.printLog(`environment:node?${this.currentConfiguration.isNode}`);
+        RxAVClient.printLog(`region:${this.currentApp.region}`);
+        RxAVClient.printLog('=== Rx is great, Typescript is wonderful! ===');
     }
     static printLog(message, ...optionalParams) {
-        if (RxAVClient.currentConfig().log) {
+        if (RxAVClient.instance.currentConfiguration.log) {
             console.log('===================================');
             if (optionalParams.length > 0)
                 console.log(message, optionalParams);
@@ -94,8 +87,9 @@ class RxAVClient {
                 console.log(message);
         }
     }
-    static generateAVCommand(relativeUrl, method, data, sessionToken) {
+    static generateAVCommand(relativeUrl, method, data, sessionToken, app) {
         let cmd = new AVCommand_1.AVCommand({
+            app: app,
             relativeUrl: relativeUrl,
             method: method,
             data: data,
@@ -103,7 +97,7 @@ class RxAVClient {
         });
         return cmd;
     }
-    static runCommand(relativeUrl, method, data, sessionToken) {
+    static runCommand(relativeUrl, method, data, sessionToken, app) {
         let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
         return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
@@ -122,31 +116,18 @@ class RxAVClient {
         process.on('unhandledRejection', function (reason, p) {
             console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
         });
-        this.appRouterState = new AppRouterState(config.appId);
-        this.currentConfiguration.applicationId = config.appId;
-        this.currentConfiguration.applicationKey = config.appKey;
         this.currentConfiguration.log = config.log;
-        if (config.server == null) {
-            this.currentConfiguration.server = {
-                api: 'https://api.leancloud.cn'
-            };
-        }
-        if (config.region == null) {
-            config.region = 'cn';
-        }
-        if (config.region != null) {
-            this.currentConfiguration.region = config.region;
-            if (config.region.toLowerCase() == 'us') {
-                config.server.api = 'https://us-api.leancloud.cn';
-            }
-        }
-        if (config.server != null) {
-            this.currentConfiguration.server = config.server;
-        }
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             this.currentConfiguration.isNode = true;
         }
-        this.currentConfiguration.log = config.log;
+        if (config.appId && config.appKey) {
+            let app = new RxAVApp({
+                appId: config.appId,
+                appKey: config.appKey,
+                shortname: 'default',
+            });
+            this.add(app, true);
+        }
         this.currentConfiguration.pluginVersion = config.pluginVersion;
         SDKPlugins_1.SDKPlugins.version = config.pluginVersion;
         if (config.plugins) {
@@ -161,7 +142,7 @@ class RxAVClient {
                 SDKPlugins_1.SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
             }
         }
-        RxAVClient.printWelcome();
+        return this;
     }
     request(url, method, headers, data) {
         let httpRequest = new HttpRequest_1.HttpRequest();
@@ -193,3 +174,68 @@ class AppRouterState {
     }
 }
 exports.AppRouterState = AppRouterState;
+class RxAVApp {
+    constructor(options) {
+        this.appId = options.appId;
+        this.appKey = options.appKey;
+        if (options.region)
+            this.region = options.region;
+        else
+            this.region = 'cn';
+        this.server = options.server;
+        this.shortname = options.shortname;
+        this.additionalHeaders = options.additionalHeaders;
+        this.appRouterState = new AppRouterState(this.appId);
+    }
+    get api() {
+        let root = this.region == 'cn' ? 'https://api.leancloud.cn' : 'https://us-api.leancloud.cn';
+        let url = this._getUrl('api');
+        return url || this.appRouterState.ApiServer || root;
+    }
+    get rtm() {
+        let url = this._getUrl('rtm');
+        return url;
+    }
+    get realtimeRouter() {
+        let url = this._getUrl('pushRouter');
+        return url || this.appRouterState.RealtimeRouterServer;
+    }
+    get engine() {
+        let url = this._getUrl('engine');
+        return url || this.appRouterState.EngineServer;
+    }
+    get stats() {
+        let url = this._getUrl('stats');
+        return url || this.appRouterState.StatsServer;
+    }
+    get push() {
+        let url = this._getUrl('push');
+        return url || this.appRouterState.PushServer;
+    }
+    get httpHeaders() {
+        let headers = {};
+        headers = {
+            'X-LC-Id': this.appId,
+            'X-LC-Key': this.appKey,
+            'Content-Type': 'application/json'
+        };
+        if (RxAVClient.instance.isNode()) {
+            headers['User-Agent'] = 'ts-sdk/' + pjson.version;
+        }
+        if (this.additionalHeaders) {
+            for (let key in this.additionalHeaders) {
+                headers[key] = this.additionalHeaders[key];
+            }
+        }
+        return headers;
+    }
+    _getUrl(key) {
+        if (this.server) {
+            if (Object.prototype.hasOwnProperty.call(this.server, key)) {
+                return this.server[key];
+            }
+        }
+        return null;
+    }
+}
+exports.RxAVApp = RxAVApp;

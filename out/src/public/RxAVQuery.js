@@ -11,21 +11,33 @@ const RxLeanCloud_2 = require("../RxLeanCloud");
  * @class RxAVQuery
  */
 class RxAVQuery {
-    constructor(objectClass) {
+    constructor(objectClass, options) {
         if (typeof objectClass === 'string') {
             this.className = objectClass;
         }
         else if (objectClass instanceof RxLeanCloud_1.RxAVObject) {
             this.className = objectClass.className;
+            this._app = objectClass.state.app;
         }
         else {
             throw new Error('A RxAVQuery must be constructed with a RxAVObject or class name.');
+        }
+        this._app = RxLeanCloud_1.RxAVClient.instance.currentApp;
+        if (options) {
+            if (options.app) {
+                if (options.app instanceof RxLeanCloud_2.RxAVApp) {
+                    this._app = options.app;
+                }
+            }
         }
         this._where = {};
         this._include = [];
         this._limit = -1; // negative limit is not sent in the server request
         this._skip = 0;
         this._extraOptions = {};
+    }
+    get app() {
+        return this._app;
     }
     static get _encoder() {
         return SDKPlugins_1.SDKPlugins.instance.Encoder;
@@ -266,7 +278,7 @@ class RxAVQuery {
                 where: query.where,
                 className: query.className
             }
-        }, sessionToken).map(res => {
+        }, sessionToken, this.app).map(res => {
             let subscriptionId = res.id;
             let queryId = res.query_id;
             let rtn = new RxAVLiveQuery(subscriptionId);
@@ -281,16 +293,16 @@ class RxAVQuery {
             rtn = liveQuerySubscription;
             return RxLeanCloud_2.RxAVRealtime.instance.open();
         }).flatMap(success => {
-            console.log('success', success);
-            console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
-            this.RxWebSocketController.onState.subscribe(state => {
-                console.log(state);
-            });
+            // console.log('success', success);
+            // console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
+            // this.RxWebSocketController.onState.subscribe(state => {
+            //     console.log(state);
+            // });
             let liveQueryLogIn = new AVCommand_1.AVCommand();
             liveQueryLogIn.data = {
                 cmd: 'login',
                 op: 'open',
-                appId: RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId,
+                appId: RxLeanCloud_1.RxAVClient.instance.currentApp.appId,
                 installationId: rtn.id,
                 service: 1,
                 i: RxLeanCloud_2.RxAVRealtime.instance.cmdId
@@ -340,7 +352,7 @@ class RxAVLiveQuery {
     }
     sendAck(ids) {
         let ackCmd = new AVCommand_1.AVCommand()
-            .attribute('appId', RxLeanCloud_1.RxAVClient.instance.currentConfiguration.applicationId)
+            .attribute('appId', RxLeanCloud_1.RxAVClient.instance.currentApp.appId)
             .attribute('cmd', 'ack')
             .attribute('installationId', this.id)
             .attribute('service', 1);

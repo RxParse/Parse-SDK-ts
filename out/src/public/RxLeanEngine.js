@@ -16,7 +16,7 @@ class RxLeanEngine {
      *
      * @memberOf RxLeanEngine
      */
-    static callFunction(name, parameters) {
+    static callFunction(name, parameters, app) {
         return RxLeanEngine.LeanEngineController.callFunction(name, parameters, RxLeanCloud_1.RxAVUser.currentSessionToken);
     }
 }

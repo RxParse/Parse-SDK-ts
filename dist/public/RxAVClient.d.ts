@@ -31,18 +31,9 @@ export declare class RxAVClient {
      * @memberOf RxAVClient
      */
     static init(config: {
-        appId: string;
-        appKey: string;
+        appId?: string;
+        appKey?: string;
         region?: string;
-        serverUrl?: string;
-        server?: {
-            api?: string;
-            pushRouter?: string;
-            rtm?: string;
-            push?: string;
-            stats?: string;
-            engine?: string;
-        };
         log?: boolean;
         pluginVersion?: number;
         plugins?: {
@@ -50,60 +41,30 @@ export declare class RxAVClient {
             device?: IDeviceInfo;
             websocket?: IWebSocketClient;
         };
-    }): void;
-    static restoreSettings(): Observable<boolean>;
-    protected static _headers: {
+    }): RxAVClient;
+    currentApp: RxAVApp;
+    remotes: Array<RxAVApp>;
+    add(app: RxAVApp, replace?: boolean): RxAVClient;
+    switch(shortname: string): RxAVClient;
+    headers(): {
         [key: string]: any;
     };
-    static headers(): {
-        [key: string]: any;
-    };
-    static readonly sdk_version: string;
-    static currentConfig(): {
-        applicationId?: string;
-        applicationKey?: string;
-        server?: {
-            api?: string;
-            pushRouter?: string;
-            rtm?: string;
-            push?: string;
-            stats?: string;
-            engine?: string;
-        };
-        region?: string;
-        isNode?: boolean;
-        sdkVersion?: string;
-        log?: boolean;
-        pluginVersion?: number;
-        runtime?: string;
-    };
-    static isNode(): boolean;
+    readonly SDKVersion: string;
+    isNode(): boolean;
     static inLeanEngine(): boolean;
-    protected static printWelcome(): void;
+    protected printWelcome(): void;
     static printLog(message?: any, ...optionalParams: any[]): void;
     protected static generateAVCommand(relativeUrl: string, method: string, data?: {
         [key: string]: any;
-    }, sessionToken?: string): AVCommand;
+    }, sessionToken?: string, app?: RxAVApp): AVCommand;
     static runCommand(relativeUrl: string, method: string, data?: {
         [key: string]: any;
-    }, sessionToken?: string): Observable<{
+    }, sessionToken?: string, app?: RxAVApp): Observable<{
         [key: string]: any;
     }>;
     private static _avClientInstance;
     static readonly instance: RxAVClient;
-    appRouterState: AppRouterState;
     currentConfiguration: {
-        applicationId?: string;
-        applicationKey?: string;
-        server?: {
-            api?: string;
-            pushRouter?: string;
-            rtm?: string;
-            push?: string;
-            stats?: string;
-            engine?: string;
-        };
-        region?: string;
         isNode?: boolean;
         sdkVersion?: string;
         log?: boolean;
@@ -111,18 +72,9 @@ export declare class RxAVClient {
         runtime?: string;
     };
     initialize(config: {
-        appId: string;
-        appKey: string;
+        appId?: string;
+        appKey?: string;
         region?: string;
-        serverUrl?: string;
-        server?: {
-            api?: string;
-            pushRouter?: string;
-            rtm?: string;
-            push?: string;
-            stats?: string;
-            engine?: string;
-        };
         log?: boolean;
         pluginVersion?: number;
         plugins?: {
@@ -130,7 +82,7 @@ export declare class RxAVClient {
             device?: IDeviceInfo;
             websocket?: IWebSocketClient;
         };
-    }): void;
+    }): RxAVClient;
     request(url: string, method?: string, headers?: {
         [key: string]: any;
     }, data?: {
@@ -149,4 +101,49 @@ export declare class AppRouterState {
     StatsServer: string;
     Source: string;
     FetchedAt: Date;
+}
+export declare class RxAVApp {
+    constructor(options: {
+        appId: string;
+        appKey: string;
+        region?: string;
+        shortname?: string;
+        server?: {
+            api?: string;
+            realtimeRouter?: string;
+            rtm?: string;
+            push?: string;
+            stats?: string;
+            engine?: string;
+        };
+        additionalHeaders?: {
+            [key: string]: any;
+        };
+    });
+    shortname: string;
+    appId: string;
+    appKey: string;
+    region?: string;
+    additionalHeaders?: {
+        [key: string]: any;
+    };
+    appRouterState: AppRouterState;
+    server?: {
+        api?: string;
+        realtimeRouter?: string;
+        rtm?: string;
+        push?: string;
+        stats?: string;
+        engine?: string;
+    };
+    readonly api: any;
+    readonly rtm: any;
+    readonly realtimeRouter: any;
+    readonly engine: any;
+    readonly stats: any;
+    readonly push: any;
+    readonly httpHeaders: {
+        [key: string]: any;
+    };
+    private _getUrl(key);
 }

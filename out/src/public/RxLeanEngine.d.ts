@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import { ILeanEngineController } from '../internal/LeanEngine/controller/ILeanEngineController';
+import { RxAVApp } from '../RxLeanCloud';
 export declare class RxLeanEngine {
     protected static readonly LeanEngineController: ILeanEngineController;
     /**
@@ -14,7 +15,7 @@ export declare class RxLeanEngine {
      */
     static callFunction(name: string, parameters?: {
         [key: string]: any;
-    }): Observable<{
+    }, app?: RxAVApp): Observable<{
         [key: string]: any;
     }>;
 }

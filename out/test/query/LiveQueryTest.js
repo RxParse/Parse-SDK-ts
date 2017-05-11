@@ -5,16 +5,19 @@ const RxLeanCloud_1 = require("../../src/RxLeanCloud");
 const NodeJSWebSocketClient_1 = require("../realtime/NodeJSWebSocketClient");
 describe('RxAVLiveQuery', () => {
     before(done => {
+        let app = new RxLeanCloud_1.RxAVApp({
+            appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
+            appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
+            server: {
+                rtm: `wss://rtm51.leancloud.cn`
+            }
+        });
         RxLeanCloud_1.RxAVClient.init({
-            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
-            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
-            region: 'cn',
             log: true,
-            server: {},
             plugins: {
                 websocket: new NodeJSWebSocketClient_1.NodeJSWebSocketClient()
             }
-        });
+        }).add(app);
         // let realtime = RxAVRealtime.instance;
         // realtime.connect('junwu').subscribe(success => {
         // });

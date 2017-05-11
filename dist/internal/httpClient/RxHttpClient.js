@@ -17,7 +17,7 @@ class RxHttpClient {
         };
         let response = new HttpResponse_1.HttpResponse(tuple);
         RxAVClient_1.RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxAVClient_1.RxAVClient.isNode() && this.version == 1) {
+        if (RxAVClient_1.RxAVClient.instance.currentConfiguration.isNode && this.version == 1) {
             RxAVClient_1.RxAVClient.printLog('http client:axios');
             return rxjs_1.Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
                 tuple[0] = res.status;
