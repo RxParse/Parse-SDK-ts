@@ -18,7 +18,14 @@ export class RxAVRealtime {
     }
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
-    clientId: string;
+
+    private _clientId: string;
+    get clientId() {
+        return this._clientId;
+    }
+
+
+
 
     /**
      * 打开与 Push Server 的 WebSocket
@@ -51,7 +58,7 @@ export class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     public connect(clientId: string): Observable<boolean> {
-        this.clientId = clientId;
+        this._clientId = clientId;
         return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand();
@@ -61,10 +68,14 @@ export class RxAVRealtime {
                     appId: RxAVClient.instance.currentConfiguration.applicationId,
                     peerId: clientId,
                     i: this.cmdId,
-                    ua: 'ts-sdk',
+                    deviceId: 'xman',
+                    ua: `ts-sdk/${RxAVClient.instance.SDKVersion}`,
                 };
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();
+                    // this.RxWebSocketController.onState.subscribe(state => {
+                    //     console.log(state);
+                    // });
                     this.messages = new Subject<RxAVIMMessage>();
                     this.RxWebSocketController.onMessage.subscribe(message => {
                         let data = JSON.parse(message);

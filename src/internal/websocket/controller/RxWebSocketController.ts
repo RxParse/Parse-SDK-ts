@@ -8,7 +8,6 @@ import { IRxWebSocketController } from './IRxWebSocketController';
 import { IWebSocketClient } from '../IWebSocketClient';
 
 export class RxWebSocketController implements IRxHttpClient, IRxWebSocketController {
-    rxWebSocketClient: IRxWebSocketClient;
     websocketClient: IWebSocketClient;
     url: string;
     protocols: string | string[];

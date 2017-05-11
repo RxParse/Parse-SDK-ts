@@ -59,6 +59,7 @@ export declare class RxAVClient {
         [key: string]: any;
     };
     static readonly sdk_version: string;
+    readonly SDKVersion: string;
     static currentConfig(): {
         applicationId?: string;
         applicationKey?: string;

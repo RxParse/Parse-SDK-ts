@@ -338,11 +338,11 @@ export /**
             rtn = liveQuerySubscription;
             return RxAVRealtime.instance.open();
         }).flatMap(success => {
-            console.log('success', success);
-            console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
-            this.RxWebSocketController.onState.subscribe(state => {
-                console.log(state);
-            });
+            // console.log('success', success);
+            // console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
+            // this.RxWebSocketController.onState.subscribe(state => {
+            //     console.log(state);
+            // });
             let liveQueryLogIn = new AVCommand();
             liveQueryLogIn.data = {
                 cmd: 'login',

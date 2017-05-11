@@ -16,6 +16,9 @@ class RxAVRealtime {
     get RxWebSocketController() {
         return SDKPlugins_1.SDKPlugins.instance.WebSocketController;
     }
+    get clientId() {
+        return this._clientId;
+    }
     /**
      * 打开与 Push Server 的 WebSocket
      *
@@ -44,7 +47,7 @@ class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     connect(clientId) {
-        this.clientId = clientId;
+        this._clientId = clientId;
         return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand_1.AVCommand();
@@ -54,7 +57,8 @@ class RxAVRealtime {
                     appId: RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId,
                     peerId: clientId,
                     i: this.cmdId,
-                    ua: 'ts-sdk',
+                    deviceId: 'xman',
+                    ua: `ts-sdk/${RxAVClient_1.RxAVClient.instance.SDKVersion}`,
                 };
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();

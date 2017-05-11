@@ -64,6 +64,9 @@ class RxAVClient {
     static get sdk_version() {
         return pjson.version;
     }
+    get SDKVersion() {
+        return pjson.version;
+    }
     static currentConfig() {
         if (RxAVClient.instance.currentConfiguration == null)
             throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');

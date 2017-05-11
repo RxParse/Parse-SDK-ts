@@ -6,7 +6,8 @@ export declare class RxAVRealtime {
     readonly RxWebSocketController: IRxWebSocketController;
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
-    clientId: string;
+    private _clientId;
+    readonly clientId: string;
     /**
      * 打开与 Push Server 的 WebSocket
      *

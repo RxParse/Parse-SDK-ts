@@ -48,7 +48,6 @@ export class RxAVClient {
         appId: string,
         appKey: string,
         region?: string,
-        serverUrl?: string,
         server?: {
             api?: string,
             pushRouter?: string,
@@ -67,11 +66,25 @@ export class RxAVClient {
     }): void {
         RxAVClient.instance.initialize(config);
     }
-    static restoreSettings(): Observable<boolean> {
-        return SDKPlugins.instance.LocalStorageControllerInstance.load().map(provider => {
-            return provider != null;
-        });
+
+    static currentApp: RxAVApp;
+    static remotes: Array<RxAVApp> = [];
+    static add(app: RxAVApp, replace?: boolean) {
+        RxAVClient.remotes.push(app);
+        if (replace) {
+            RxAVClient.currentApp = app;
+        }
     }
+
+    static switch(shortname: string) {
+        let tempApp = RxAVClient.remotes.find(app => {
+            return app.shortname == shortname;
+        });
+        if (tempApp) {
+            RxAVClient.currentApp = tempApp;
+        }
+    }
+
     protected static _headers: { [key: string]: any };
     public static headers() {
         let config = RxAVClient.currentConfig();
@@ -92,16 +105,23 @@ export class RxAVClient {
         return pjson.version;
     }
 
+    public get SDKVersion(): string {
+        return pjson.version;
+    }
+
     public static currentConfig() {
         if (RxAVClient.instance.currentConfiguration == null) throw new Error('RxAVClient 未被初始化，请调用 RxAVClient.init({appId,appKey}) 进行初始化.');
         return RxAVClient.instance.currentConfiguration;
     }
+
     public static isNode() {
         return RxAVClient.currentConfig().isNode;
     }
+
     public static inLeanEngine() {
         return false;
     }
+
     protected static printWelcome() {
         RxAVClient.printLog('===LeanCloud-Typescript-Rx-SDK=============');
         RxAVClient.printLog(`pluginVersion:${RxAVClient.instance.currentConfiguration.pluginVersion}`);
@@ -109,6 +129,7 @@ export class RxAVClient {
         RxAVClient.printLog(`region:${RxAVClient.instance.currentConfiguration.region}`);
         RxAVClient.printLog('===Rx is great,Typescript is wonderful!====');
     }
+
     public static printLog(message?: any, ...optionalParams: any[]) {
         if (RxAVClient.currentConfig().log) {
             console.log('===================================');
@@ -134,7 +155,6 @@ export class RxAVClient {
             return res.body;
         });
     }
-
 
     private static _avClientInstance: RxAVClient;
 
@@ -197,7 +217,6 @@ export class RxAVClient {
         this.currentConfiguration.applicationId = config.appId;
         this.currentConfiguration.applicationKey = config.appKey;
         this.currentConfiguration.log = config.log;
-
 
         if (config.server == null) {
             this.currentConfiguration.server = {
@@ -278,4 +297,11 @@ export class AppRouterState {
     public StatsServer: string;
     public Source: string;
     public FetchedAt: Date;
+}
+
+export class RxAVApp {
+    shortname: string;
+    appId: string;
+    appKey: string;
+    region?: string;
 }
