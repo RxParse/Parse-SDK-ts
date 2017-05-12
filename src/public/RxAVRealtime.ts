@@ -1,16 +1,23 @@
 import { Observable, Subject } from 'rxjs';
-import { RxAVClient } from './RxAVClient';
+import { RxAVClient, RxAVApp } from './RxAVClient';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { AVCommand } from '../internal/command/AVCommand';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
 
 export class RxAVRealtime {
 
+    constructor(options?: any) {
+        this._app = RxAVClient.instance.take(options);
+    }
+    protected _app: RxAVApp;
+    get app() {
+        return this._app;
+    }
     private static singleton: RxAVRealtime;
 
     static get instance(): RxAVRealtime {
         if (RxAVRealtime.singleton == null)
-            RxAVRealtime.singleton = new RxAVRealtime();
+            RxAVRealtime.singleton = new RxAVRealtime({ app: RxAVClient.instance.currentApp });
         return RxAVRealtime.singleton;
     }
     get RxWebSocketController() {
@@ -18,7 +25,11 @@ export class RxAVRealtime {
     }
     messages: Subject<RxAVIMMessage>;
     pushRouterState: any;
-    clientId: string;
+
+    private _clientId: string;
+    get clientId() {
+        return this._clientId;
+    }
 
     /**
      * 打开与 Push Server 的 WebSocket
@@ -28,16 +39,13 @@ export class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     public open(): Observable<boolean> {
-        if (RxAVClient.instance.currentConfiguration.server.rtm != null)
-            return this.RxWebSocketController.open(RxAVClient.instance.currentConfiguration.server.rtm);
+        if (this.app.rtm != null)
+            return this.RxWebSocketController.open(this.app.rtm);
 
-        let pushRouter = `${RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
-        if (RxAVClient.instance.currentConfiguration.server.pushRouter != null)
-            pushRouter = RxAVClient.instance.currentConfiguration.server.pushRouter;
+        let pushRouter = `${this.app.realtimeRouter}/v1/route?appId=${this.app.appId}&secure=1`;
 
         return RxAVClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
-            console.log('pushRouterState', this.pushRouterState);
             return this.RxWebSocketController.open(this.pushRouterState.server);
         });
     }
@@ -51,20 +59,24 @@ export class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     public connect(clientId: string): Observable<boolean> {
-        this.clientId = clientId;
+        this._clientId = clientId;
         return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand();
                 sessionOpenCmd.data = {
                     cmd: 'session',
                     op: 'open',
-                    appId: RxAVClient.instance.currentConfiguration.applicationId,
+                    appId: this.app.appId,
                     peerId: clientId,
                     i: this.cmdId,
-                    ua: 'ts-sdk',
+                    deviceId: 'xman',
+                    ua: `ts-sdk/${RxAVClient.instance.SDKVersion}`,
                 };
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();
+                    // this.RxWebSocketController.onState.subscribe(state => {
+                    //     console.log(state);
+                    // });
                     this.messages = new Subject<RxAVIMMessage>();
                     this.RxWebSocketController.onMessage.subscribe(message => {
                         let data = JSON.parse(message);
@@ -196,7 +208,7 @@ export class RxAVRealtime {
 
     private makeCommand() {
         let cmd = new AVCommand();
-        cmd.attribute('appId', RxAVClient.instance.currentConfiguration.applicationId);
+        cmd.attribute('appId', this.app.appId);
         cmd.attribute('peerId', this.clientId);
         cmd.attribute('i', this.cmdId);
         return cmd;

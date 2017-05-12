@@ -14,18 +14,9 @@ class RxAVUser extends RxLeanCloud_1.RxAVObject {
     constructor() {
         super('_User');
     }
-    static get currentSessionToken() {
-        if (RxAVUser._currentUser) {
-            return RxAVUser._currentUser.sesstionToken;
-        }
-        return null;
-    }
     static saveCurrentUser(user) {
-        RxAVUser._currentUser = user;
-        return RxLeanCloud_1.RxAVObject.saveToLocalStorage(user, RxAVUser.currenUserCacheKey);
-    }
-    static get currentUser() {
-        return RxAVUser._currentUser;
+        RxAVUser._currentUsers.set(user.state.app.appId, user);
+        return RxLeanCloud_1.RxAVObject.saveToLocalStorage(user, `${user.state.app.appId}_${RxAVUser.currenUserCacheKey}`);
     }
     /**
      * 获取本地缓存文件里面是否存在已经登录过的用户
@@ -35,16 +26,31 @@ class RxAVUser extends RxLeanCloud_1.RxAVObject {
      * @type {Observable<RxAVUser>}
      * @memberOf RxAVUser
      */
-    static current() {
-        return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVUser.currenUserCacheKey).map(userCache => {
-            if (userCache) {
-                let userState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins_1.SDKPlugins.instance.Decoder);
-                userState = userState.mutatedClone((s) => { });
-                let user = RxAVUser.createWithoutData();
-                user.handlerLogIn(userState);
-                RxAVUser._currentUser = user;
-            }
-            return RxAVUser._currentUser;
+    static current(options) {
+        let rtn = null;
+        let app = RxLeanCloud_1.RxAVClient.instance.take(options);
+        if (RxAVUser._currentUsers.has(app.appId)) {
+            rtn = RxAVUser._currentUsers.get(app.appId);
+        }
+        else if (SDKPlugins_1.SDKPlugins.instance.hasStorage) {
+            return SDKPlugins_1.SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxAVUser.currenUserCacheKey}`).map(userCache => {
+                if (userCache) {
+                    let userState = SDKPlugins_1.SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins_1.SDKPlugins.instance.Decoder);
+                    userState = userState.mutatedClone((s) => { });
+                    let user = RxAVUser.createWithoutData();
+                    user.handlerLogIn(userState);
+                    rtn = user;
+                }
+                return rtn;
+            });
+        }
+        return rxjs_1.Observable.from([rtn]);
+    }
+    static currentSessionToken() {
+        return RxAVUser.current().map(user => {
+            if (user != null)
+                return user.sesstionToken;
+            return null;
         });
     }
     static get UserController() {
@@ -133,7 +139,7 @@ class RxAVUser extends RxLeanCloud_1.RxAVObject {
      */
     isAuthenticated() {
         try {
-            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken).map(body => {
+            return !!this.sesstionToken && RxLeanCloud_1.RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken, this.state.app).map(body => {
                 return true;
             });
         }
@@ -141,27 +147,6 @@ class RxAVUser extends RxLeanCloud_1.RxAVObject {
             return rxjs_1.Observable.from([error.error.code == 211]);
         }
     }
-    // public setPrimaryRole(role: RxAVRole) {
-    //     this.set('primaryRole', role);
-    //     if (role.isDirty)
-    //         return role.save().flatMap<boolean>(s1 => {
-    //             return role.grant(this);
-    //         }).flatMap<boolean>(s2 => {
-    //             return this.save();
-    //         });
-    //     else return role.grant(this).flatMap<boolean>(s3 => {
-    //         return this.save();
-    //     });
-    // }
-    // /**
-    //  *  获取当前用户的主要角色
-    //  * 
-    //  * 
-    //  * @memberOf RxAVUser
-    //  */
-    // get primaryRole() {
-    //     return this.get('primaryRole');
-    // }
     /**
      * 将一个 RxAVInstallation 对象绑定到 RxAVUser
      *
@@ -411,4 +396,5 @@ class RxAVUser extends RxLeanCloud_1.RxAVObject {
 RxAVUser.installationKey = 'installations';
 RxAVUser.currenUserCacheKey = 'CurrentUser';
 RxAVUser._currentUser = null;
+RxAVUser._currentUsers = new Map();
 exports.RxAVUser = RxAVUser;

@@ -22,7 +22,7 @@ export declare class RxAVObject {
      * @constructor
      * @param {string} className - className:对象在云端数据库对应的表名.
      */
-    constructor(className: string);
+    constructor(className: string, options?: any);
     protected static readonly _objectController: IObjectController;
     /**
      *  获取当前对象的 className

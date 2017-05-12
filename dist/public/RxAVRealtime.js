@@ -5,16 +5,23 @@ const RxAVClient_1 = require("./RxAVClient");
 const SDKPlugins_1 = require("../internal/SDKPlugins");
 const AVCommand_1 = require("../internal/command/AVCommand");
 class RxAVRealtime {
-    constructor() {
+    constructor(options) {
         this.idSeed = -65535;
+        this._app = RxAVClient_1.RxAVClient.instance.take(options);
+    }
+    get app() {
+        return this._app;
     }
     static get instance() {
         if (RxAVRealtime.singleton == null)
-            RxAVRealtime.singleton = new RxAVRealtime();
+            RxAVRealtime.singleton = new RxAVRealtime({ app: RxAVClient_1.RxAVClient.instance.currentApp });
         return RxAVRealtime.singleton;
     }
     get RxWebSocketController() {
         return SDKPlugins_1.SDKPlugins.instance.WebSocketController;
+    }
+    get clientId() {
+        return this._clientId;
     }
     /**
      * 打开与 Push Server 的 WebSocket
@@ -24,14 +31,11 @@ class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     open() {
-        if (RxAVClient_1.RxAVClient.instance.currentConfiguration.server.rtm != null)
-            return this.RxWebSocketController.open(RxAVClient_1.RxAVClient.instance.currentConfiguration.server.rtm);
-        let pushRouter = `${RxAVClient_1.RxAVClient.instance.appRouterState.RealtimeRouterServer}/v1/route?appId=${RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId}&secure=1`;
-        if (RxAVClient_1.RxAVClient.instance.currentConfiguration.server.pushRouter != null)
-            pushRouter = RxAVClient_1.RxAVClient.instance.currentConfiguration.server.pushRouter;
+        if (this.app.rtm != null)
+            return this.RxWebSocketController.open(this.app.rtm);
+        let pushRouter = `${this.app.realtimeRouter}/v1/route?appId=${this.app.appId}&secure=1`;
         return RxAVClient_1.RxAVClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
-            console.log('pushRouterState', this.pushRouterState);
             return this.RxWebSocketController.open(this.pushRouterState.server);
         });
     }
@@ -44,20 +48,24 @@ class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     connect(clientId) {
-        this.clientId = clientId;
+        this._clientId = clientId;
         return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand_1.AVCommand();
                 sessionOpenCmd.data = {
                     cmd: 'session',
                     op: 'open',
-                    appId: RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId,
+                    appId: this.app.appId,
                     peerId: clientId,
                     i: this.cmdId,
-                    ua: 'ts-sdk',
+                    deviceId: 'xman',
+                    ua: `ts-sdk/${RxAVClient_1.RxAVClient.instance.SDKVersion}`,
                 };
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();
+                    // this.RxWebSocketController.onState.subscribe(state => {
+                    //     console.log(state);
+                    // });
                     this.messages = new rxjs_1.Subject();
                     this.RxWebSocketController.onMessage.subscribe(message => {
                         let data = JSON.parse(message);
@@ -176,7 +184,7 @@ class RxAVRealtime {
     }
     makeCommand() {
         let cmd = new AVCommand_1.AVCommand();
-        cmd.attribute('appId', RxAVClient_1.RxAVClient.instance.currentConfiguration.applicationId);
+        cmd.attribute('appId', this.app.appId);
         cmd.attribute('peerId', this.clientId);
         cmd.attribute('i', this.cmdId);
         return cmd;

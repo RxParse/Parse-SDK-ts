@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const rxjs_1 = require("rxjs");
+const RxLeanCloud_1 = require("../RxLeanCloud");
 const SDKPlugins_1 = require("../internal/SDKPlugins");
 /**
  * 统计服务的操作接口
@@ -11,7 +12,7 @@ const SDKPlugins_1 = require("../internal/SDKPlugins");
  * @class RxAVAnalytics
  */
 class RxAVAnalytics {
-    constructor(mutableData) {
+    constructor(mutableData, options) {
         if (mutableData && mutableData != null) {
             this.enable = mutableData.enable;
             this.sessionId = mutableData.sessionId;
@@ -20,6 +21,7 @@ class RxAVAnalytics {
             this.device = mutableData.device;
             this.events = mutableData.events;
         }
+        this._app = RxLeanCloud_1.RxAVClient.instance.take(options);
     }
     static get _analyticsController() {
         return SDKPlugins_1.SDKPlugins.instance.AnalyticsControllerInstance;
@@ -29,6 +31,9 @@ class RxAVAnalytics {
     }
     static get _toolController() {
         return SDKPlugins_1.SDKPlugins.instance.ToolControllerInstance;
+    }
+    get app() {
+        return this._app;
     }
     /**
      * 获取本地对话的统计对象

@@ -20,7 +20,7 @@ export class RxHttpClient implements IRxHttpClient {
         };
         let response = new HttpResponse(tuple);
         RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxAVClient.isNode() && this.version == 1) {
+        if (RxAVClient.instance.currentConfiguration.isNode && this.version == 1) {
             RxAVClient.printLog('http client:axios');
             return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
 

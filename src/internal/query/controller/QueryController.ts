@@ -19,6 +19,7 @@ export /**
     find(query: RxAVQuery, sessionToken: string): Observable<Array<IObjectState>> {
         let qu = this.buildQueryString(query);
         let cmd = new AVCommand({
+            app: query.app,
             relativeUrl: qu,
             method: 'GET',
             sessionToken: sessionToken

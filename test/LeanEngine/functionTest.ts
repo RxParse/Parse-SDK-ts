@@ -15,7 +15,7 @@ describe('RxLeanEngine', function () {
         });
     });
     it('RxLeanEngine#callFunction', done => {
-        if (RxAVClient.currentConfig().region.toLowerCase() == 'us') {
+        if (RxAVClient.instance.currentApp.region.toLowerCase() == 'us') {
             done();
             console.log('Hello,LeanEngine in US.');
             return;

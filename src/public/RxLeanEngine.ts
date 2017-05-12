@@ -1,7 +1,7 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { Observable } from 'rxjs';
 import { ILeanEngineController } from '../internal/LeanEngine/controller/ILeanEngineController';
-import { RxAVUser } from '../RxLeanCloud';
+import { RxAVUser, RxAVApp } from '../RxLeanCloud';
 
 export class RxLeanEngine {
 
@@ -19,7 +19,10 @@ export class RxLeanEngine {
      * 
      * @memberOf RxLeanEngine
      */
-    static callFunction(name: string, parameters?: { [key: string]: any }) {
-        return RxLeanEngine.LeanEngineController.callFunction(name,parameters,RxAVUser.currentSessionToken);
+    static callFunction(name: string, parameters?: { [key: string]: any }, app?: RxAVApp) {
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxLeanEngine.LeanEngineController.callFunction(name, parameters, sessionToken);
+        });
+
     }
 }

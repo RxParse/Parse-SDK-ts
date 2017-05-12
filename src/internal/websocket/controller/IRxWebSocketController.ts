@@ -9,7 +9,6 @@ import { AVCommandResponse } from '../../command/AVCommandResponse';
 import { IWebSocketClient } from '../IWebSocketClient';
 
 export interface IRxWebSocketController {
-    rxWebSocketClient: IRxWebSocketClient;
     websocketClient: IWebSocketClient;
     onMessage: Observable<any>;
     onState: Observable<any>;

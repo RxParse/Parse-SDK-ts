@@ -15,6 +15,7 @@ class RxWebSocketController {
         this.websocketClient.open(url, protocols);
         this.onState = rxjs_1.Observable.create((obs) => {
             this.websocketClient.onopen = (event) => {
+                console.log(url, 'connected.');
                 obs.next(this.websocketClient.readyState);
             };
             this.websocketClient.onerror = (event) => {

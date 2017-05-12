@@ -20,7 +20,7 @@ class AnalyticsController {
     }
     getPolicy() {
         var policyCMD = new AVCommand_1.AVCommand({
-            relativeUrl: `/statistics/apps/${RxAVClient_1.RxAVClient.currentConfig().applicationId}/sendPolicy`,
+            relativeUrl: `/statistics/apps/${RxAVClient_1.RxAVClient.instance.currentApp.appId}/sendPolicy`,
             method: 'GET',
         });
         return this._commandRunner.runRxCommand(policyCMD).map(res => {

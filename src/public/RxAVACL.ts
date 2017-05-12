@@ -39,13 +39,8 @@ export class RxAVACL {
                 }
             });
         } else {
-            if (RxAVUser.currentUser) {
-                this.setReadAccess(RxAVUser.currentUser, true);
-                this.setWriteAccess(RxAVUser.currentUser, true);
-            } else {
-                this.setPublicReadAccess(true);
-                this.setPublicWriteAccess(true);
-            }
+            this.setPublicReadAccess(true);
+            this.setPublicWriteAccess(true);
         }
 
         // if (arg1 && typeof arg1 === 'object') {

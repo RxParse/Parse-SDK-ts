@@ -26,7 +26,7 @@ export class AnalyticsController implements IAnalyticsController {
     }
     getPolicy(): Observable<RxAVAnalytics> {
         var policyCMD = new AVCommand({
-            relativeUrl: `/statistics/apps/${RxAVClient.currentConfig().applicationId}/sendPolicy`,
+            relativeUrl: `/statistics/apps/${RxAVClient.instance.currentApp.appId}/sendPolicy`,
             method: 'GET',
         });
         return this._commandRunner.runRxCommand(policyCMD).map(res => {

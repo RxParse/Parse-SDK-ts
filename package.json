@@ -1,6 +1,6 @@
 {
   "name": "leancloud-typescript-rx-sdk",
-  "version": "0.1.0",
+  "version": "0.1.3-0",
   "repository": {
     "type": "git",
     "url": "https://github.com/wujun4code/leancloud-typescript-rx-sdk"
@@ -10,7 +10,8 @@
     "bingo": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js')",
     "ready": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js') && gulp",
     "pretest": "node out/test/utils/init.js",
-    "test": "mocha --timeout 30000 $(find out/test -name '*.js')"
+    "test": "mocha --timeout 30000 $(find out/test -name '*.js')",
+    "pkg": "tsc && gulp"
   },
   "author": "Wu Jun",
   "license": "MIT",

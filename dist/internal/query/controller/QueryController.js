@@ -10,6 +10,7 @@ class QueryController {
     find(query, sessionToken) {
         let qu = this.buildQueryString(query);
         let cmd = new AVCommand_1.AVCommand({
+            app: query.app,
             relativeUrl: qu,
             method: 'GET',
             sessionToken: sessionToken

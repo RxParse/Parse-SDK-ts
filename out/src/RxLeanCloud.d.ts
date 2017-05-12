@@ -2,7 +2,7 @@ export { IStorage } from './internal/storage/IStorage';
 export { IDeviceInfo } from './internal/analytics/IDeviceInfo';
 export { IWebSocketClient } from './internal/websocket/IWebSocketClient';
 export { RxAVObject } from './public/RxAVObject';
-export { RxAVClient } from './public/RxAVClient';
+export { RxAVClient, RxAVApp } from './public/RxAVClient';
 export { RxAVQuery, RxAVLiveQuery } from './public/RxAVQuery';
 export { RxAVUser } from './public/RxAVUser';
 export { RxAVACL } from './public/RxAVACL';

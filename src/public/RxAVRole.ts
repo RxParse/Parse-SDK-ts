@@ -48,12 +48,7 @@ export /**
             this.ACL = acl;
         }
         else {
-            if (RxAVUser.currentUser) {
-                this.ACL = new RxAVACL(RxAVUser.currentUser);
-            } else {
-                //throw new Error('Object must have a valid ACL.');
-                //this.ACL = new RxAVACL(this.name);
-            }
+            
         }
     }
 
@@ -111,8 +106,10 @@ export /**
             }
         });
         this._buildRoleRelation(op, users, roles, body);
-        return RxAVUser._objectController.save(this.state, body, RxAVUser.currentSessionToken).map(serverState => {
-            return serverState != null;
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVUser._objectController.save(this.state, body, sessionToken).map(serverState => {
+                return serverState != null;
+            });
         });
     }
 

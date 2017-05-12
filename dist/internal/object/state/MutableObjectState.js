@@ -49,6 +49,9 @@ class MutableObjectState {
             if (options.updatedAt != null) {
                 this.updatedAt = options.updatedAt;
             }
+            if (options.app != null) {
+                this.app = options.app;
+            }
         }
     }
 }

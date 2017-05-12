@@ -50,7 +50,7 @@ describe('RxAVRole', () => {
     it('RxAVRole#createWithPublicACL', done => {
         RxAVUser.logIn('junwu', 'leancloud').flatMap(user => {
             let randomRoleName = random.randomHexString(8);
-            let testRole = new RxAVRole(randomRoleName, new RxAVACL());
+            let testRole = new RxAVRole(randomRoleName, new RxAVACL(user));
             return testRole.save();
         }).subscribe(s => {
             chai.assert.isTrue(s);

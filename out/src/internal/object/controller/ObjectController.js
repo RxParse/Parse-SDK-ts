@@ -8,6 +8,7 @@ class ObjectController {
     }
     fetch(state, sessionToken) {
         let cmd = new AVCommand_1.AVCommand({
+            app: state.app,
             relativeUrl: `/classes/${state.className}/${state.objectId}`,
             method: 'GET',
             data: null,
@@ -56,6 +57,7 @@ class ObjectController {
         let mutableDictionary = this.packForSave(dictionary);
         let encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
         let cmd = new AVCommand_1.AVCommand({
+            app: state.app,
             relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
             method: state.objectId == null ? 'POST' : 'PUT',
             data: encoded,
@@ -75,6 +77,7 @@ class ObjectController {
             let mutableDictionary = this.packForSave(dictionaries[i]);
             let encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(mutableDictionary);
             let cmd = new AVCommand_1.AVCommand({
+                app: state.app,
                 relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
                 data: encoded,

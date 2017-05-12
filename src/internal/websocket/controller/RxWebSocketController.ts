@@ -8,7 +8,6 @@ import { IRxWebSocketController } from './IRxWebSocketController';
 import { IWebSocketClient } from '../IWebSocketClient';
 
 export class RxWebSocketController implements IRxHttpClient, IRxWebSocketController {
-    rxWebSocketClient: IRxWebSocketClient;
     websocketClient: IWebSocketClient;
     url: string;
     protocols: string | string[];
@@ -28,6 +27,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
         this.onState = Observable.create(
             (obs: Observer<number>) => {
                 this.websocketClient.onopen = (event) => {
+                    console.log(url, 'connected.');
                     obs.next(this.websocketClient.readyState);
                 };
                 this.websocketClient.onerror = (event) => {
