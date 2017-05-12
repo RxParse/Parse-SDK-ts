@@ -53,7 +53,8 @@ class RxAVClient {
         this.remotes.push(app);
         return this;
     }
-    take(app, options) {
+    take(options) {
+        let app = null;
         if (options) {
             if (options.app) {
                 if (options.app instanceof RxAVApp) {

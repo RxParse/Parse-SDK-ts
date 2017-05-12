@@ -75,7 +75,8 @@ export class RxAVClient {
         return this as RxAVClient;
     }
 
-    take(app: RxAVApp, options?: any) {
+    take(options?: any) {
+        let app: RxAVApp = null;
         if (options) {
             if (options.app) {
                 if (options.app instanceof RxAVApp) {

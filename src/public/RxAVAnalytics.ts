@@ -22,7 +22,7 @@ export class RxAVAnalytics {
             this.device = mutableData.device;
             this.events = mutableData.events;
         }
-        this._app = RxAVClient.instance.take(this._app, options);
+        this._app = RxAVClient.instance.take(options);
     }
 
     static readonly analyticsCacheKey = 'LastAnalyticsData';

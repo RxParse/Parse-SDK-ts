@@ -8,7 +8,7 @@ export class RxLeanEngine {
     protected static get LeanEngineController() {
         return SDKPlugins.instance.LeanEngineControllerInstance;
     }
-    
+
     /**
      * 调用云函数
      * 
@@ -20,6 +20,9 @@ export class RxLeanEngine {
      * @memberOf RxLeanEngine
      */
     static callFunction(name: string, parameters?: { [key: string]: any }, app?: RxAVApp) {
-        return RxLeanEngine.LeanEngineController.callFunction(name, parameters, RxAVUser.currentSessionToken);
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxLeanEngine.LeanEngineController.callFunction(name, parameters, sessionToken);
+        });
+
     }
 }

@@ -87,8 +87,10 @@ export class RxAVPush {
      */
     public send(): Observable<boolean> {
         let data = this.encode();
-        return RxAVClient.runCommand('/push', 'POST', data, RxAVUser.currentSessionToken, this.query.app).map(body => {
-            return true;
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVClient.runCommand('/push', 'POST', data, sessionToken, this.query.app).map(body => {
+                return true;
+            });
         });
     }
 

@@ -42,13 +42,6 @@ class RxAVRole extends RxLeanCloud_1.RxAVObject {
             this.ACL = acl;
         }
         else {
-            if (RxLeanCloud_1.RxAVUser.currentUser) {
-                this.ACL = new RxLeanCloud_1.RxAVACL(RxLeanCloud_1.RxAVUser.currentUser);
-            }
-            else {
-                //throw new Error('Object must have a valid ACL.');
-                //this.ACL = new RxAVACL(this.name);
-            }
         }
     }
     get name() {
@@ -99,8 +92,10 @@ class RxAVRole extends RxLeanCloud_1.RxAVObject {
             }
         });
         this._buildRoleRelation(op, users, roles, body);
-        return RxLeanCloud_1.RxAVUser._objectController.save(this.state, body, RxLeanCloud_1.RxAVUser.currentSessionToken).map(serverState => {
-            return serverState != null;
+        return RxLeanCloud_1.RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxLeanCloud_1.RxAVUser._objectController.save(this.state, body, sessionToken).map(serverState => {
+                return serverState != null;
+            });
         });
     }
     save() {

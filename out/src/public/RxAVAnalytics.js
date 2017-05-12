@@ -21,7 +21,7 @@ class RxAVAnalytics {
             this.device = mutableData.device;
             this.events = mutableData.events;
         }
-        this._app = RxLeanCloud_1.RxAVClient.instance.take(this._app, options);
+        this._app = RxLeanCloud_1.RxAVClient.instance.take(options);
     }
     static get _analyticsController() {
         return SDKPlugins_1.SDKPlugins.instance.AnalyticsControllerInstance;

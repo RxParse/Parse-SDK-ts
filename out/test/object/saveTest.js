@@ -92,7 +92,6 @@ describe('RxObject', function () {
             acl.setPublicReadAccess(false);
             team.set('name', teamPrefix);
             team.set('domain', teamPrefix);
-            team.set('owner', RxLeanCloud_1.RxAVUser.currentUser);
             team.save().subscribe(() => {
                 done();
             });

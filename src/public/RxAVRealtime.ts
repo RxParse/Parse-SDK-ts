@@ -7,7 +7,7 @@ import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebS
 export class RxAVRealtime {
 
     constructor(options?: any) {
-        this._app = RxAVClient.instance.take(this._app, options);
+        this._app = RxAVClient.instance.take(options);
     }
     protected _app: RxAVApp;
     get app() {

@@ -70,8 +70,10 @@ class RxAVPush {
      */
     send() {
         let data = this.encode();
-        return RxLeanCloud_1.RxAVClient.runCommand('/push', 'POST', data, RxLeanCloud_1.RxAVUser.currentSessionToken, this.query.app).map(body => {
-            return true;
+        return RxLeanCloud_1.RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxLeanCloud_1.RxAVClient.runCommand('/push', 'POST', data, sessionToken, this.query.app).map(body => {
+                return true;
+            });
         });
     }
     encode() {

@@ -18,10 +18,9 @@ export declare class RxAVUser extends RxAVObject {
     email: string;
     private _mobilephone;
     roles: Array<RxAVRole>;
-    static readonly currentSessionToken: any;
     private static _currentUser;
+    private static _currentUsers;
     protected static saveCurrentUser(user: RxAVUser): Observable<boolean>;
-    static readonly currentUser: RxAVUser;
     /**
      * 获取本地缓存文件里面是否存在已经登录过的用户
      *
@@ -30,7 +29,8 @@ export declare class RxAVUser extends RxAVObject {
      * @type {Observable<RxAVUser>}
      * @memberOf RxAVUser
      */
-    static current(): Observable<RxAVUser>;
+    static current(options?: any): Observable<RxAVUser>;
+    static currentSessionToken(): Observable<string>;
     protected static readonly UserController: IUserController;
     /**
      * 获取用户名

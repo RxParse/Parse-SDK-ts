@@ -17,7 +17,9 @@ class RxLeanEngine {
      * @memberOf RxLeanEngine
      */
     static callFunction(name, parameters, app) {
-        return RxLeanEngine.LeanEngineController.callFunction(name, parameters, RxLeanCloud_1.RxAVUser.currentSessionToken);
+        return RxLeanCloud_1.RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxLeanEngine.LeanEngineController.callFunction(name, parameters, sessionToken);
+        });
     }
 }
 exports.RxLeanEngine = RxLeanEngine;

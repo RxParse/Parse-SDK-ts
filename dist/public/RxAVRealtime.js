@@ -7,7 +7,7 @@ const AVCommand_1 = require("../internal/command/AVCommand");
 class RxAVRealtime {
     constructor(options) {
         this.idSeed = -65535;
-        this._app = RxAVClient_1.RxAVClient.instance.take(this._app, options);
+        this._app = RxAVClient_1.RxAVClient.instance.take(options);
     }
     get app() {
         return this._app;

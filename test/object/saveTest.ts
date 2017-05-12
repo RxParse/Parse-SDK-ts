@@ -1,9 +1,9 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery,RxAVApp } from '../../src/RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVApp } from '../../src/RxLeanCloud';
 
 describe('RxObject', function () {
     before(() => {
-        
+
         let app = new RxAVApp({
             appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
             appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`
@@ -112,7 +112,6 @@ describe('RxObject', function () {
 
             team.set('name', teamPrefix);
             team.set('domain', teamPrefix);
-            team.set('owner', RxAVUser.currentUser);
 
             team.save().subscribe(() => {
                 done();

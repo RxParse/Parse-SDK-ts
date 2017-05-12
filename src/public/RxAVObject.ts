@@ -31,7 +31,7 @@ export class RxAVObject {
         this._isDirty = true;
 
         this.state = new MutableObjectState({ className: className });
-        this.state.app = RxAVClient.instance.take(this.state.app, options);
+        this.state.app = RxAVClient.instance.take(options);
         this.className = className;
     }
 
@@ -129,9 +129,11 @@ export class RxAVObject {
         if (dirtyChildren.length > 0) {
             rtn = RxAVObject.batchSave(dirtyChildren).flatMap<boolean, boolean>(sal => this.save());
         } else {
-            rtn = RxAVObject._objectController.save(this.state, this.estimatedData, RxAVUser.currentSessionToken).map(serverState => {
-                this.handlerSave(serverState);
-                return true;
+            return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+                return rtn = RxAVObject._objectController.save(this.state, this.estimatedData, sessionToken).map(serverState => {
+                    this.handlerSave(serverState);
+                    return true;
+                });
             });
         }
         return rtn;
@@ -146,9 +148,11 @@ export class RxAVObject {
      */
     public fetch(): Observable<RxAVObject> {
         if (this.objectId == null) throw new Error(`Cannot refresh an object that hasn't been saved to the server.`);
-        return RxAVObject._objectController.fetch(this.state, RxAVUser.currentSessionToken).map(serverState => {
-            this.handleFetchResult(serverState);
-            return this;
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVObject._objectController.fetch(this.state, sessionToken).map(serverState => {
+                this.handleFetchResult(serverState);
+                return this;
+            });
         });
     }
 
@@ -217,12 +221,15 @@ export class RxAVObject {
     protected static batchSave(objArray: Array<RxAVObject>) {
         let states = objArray.map(c => c.state);
         let ds = objArray.map(c => c.estimatedData);
-        return RxAVObject._objectController.batchSave(states, ds, RxAVUser.currentSessionToken).map(serverStateArray => {
-            objArray.forEach((dc, i, a) => {
-                dc.handlerSave(serverStateArray[i]);
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVObject._objectController.batchSave(states, ds, sessionToken).map(serverStateArray => {
+                objArray.forEach((dc, i, a) => {
+                    dc.handlerSave(serverStateArray[i]);
+                });
+                return true;
             });
-            return true;
         });
+
     }
 
     protected static deepSave(obj: RxAVObject) {

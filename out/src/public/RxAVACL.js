@@ -38,14 +38,8 @@ class RxAVACL {
             });
         }
         else {
-            if (RxAVUser_1.RxAVUser.currentUser) {
-                this.setReadAccess(RxAVUser_1.RxAVUser.currentUser, true);
-                this.setWriteAccess(RxAVUser_1.RxAVUser.currentUser, true);
-            }
-            else {
-                this.setPublicReadAccess(true);
-                this.setPublicWriteAccess(true);
-            }
+            this.setPublicReadAccess(true);
+            this.setPublicWriteAccess(true);
         }
         // if (arg1 && typeof arg1 === 'object') {
         //     if (arg1 instanceof RxAVUser) {

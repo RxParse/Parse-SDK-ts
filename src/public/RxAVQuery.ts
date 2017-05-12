@@ -19,7 +19,7 @@ export /**
     constructor(objectClass: string | RxAVObject, options?: any) {
         if (typeof objectClass === 'string') {
             this.className = objectClass;
-            this._app = RxAVClient.instance.take(this._app, options);
+            this._app = RxAVClient.instance.take(options);
         } else if (objectClass instanceof RxAVObject) {
             this.className = objectClass.className;
             this._app = objectClass.state.app;
@@ -234,16 +234,18 @@ export /**
      * @memberOf RxAVQuery
      */
     public find(): Observable<Array<RxAVObject>> {
-        return RxAVQuery._queryController.find(this, RxAVUser.currentSessionToken).map(serverStates => {
-            let resultList = serverStates.map((serverState, i, a) => {
-                let rxObject = new RxAVObject(this.className);
-                rxObject.handleFetchResult(serverState);
-                return rxObject;
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVQuery._queryController.find(this, sessionToken).map(serverStates => {
+                let resultList = serverStates.map((serverState, i, a) => {
+                    let rxObject = new RxAVObject(this.className);
+                    rxObject.handleFetchResult(serverState);
+                    return rxObject;
+                });
+                if (resultList == undefined || resultList == null) {
+                    resultList = [];
+                }
+                return resultList;
             });
-            if (resultList == undefined || resultList == null) {
-                resultList = [];
-            }
-            return resultList;
         });
     }
 
@@ -354,44 +356,47 @@ export /**
     }
     subscribe(): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery;
-        return this.createSubscription(this, RxAVUser.currentSessionToken).flatMap(liveQuerySubscription => {
-            rtn = liveQuerySubscription;
-            return this.realtime.open();
-        }).flatMap(success => {
-            // console.log('success', success);
-            // console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
-            // this.RxWebSocketController.onState.subscribe(state => {
-            //     console.log(state);
-            // });
-            let liveQueryLogIn = new AVCommand();
-            liveQueryLogIn.data = {
-                cmd: 'login',
-                op: 'open',
-                appId: this.realtime.app.appId,
-                installationId: rtn.id,
-                service: 1,
-                i: RxAVRealtime.instance.cmdId
-            };
-            return this.RxWebSocketController.execute(liveQueryLogIn);
-        }).map(logInResp => {
-            this.RxWebSocketController.onMessage.subscribe(message => {
-                let data = JSON.parse(message);
-                console.log('livequery<=', data);
-                if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
-                    if (data.cmd == 'data') {
-                        let ids = data.ids;
-                        let msg: Array<{ object: any, op: string, query_id: string }> = data.msg;
-                        msg.filter(item => {
-                            return item.query_id == rtn.queryId;
-                        }).forEach(item => {
-                            rtn.push(item.op, item.object);
-                        });
-                        rtn.sendAck(ids);
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return this.createSubscription(this, sessionToken).flatMap(liveQuerySubscription => {
+                rtn = liveQuerySubscription;
+                return this.realtime.open();
+            }).flatMap(success => {
+                // console.log('success', success);
+                // console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
+                // this.RxWebSocketController.onState.subscribe(state => {
+                //     console.log(state);
+                // });
+                let liveQueryLogIn = new AVCommand();
+                liveQueryLogIn.data = {
+                    cmd: 'login',
+                    op: 'open',
+                    appId: this.realtime.app.appId,
+                    installationId: rtn.id,
+                    service: 1,
+                    i: RxAVRealtime.instance.cmdId
+                };
+                return this.RxWebSocketController.execute(liveQueryLogIn);
+            }).map(logInResp => {
+                this.RxWebSocketController.onMessage.subscribe(message => {
+                    let data = JSON.parse(message);
+                    console.log('livequery<=', data);
+                    if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
+                        if (data.cmd == 'data') {
+                            let ids = data.ids;
+                            let msg: Array<{ object: any, op: string, query_id: string }> = data.msg;
+                            msg.filter(item => {
+                                return item.query_id == rtn.queryId;
+                            }).forEach(item => {
+                                rtn.push(item.op, item.object);
+                            });
+                            rtn.sendAck(ids);
+                        }
                     }
-                }
+                });
+                return rtn;
             });
-            return rtn;
         });
+
     }
 }
 
