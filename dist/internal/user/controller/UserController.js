@@ -9,6 +9,7 @@ class UserController {
     signUp(state, dictionary) {
         let encoded = SDKPlugins_1.SDKPlugins.instance.Encoder.encode(dictionary);
         let cmd = new AVCommand_1.AVCommand({
+            app: state.app,
             relativeUrl: "/users",
             method: 'POST',
             data: encoded

@@ -44,13 +44,39 @@ class RxAVClient {
         return RxAVClient.instance.initialize(config);
     }
     add(app, replace) {
-        this.remotes.push(app);
-        if (typeof replace == 'undefined' || replace) {
+        if (this.remotes.length == 0 || (typeof replace != 'undefined' && replace)) {
+            if (app.shortname == null) {
+                app.shortname = 'default';
+            }
             this.currentApp = app;
         }
+        this.remotes.push(app);
         return this;
     }
-    switch(shortname) {
+    take(app, options) {
+        if (options) {
+            if (options.app) {
+                if (options.app instanceof RxAVApp) {
+                    app = options.app;
+                }
+            }
+            else if (options.appName) {
+                if (typeof options.appName === "string") {
+                    let tempApp = this.remotes.find(a => {
+                        return a.shortname == options.appName;
+                    });
+                    if (tempApp) {
+                        app = tempApp;
+                    }
+                }
+            }
+        }
+        else {
+            app = RxAVClient.instance.currentApp;
+        }
+        return app;
+    }
+    _switch(shortname) {
         let tempApp = this.remotes.find(app => {
             return app.shortname == shortname;
         });
@@ -58,9 +84,6 @@ class RxAVClient {
             this.currentApp = tempApp;
         }
         return this;
-    }
-    headers() {
-        return this.currentApp.httpHeaders;
     }
     get SDKVersion() {
         return pjson.version;
@@ -98,7 +121,7 @@ class RxAVClient {
         return cmd;
     }
     static runCommand(relativeUrl, method, data, sessionToken, app) {
-        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
+        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken, app);
         return SDKPlugins_1.SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });
@@ -124,7 +147,6 @@ class RxAVClient {
             let app = new RxAVApp({
                 appId: config.appId,
                 appKey: config.appKey,
-                shortname: 'default',
             });
             this.add(app, true);
         }

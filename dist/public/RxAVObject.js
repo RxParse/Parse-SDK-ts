@@ -19,15 +19,8 @@ class RxAVObject {
     constructor(className, options) {
         this.estimatedData = {};
         this._isDirty = true;
-        let app = RxLeanCloud_1.RxAVClient.instance.currentApp;
-        if (options) {
-            if (options.app) {
-                if (options.app instanceof RxLeanCloud_1.RxAVApp) {
-                    app = options.app;
-                }
-            }
-        }
-        this.state = new MutableObjectState_1.MutableObjectState({ className: className, app: app });
+        this.state = new MutableObjectState_1.MutableObjectState({ className: className });
+        this.state.app = RxLeanCloud_1.RxAVClient.instance.take(this.state.app, options);
         this.className = className;
     }
     static get _objectController() {

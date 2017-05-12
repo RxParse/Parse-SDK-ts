@@ -8,7 +8,7 @@ export class RxLeanEngine {
     protected static get LeanEngineController() {
         return SDKPlugins.instance.LeanEngineControllerInstance;
     }
-
+    
     /**
      * 调用云函数
      * 

@@ -7,13 +7,7 @@ import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebS
 export class RxAVRealtime {
 
     constructor(options?: any) {
-        if (options) {
-            if (options.app) {
-                if (options.app instanceof RxAVApp) {
-                    this._app = options.app;
-                }
-            }
-        }
+        this._app = RxAVClient.instance.take(this._app, options);
     }
     protected _app: RxAVApp;
     get app() {
@@ -52,7 +46,6 @@ export class RxAVRealtime {
 
         return RxAVClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
-            console.log('pushRouterState', this.pushRouterState);
             return this.RxWebSocketController.open(this.pushRouterState.server);
         });
     }

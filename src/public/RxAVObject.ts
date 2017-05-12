@@ -30,15 +30,8 @@ export class RxAVObject {
         this.estimatedData = {};
         this._isDirty = true;
 
-        let app = RxAVClient.instance.currentApp;
-        if (options) {
-            if (options.app) {
-                if (options.app instanceof RxAVApp) {
-                    app = options.app;
-                }
-            }
-        }
-        this.state = new MutableObjectState({ className: className, app: app });
+        this.state = new MutableObjectState({ className: className });
+        this.state.app = RxAVClient.instance.take(this.state.app, options);
         this.className = className;
     }
 

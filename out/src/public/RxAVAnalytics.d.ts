@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { RxAVApp } from '../RxLeanCloud';
 import { IAnalyticsController } from '../internal/analytics/controller/IAnalyticsController';
 import { IToolController } from '../internal/tool/controller/IToolController';
 /**
@@ -10,12 +11,14 @@ import { IToolController } from '../internal/tool/controller/IToolController';
  * @class RxAVAnalytics
  */
 export declare class RxAVAnalytics {
-    constructor(mutableData?: any);
+    constructor(mutableData?: any, options?: any);
     static readonly analyticsCacheKey: string;
     protected static readonly _analyticsController: IAnalyticsController;
     private static _CurrentAnalytics;
     private static setCurrentAnalytics(analytics);
     static readonly _toolController: IToolController;
+    protected _app: RxAVApp;
+    readonly app: RxAVApp;
     /**
      * 获取本地对话的统计对象
      *

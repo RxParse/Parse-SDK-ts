@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { RxAVUser } from './RxAVUser';
-import { RxAVClient, RxAVObject } from '../RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVApp } from '../RxLeanCloud';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAnalyticsController } from '../internal/analytics/controller/IAnalyticsController';
 import { IToolController } from '../internal/tool/controller/IToolController';
@@ -13,7 +13,7 @@ import { IToolController } from '../internal/tool/controller/IToolController';
  * @class RxAVAnalytics
  */
 export class RxAVAnalytics {
-    constructor(mutableData?: any) {
+    constructor(mutableData?: any, options?: any) {
         if (mutableData && mutableData != null) {
             this.enable = mutableData.enable;
             this.sessionId = mutableData.sessionId;
@@ -22,6 +22,7 @@ export class RxAVAnalytics {
             this.device = mutableData.device;
             this.events = mutableData.events;
         }
+        this._app = RxAVClient.instance.take(this._app, options);
     }
 
     static readonly analyticsCacheKey = 'LastAnalyticsData';
@@ -35,6 +36,10 @@ export class RxAVAnalytics {
     }
     static get _toolController() {
         return SDKPlugins.instance.ToolControllerInstance;
+    }
+    protected _app: RxAVApp;
+    get app() {
+        return this._app;
     }
 
     /**

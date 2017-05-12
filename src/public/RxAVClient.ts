@@ -65,14 +65,39 @@ export class RxAVClient {
     currentApp: RxAVApp;
     remotes: Array<RxAVApp> = [];
     add(app: RxAVApp, replace?: boolean) {
-        this.remotes.push(app);
-        if (typeof replace == 'undefined' || replace) {
+        if (this.remotes.length == 0 || (typeof replace != 'undefined' && replace)) {
+            if (app.shortname == null) {
+                app.shortname = 'default';
+            }
             this.currentApp = app;
         }
+        this.remotes.push(app);
         return this as RxAVClient;
     }
 
-    switch(shortname: string) {
+    take(app: RxAVApp, options?: any) {
+        if (options) {
+            if (options.app) {
+                if (options.app instanceof RxAVApp) {
+                    app = options.app;
+                }
+            } else if (options.appName) {
+                if (typeof options.appName === "string") {
+                    let tempApp = this.remotes.find(a => {
+                        return a.shortname == options.appName;
+                    });
+                    if (tempApp) {
+                        app = tempApp;
+                    }
+                }
+            }
+        } else {
+            app = RxAVClient.instance.currentApp;
+        }
+        return app;
+    }
+
+    private _switch(shortname: string) {
         let tempApp = this.remotes.find(app => {
             return app.shortname == shortname;
         });
@@ -82,9 +107,6 @@ export class RxAVClient {
         return this as RxAVClient;
     }
 
-    public headers() {
-        return this.currentApp.httpHeaders;
-    }
 
     public get SDKVersion(): string {
         return pjson.version;
@@ -127,7 +149,7 @@ export class RxAVClient {
     }
 
     public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: RxAVApp): Observable<{ [key: string]: any }> {
-        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken);
+        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken, app);
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });
@@ -179,7 +201,6 @@ export class RxAVClient {
             let app = new RxAVApp({
                 appId: config.appId,
                 appKey: config.appKey,
-                shortname: 'default',
             });
 
             this.add(app, true);
@@ -216,7 +237,6 @@ export class RxAVClient {
         return SDKPlugins.instance.HttpClient.execute(httpRequest);
     }
 }
-
 
 export class AppRouterState {
     constructor(appId: string) {

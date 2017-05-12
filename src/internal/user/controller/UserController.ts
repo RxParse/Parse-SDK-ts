@@ -19,6 +19,7 @@ export /**
     signUp(state: IObjectState, dictionary: { [key: string]: any }): Observable<IObjectState> {
         let encoded = SDKPlugins.instance.Encoder.encode(dictionary);
         let cmd = new AVCommand({
+            app: state.app,
             relativeUrl: "/users",
             method: 'POST',
             data: encoded
@@ -41,7 +42,7 @@ export /**
             method: 'POST',
             data: data
         });
-        
+
         return this._commandRunner.runRxCommand(cmd).map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
             return serverState;

@@ -14,6 +14,7 @@ class RxAVQuery {
     constructor(objectClass, options) {
         if (typeof objectClass === 'string') {
             this.className = objectClass;
+            this._app = RxLeanCloud_1.RxAVClient.instance.take(this._app, options);
         }
         else if (objectClass instanceof RxLeanCloud_1.RxAVObject) {
             this.className = objectClass.className;
@@ -22,14 +23,7 @@ class RxAVQuery {
         else {
             throw new Error('A RxAVQuery must be constructed with a RxAVObject or class name.');
         }
-        this._app = RxLeanCloud_1.RxAVClient.instance.currentApp;
-        if (options) {
-            if (options.app) {
-                if (options.app instanceof RxLeanCloud_2.RxAVApp) {
-                    this._app = options.app;
-                }
-            }
-        }
+        console.log('RxAVQuery', this.app);
         this._where = {};
         this._include = [];
         this._limit = -1; // negative limit is not sent in the server request
@@ -215,15 +209,19 @@ class RxAVQuery {
      */
     static or(...queries) {
         let className = null;
+        let app;
         queries.forEach((q) => {
             if (!className) {
                 className = q.className;
+                app = q.app;
             }
             if (className !== q.className) {
                 throw new Error('All queries must be for the same class.');
             }
         });
-        let query = new RxAVQuery(className);
+        let query = new RxAVQuery(className, {
+            app: app
+        });
         query._orQuery(queries);
         return query;
     }
@@ -287,11 +285,17 @@ class RxAVQuery {
             return rtn;
         });
     }
+    get realtime() {
+        if (this._realtime == null) {
+            this._realtime = new RxLeanCloud_2.RxAVRealtime({ app: this.app });
+        }
+        return this._realtime;
+    }
     subscribe() {
         let rtn;
         return this.createSubscription(this, RxLeanCloud_1.RxAVUser.currentSessionToken).flatMap(liveQuerySubscription => {
             rtn = liveQuerySubscription;
-            return RxLeanCloud_2.RxAVRealtime.instance.open();
+            return this.realtime.open();
         }).flatMap(success => {
             // console.log('success', success);
             // console.log('this.RxWebSocketController.onState', this.RxWebSocketController.onState);
@@ -302,7 +306,7 @@ class RxAVQuery {
             liveQueryLogIn.data = {
                 cmd: 'login',
                 op: 'open',
-                appId: RxLeanCloud_1.RxAVClient.instance.currentApp.appId,
+                appId: this.realtime.app.appId,
                 installationId: rtn.id,
                 service: 1,
                 i: RxLeanCloud_2.RxAVRealtime.instance.cmdId
@@ -332,7 +336,7 @@ class RxAVQuery {
 exports.RxAVQuery = RxAVQuery;
 const AVCommand_1 = require("../internal/command/AVCommand");
 class RxAVLiveQuery {
-    constructor(id) {
+    constructor(id, options) {
         this.id = id;
         this.on = new rxjs_1.Subject();
     }
@@ -347,12 +351,11 @@ class RxAVLiveQuery {
             scope: op,
             object: rxObject
         };
-        console.log('notice', notice);
         this.on.next(notice);
     }
     sendAck(ids) {
         let ackCmd = new AVCommand_1.AVCommand()
-            .attribute('appId', RxLeanCloud_1.RxAVClient.instance.currentApp.appId)
+            .attribute('appId', this.query.app.appId)
             .attribute('cmd', 'ack')
             .attribute('installationId', this.id)
             .attribute('service', 1);

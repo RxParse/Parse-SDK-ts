@@ -7,13 +7,7 @@ const AVCommand_1 = require("../internal/command/AVCommand");
 class RxAVRealtime {
     constructor(options) {
         this.idSeed = -65535;
-        if (options) {
-            if (options.app) {
-                if (options.app instanceof RxAVClient_1.RxAVApp) {
-                    this._app = options.app;
-                }
-            }
-        }
+        this._app = RxAVClient_1.RxAVClient.instance.take(this._app, options);
     }
     get app() {
         return this._app;
@@ -42,7 +36,6 @@ class RxAVRealtime {
         let pushRouter = `${this.app.realtimeRouter}/v1/route?appId=${this.app.appId}&secure=1`;
         return RxAVClient_1.RxAVClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
-            console.log('pushRouterState', this.pushRouterState);
             return this.RxWebSocketController.open(this.pushRouterState.server);
         });
     }

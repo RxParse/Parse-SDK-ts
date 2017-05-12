@@ -11,7 +11,7 @@ export class AVCommand extends HttpRequest {
         this.data = {};
         if (options != null) {
             this.relativeUrl = options.relativeUrl;
-            
+
             let apiVersion = '1.1';
             if (this.relativeUrl == null || typeof this.relativeUrl == 'undefined') throw new Error('command must have a relative url.');
             let protocol = 'https://';

@@ -45,10 +45,8 @@ export declare class RxAVClient {
     currentApp: RxAVApp;
     remotes: Array<RxAVApp>;
     add(app: RxAVApp, replace?: boolean): RxAVClient;
-    switch(shortname: string): RxAVClient;
-    headers(): {
-        [key: string]: any;
-    };
+    take(app: RxAVApp, options?: any): RxAVApp;
+    private _switch(shortname);
     readonly SDKVersion: string;
     isNode(): boolean;
     static inLeanEngine(): boolean;

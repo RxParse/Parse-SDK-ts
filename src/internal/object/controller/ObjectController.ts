@@ -64,7 +64,6 @@ export class ObjectController implements IObjectController {
     save(state: IObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<IObjectState> {
         let mutableDictionary = this.packForSave(dictionary);
         let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
-
         let cmd = new AVCommand({
             app: state.app,
             relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
