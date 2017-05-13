@@ -1,4 +1,4 @@
-import { Observable, Observer, Subject } from 'rxjs';
+import { Observable, Observer, Subject, ConnectableObservable } from 'rxjs';
 import { HttpRequest } from '../../httpClient/HttpRequest';
 import { HttpResponse } from '../../httpClient/HttpResponse';
 import { IRxHttpClient } from '../../httpClient/iRxHttpClient';
@@ -13,10 +13,50 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     protocols: string | string[];
     onMessage: Observable<any>;
     onState: Observable<number>;
+    subject: Subject<any> = new Subject<any>();
+    publish: ConnectableObservable<any>;
     constructor(_webSocketClient: IWebSocketClient) {
         this.websocketClient = _webSocketClient;
     }
-
+    // private create(): Subject<any> {
+    //     // 创建websocket对象
+    //     let ws = this.websocketClient;
+    //     // 创建Observable对象
+    //     let observable = Observable.create(
+    //         (obs: Observer<any>) => {
+    //             // 当websocket获得推送内容的时候，调用next方法，并传入推送内容
+    //             ws.onmessage = obs.next.bind(obs);
+    //             // 当websocket出错的时候，调用error方法，并传入失败信息
+    //             ws.onerror = obs.error.bind(obs);
+    //             // 当websocket关闭的时候，调用complete方法
+    //             ws.onclose = obs.complete.bind(obs);
+    //             return ws.close.bind(ws);
+    //         }
+    //     );
+    //     // 创建observer对象，用于向websocket发送信息
+    //     let observer = {
+    //         next: (value) => {
+    //             if (ws.readyState === WebSocket.OPEN) {
+    //                 ws.send(value.toString());
+    //             }
+    //         },
+    //     };
+    //     // 使用Rx.Subject.create创建Subject对象
+    //     return Subject.create(observer, observable);
+    // } // 获取subject对象接口
+    // getSubject() {
+    //     if (!this.subject) {
+    //         this.subject = this.create();
+    //     }
+    //     return this.subject;
+    // }
+    // // 获取publish对象接口
+    // getPublish() {
+    //     if (!this.publish) {
+    //         this.publish = this.getSubject().publish();
+    //     }
+    //     return this.publish;
+    // }
     open(url: string, protocols?: string | string[]): Observable<boolean> {
         if (this.websocketClient.readyState == 1) return Observable.from([true]);
         console.log(url, 'connecting...');
@@ -26,6 +66,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
 
         this.onState = Observable.create(
             (obs: Observer<number>) => {
+                console.log('zzzz');
                 this.websocketClient.onopen = (event) => {
                     console.log(url, 'connected.');
                     obs.next(this.websocketClient.readyState);
@@ -38,24 +79,49 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
                 };
             }
         );
+        if (this.onMessage == undefined) {
+            this.websocketClient.onmessage = (event) => {
+                let messageJson = JSON.parse(event.data);
+                console.log('websocket<=', messageJson);
+                this.subject.next(event.data);
+            };
+            this.onMessage = this.subject.asObservable();
+            // this.onMessage = Observable.create(
+            //     (obs: Observer<string>) => {
+            //         console.log('xxxxx', this.onMessage);
+            //         this.websocketClient.onmessage = (event) => {
+            //             let messageJson = JSON.parse(event.data);
+            //             console.log('websocket<=', messageJson);
+            //             obs.next(event.data);
+            //         };
 
-        this.onMessage = Observable.create(
-            (obs: Observer<string>) => {
-                this.websocketClient.onmessage = (event) => {
-                    let messageJson = JSON.parse(event.data);
-                    console.log('websocket<=', messageJson);
-                    obs.next(event.data);
-                };
+            //         this.websocketClient.onclose = (event) => {
+            //             obs.complete();
+            //         };
 
-                this.websocketClient.onclose = (event) => {
-                    obs.complete();
-                };
-
-                this.websocketClient.onerror = (event) => {
-                    obs.error(event.stack);
-                };
-            }
-        );
+            //         this.websocketClient.onerror = (event) => {
+            //             obs.error(event.stack);
+            //         };
+            //     }
+            // );
+            // let observable = Observable.create(
+            //     (obs: Observer<string>) => {
+            //         this.websocketClient.onmessage = obs.next.bind(str => {
+            //             obs.next(str)
+            //         });
+            //         this.websocketClient.onerror = obs.error.bind(obs);
+            //         this.websocketClient.onclose = obs.complete.bind(obs);
+            //         return this.websocketClient.close.bind(this.websocketClient);
+            //     }
+            // );
+            // let observer = {
+            //     next: (event: any) => {
+            //         let messageJson = JSON.parse(event.data);
+            //         console.log('websocket<=', messageJson);
+            //     },
+            // };
+            // this.onMessage = Subject.create(observer, observable);
+        }
 
         return this.onState.filter(readyState => {
             return readyState == 1;

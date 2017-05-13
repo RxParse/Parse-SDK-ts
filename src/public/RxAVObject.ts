@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
  * @export
  * @class RxAVObject
  */
-export class RxAVObject {
+export class RxAVObject implements ICanSaved {
 
     estimatedData: { [key: string]: any };
     state: MutableObjectState;
@@ -369,7 +369,7 @@ export class RxAVObject {
         return query.find();
     }
 
-    protected static saveToLocalStorage(entity: RxAVObject, key: string) {
+    static saveToLocalStorage(entity: ICanSaved, key: string) {
         if (SDKPlugins.instance.hasStorage) {
             if (entity == null) {
                 return SDKPlugins.instance.LocalStorageControllerInstance.remove(key).map(provider => {
@@ -384,7 +384,7 @@ export class RxAVObject {
         return Observable.from([true]);
     }
 
-    protected toJSONObjectForSaving() {
+    toJSONObjectForSaving() {
         let data = this.estimatedData;
         data['objectId'] = this.objectId;
         data['createdAt'] = this.createdAt;
@@ -392,4 +392,8 @@ export class RxAVObject {
         let encoded = SDKPlugins.instance.Encoder.encode(data);
         return encoded;
     }
+}
+
+export interface ICanSaved {
+    toJSONObjectForSaving(): { [key: string]: any };
 }

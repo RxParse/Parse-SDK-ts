@@ -237,6 +237,7 @@ export class RxAVClient {
             httpRequest.headers = headers;
         return SDKPlugins.instance.HttpClient.execute(httpRequest);
     }
+
 }
 
 export class AppRouterState {
@@ -251,6 +252,18 @@ export class AppRouterState {
         this.RealtimeRouterServer = `${prefix}.rtm.lncld.net`;
         this.StatsServer = `${prefix}.stats.lncld.net`;
         this.Source = "initial";
+
+        let appHash = appId.split('-');
+        if (appHash.length > 1) {
+            let regionHash = appHash[1];
+            if (regionHash == '9Nh9j0Va') {
+                this.ApiServer = `${protocol}e1-api.leancloud.cn`;
+                this.EngineServer = `${protocol}e1-api.leancloud.cn`;
+                this.PushServer = `${protocol}e1-api.leancloud.cn`;
+                this.RealtimeRouterServer = `${protocol}router-q0-push.leancloud.cn`;
+                this.StatsServer = `${protocol}e1-api.leancloud.cn`;
+            }
+        }
     }
     public TTL: number
     public ApiServer: string;

@@ -6,4 +6,6 @@ node_modules/
 typings/
 release/
 test/*.js
+dist/
+out/
 **/.leancloud
