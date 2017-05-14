@@ -1,5 +1,5 @@
 import { IObjectState } from '../state/IObjectState';
-import { IObjectController } from './iObjectController';
+import { IObjectController } from './IObjectController';
 import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 import { SDKPlugins } from '../../SDKPlugins';

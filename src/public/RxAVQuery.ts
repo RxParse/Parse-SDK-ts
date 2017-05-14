@@ -389,7 +389,6 @@ export /**
                     rtn.bind();
                     return Observable.from([rtn]);
                 } else {
-                    console.log('yyyy');
                     return this.realtime.open().flatMap(success => {
                         if (success) {
                             let liveQueryLogIn = new AVCommand();

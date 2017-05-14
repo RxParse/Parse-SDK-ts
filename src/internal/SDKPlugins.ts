@@ -4,7 +4,7 @@ import { RxHttpClient } from './httpClient/RxHttpClient';
 import { AVCommand } from './command/AVCommand';
 import { IAVCommandRunner } from './command/IAVCommandRunner';
 import { AVCommandRunner } from './command/AVCommandRunner';
-import { IObjectController } from './object/controller/iObjectController';
+import { IObjectController } from './object/controller/IObjectController';
 import { ObjectController } from './object/controller/ObjectController';
 import { IUserController } from './user/controller/iUserController';
 import { UserController } from './user/controller/UserController';

@@ -13,7 +13,8 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     protocols: string | string[];
     onMessage: Observable<any>;
     onState: Observable<number>;
-    subject: Subject<any> = new Subject<any>();
+    messageSubject: Subject<any> = new Subject<any>();
+    stateSubject: Subject<number> = new Subject<number>();
     publish: ConnectableObservable<any>;
     constructor(_webSocketClient: IWebSocketClient) {
         this.websocketClient = _webSocketClient;
@@ -66,7 +67,6 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
 
         this.onState = Observable.create(
             (obs: Observer<number>) => {
-                console.log('zzzz');
                 this.websocketClient.onopen = (event) => {
                     console.log(url, 'connected.');
                     obs.next(this.websocketClient.readyState);
@@ -79,13 +79,16 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
                 };
             }
         );
+        if (this.onState == undefined) {
+            
+        }
         if (this.onMessage == undefined) {
             this.websocketClient.onmessage = (event) => {
                 let messageJson = JSON.parse(event.data);
                 console.log('websocket<=', messageJson);
-                this.subject.next(event.data);
+                this.messageSubject.next(event.data);
             };
-            this.onMessage = this.subject.asObservable();
+            this.onMessage = this.messageSubject.asObservable();
             // this.onMessage = Observable.create(
             //     (obs: Observer<string>) => {
             //         console.log('xxxxx', this.onMessage);
