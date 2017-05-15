@@ -2,18 +2,12 @@ import * as chai from 'chai';
 import * as random from "../utils/random";
 import { RxAVClient } from '../../src/RxLeanCloud';
 import { RxAVUser, RxAVACL, RxAVRole } from '../../src/RxLeanCloud';
+import * as init from "../utils/init";
 
 let randomUsername = '';
 
 describe('RxAVUser', function () {
     before(() => {
-        RxAVClient.init({
-            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
-            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
-            region: 'cn',
-            log: true,
-            pluginVersion: 2
-        });
         randomUsername = random.randomString(8);
     });
     it('RxAVUser#signUp', function (done) {

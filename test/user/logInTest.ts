@@ -1,16 +1,9 @@
 import * as chai from 'chai';
-
+import * as init from "../utils/init";
 import { RxAVUser, RxAVClient } from '../../src/RxLeanCloud';
 
 describe('RxAVUser', function () {
     before(() => {
-        RxAVClient.init({
-            appId: 'uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap',
-            appKey: 'kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww',
-            region: 'cn',
-            log: true,
-            pluginVersion: 2
-        });
     });
     it('RxAVUser#logIn', function (done) {
         RxAVUser.logIn('junwu', 'leancloud').subscribe(user => {

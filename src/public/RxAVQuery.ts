@@ -397,7 +397,7 @@ export /**
                                 appId: this.realtime.app.appId,
                                 installationId: liveQuerySubscription.id,
                                 service: 1,
-                                i: RxAVRealtime.instance.cmdId
+                                i: RxAVRealtime.getInstance({ app: this.app }).cmdId
                             };
                             return this.RxWebSocketController.execute(liveQueryLogIn);
                         }

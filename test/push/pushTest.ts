@@ -3,13 +3,6 @@ import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVIns
 
 describe('RxAVPush', function () {
     before(() => {
-        RxAVClient.init({
-            appId: '6j2LjkhAnnDTeefTLFQTFJXx-gzGzoHsz',
-            appKey: 'mrChsHGwIAytLHopODLpqiHo',
-            region: 'cn',
-            log: true,
-            pluginVersion: 2
-        });
     });
     // it('RxAVPush#sendContent', done => {
     //     let query = new RxAVQuery('_Installation');

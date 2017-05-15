@@ -1,28 +1,15 @@
 import * as chai from 'chai';
+import * as init from "../utils/init";
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVRole, RxAVUser, RxAVACL, RxAVRealtime, RxAVApp } from '../../src/RxLeanCloud';
 import * as random from "../utils/random";
 import { NodeJSWebSocketClient } from './NodeJSWebSocketClient';
 
+init.init();
 
-let app1 = new RxAVApp({
-    appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
-    appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
-    server: {
-        rtm: `wss://rtm51.leancloud.cn`
-    }
-});
-
-let realtime = new RxAVRealtime({ app: app1 });
+let realtime = new RxAVRealtime();
 
 describe('AVRealtime', () => {
     before(done => {
-        RxAVClient.init({
-            log: true,
-            plugins: {
-                websocket: new NodeJSWebSocketClient()
-            }
-        }).add(app1);
-
         realtime.connect('junwu').subscribe(success => {
             done();
         });
@@ -30,6 +17,7 @@ describe('AVRealtime', () => {
 
     it('AVRealtime#receive', done => {
         RESTSendMessage('test');
+        console.log('realtime', realtime);
         realtime.messages.subscribe(message => {
             console.log(message.serialize());
             let msgMap = message.toJson();
