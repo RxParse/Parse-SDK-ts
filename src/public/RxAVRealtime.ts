@@ -8,6 +8,10 @@ export class RxAVRealtime {
 
     constructor(options?: any) {
         this._app = RxAVClient.instance.take(options);
+        console.log('this._app', this._app);
+        if (!RxAVRealtime._realtimeInstances.has(this.app.appId)) {
+            RxAVRealtime._realtimeInstances.set(this.app.appId, this);
+        }
     }
     protected _app: RxAVApp;
     get app() {
@@ -15,11 +19,19 @@ export class RxAVRealtime {
     }
     private static singleton: RxAVRealtime;
 
-    static get instance(): RxAVRealtime {
-        if (RxAVRealtime.singleton == null)
-            RxAVRealtime.singleton = new RxAVRealtime({ app: RxAVClient.instance.currentApp });
-        return RxAVRealtime.singleton;
+    static getInstance(options?: any) {
+        let rtn: RxAVRealtime = null;
+        let app = RxAVClient.instance.take(options);
+        if (RxAVRealtime._realtimeInstances.has(app.appId)) {
+            rtn = RxAVRealtime._realtimeInstances.get(app.appId);
+        } else {
+            rtn = new RxAVRealtime(options);
+        }
+        return rtn;
     }
+
+    private static _realtimeInstances: Map<string, RxAVRealtime> = new Map<string, RxAVRealtime>();
+
     get RxWebSocketController() {
         return SDKPlugins.instance.WebSocketController;
     }

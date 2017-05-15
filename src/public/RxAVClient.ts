@@ -72,6 +72,7 @@ export class RxAVClient {
             this.currentApp = app;
         }
         this.remotes.push(app);
+        this.printWelcome(app);
         return this as RxAVClient;
     }
 
@@ -121,11 +122,13 @@ export class RxAVClient {
         return false;
     }
 
-    protected printWelcome() {
+    protected printWelcome(app: RxAVApp) {
         RxAVClient.printLog('=== LeanCloud-Typescript-Rx-SDK ===');
         RxAVClient.printLog(`pluginVersion:${this.currentConfiguration.pluginVersion}`);
         RxAVClient.printLog(`environment:node?${this.currentConfiguration.isNode}`);
-        RxAVClient.printLog(`region:${this.currentApp.region}`);
+        RxAVClient.printLog(`appId:${app.appId}`);
+        RxAVClient.printLog(`appKey:${app.appKey}`);
+        RxAVClient.printLog(`region:${app.region}`);
         RxAVClient.printLog('=== Rx is great, Typescript is wonderful! ===');
     }
 
@@ -221,6 +224,7 @@ export class RxAVClient {
                 SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
             }
         }
+
         return this as RxAVClient;
     }
 

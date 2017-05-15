@@ -1,12 +1,12 @@
 import { HttpRequest } from './httpClient/HttpRequest';
-import { IRxHttpClient } from './httpClient/iRxHttpClient';
+import { IRxHttpClient } from './httpClient/IRxHttpClient';
 import { RxHttpClient } from './httpClient/RxHttpClient';
 import { AVCommand } from './command/AVCommand';
 import { IAVCommandRunner } from './command/IAVCommandRunner';
 import { AVCommandRunner } from './command/AVCommandRunner';
 import { IObjectController } from './object/controller/IObjectController';
 import { ObjectController } from './object/controller/ObjectController';
-import { IUserController } from './user/controller/iUserController';
+import { IUserController } from './user/controller/IUserController';
 import { UserController } from './user/controller/UserController';
 import { IQueryController } from './query/controller/IQueryController';
 import { QueryController } from './query/controller/QueryController';

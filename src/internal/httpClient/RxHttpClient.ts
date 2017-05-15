@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
-import { IRxHttpClient } from './iRxHttpClient';
+import { IRxHttpClient } from './IRxHttpClient';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
 import * as superagent from 'superagent';
 import { RxAVClient } from '../../public/RxAVClient';

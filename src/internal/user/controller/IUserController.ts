@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 
 export /**
- * iUserController
+ * IUserController
  */
     interface IUserController {
     signUp(state:IObjectState,dictionary:{ [key: string]: any }): Observable<IObjectState>;

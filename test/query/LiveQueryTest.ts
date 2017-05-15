@@ -1,37 +1,19 @@
 import * as chai from 'chai';
 import { Observable } from 'rxjs';
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime, RxAVApp } from '../../src/RxLeanCloud';
-import { NodeJSWebSocketClient } from '../realtime/NodeJSWebSocketClient';
-let app = new RxAVApp({
-    appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
-    appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
-    server: {
-        rtm: `wss://rtm51.leancloud.cn`
-    }
-});
+import * as init from "../utils/init";
+
 describe('RxAVLiveQuery', () => {
     before(done => {
-
-        RxAVClient.init({
-            log: true,
-            plugins: {
-                websocket: new NodeJSWebSocketClient()
-            }
-        }).add(app);
-
-        // let realtime = RxAVRealtime.instance;
-        // realtime.connect('junwu').subscribe(success => {
-
-        // });
         done();
     });
     it('RxAVLiveQuery#subscribe', done => {
-        let query = new RxAVQuery('TodoLiveQuery', { app: app });
+        let query = new RxAVQuery('TodoLiveQuery');
         query.equalTo('tag', 'livequery');
         let subscription = query.subscribe();
         subscription.flatMap(subs => {
             //save a tofo for test
-            let todo = new RxAVObject('TodoLiveQuery', { app: app });
+            let todo = new RxAVObject('TodoLiveQuery');
             todo.set('tag', 'livequery');
             todo.save().subscribe(result => {
                 console.log('save a todo for test,', result);
@@ -46,7 +28,7 @@ describe('RxAVLiveQuery', () => {
         });
     });
     it('RxAVLiveQuery#singleton', done => {
-        let query1 = new RxAVQuery('TodoLiveQuery', { app: app });
+        let query1 = new RxAVQuery('TodoLiveQuery');
         query1.equalTo('name', 'livequery');
 
         let subscription1: RxAVLiveQuery = null;
@@ -54,7 +36,7 @@ describe('RxAVLiveQuery', () => {
 
         query1.subscribe().flatMap(subs => {
             subscription1 = subs;
-            let query2 = new RxAVQuery('TodoLiveQuery', { app: app });
+            let query2 = new RxAVQuery('TodoLiveQuery');
             query2.equalTo('name', 'livequery');
             return query2.subscribe();
         }).subscribe(subs2 => {
@@ -67,7 +49,7 @@ describe('RxAVLiveQuery', () => {
         });
     });
     it('RxAVLiveQuery#sameConnection', done => {
-        let query1 = new RxAVQuery('TodoLiveQuery', { app: app });
+        let query1 = new RxAVQuery('TodoLiveQuery');
         query1.equalTo('name', 'livequery');
 
         let subscription1: RxAVLiveQuery = null;
@@ -75,7 +57,7 @@ describe('RxAVLiveQuery', () => {
         let r = 0;
         query1.subscribe().flatMap(subs1 => {
             subscription1 = subs1;
-            let query2 = new RxAVQuery('TodoLiveQuery', { app: app });
+            let query2 = new RxAVQuery('TodoLiveQuery');
             query2.equalTo('title', 'livequery');
             return query2.subscribe();
         }).flatMap(subs2 => {
@@ -87,7 +69,7 @@ describe('RxAVLiveQuery', () => {
             //     console.log('subscription2', pushdata2.scope, pushdata2.object);
             // });
             //save a tofo for test
-            let todo = new RxAVObject('TodoLiveQuery', { app: app });
+            let todo = new RxAVObject('TodoLiveQuery');
             todo.set('name', 'livequery');
             todo.set('title', 'livequery');
             todo.save().subscribe(result => {

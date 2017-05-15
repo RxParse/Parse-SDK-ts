@@ -3,7 +3,7 @@ import { AVCommand } from '../../command/AVCommand';
 import { RxAVClient } from '../../../public/RxAVClient';
 import { Observable } from 'rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
-import { IUserController } from './iUserController';
+import { IUserController } from './IUserController';
 import { SDKPlugins } from '../../SDKPlugins';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 

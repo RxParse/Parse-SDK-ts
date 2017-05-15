@@ -2,7 +2,7 @@ import { IObjectState } from '../../object/state/IObjectState';
 import { IQueryController } from './IQueryController';
 import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
-import { RxAVQuery } from '../../../RxLeancloud';
+import { RxAVQuery } from '../../../public/RxAVQuery';
 import { SDKPlugins } from '../../SDKPlugins';
 import { Observable } from 'rxjs';
 
