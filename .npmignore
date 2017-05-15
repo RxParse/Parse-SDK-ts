@@ -1,0 +1,12 @@
+node_modules/
+**/.vs
+**/.vscode
+!**/.vscode/tasks.json
+.idea
+typings/
+release/
+test/
+out/
+**/.leancloud
+.travis.yml
+build_notification.ps1
