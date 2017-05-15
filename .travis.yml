@@ -8,10 +8,9 @@ env:
     - APP_ID=WI5a89CtPIOrWpvIwzNfOg9R-MdYXbMMI
     - APP_KEY=RUoMOSD8RNlpd0MIIiSDi7BU
 install:
-  - npm i -g typescript typings
   - npm install
   - typings install
 script:
   - npm test
 notifications:
-  webhooks: https://hook.bearychat.com/=bw52Y/travis/0ce0c78a1e423b087df137fcbfbf619f
+  webhooks: https://hook.bearychat.com/=bw52Y/travis/82822d77481fb732997758d83dbedfec
