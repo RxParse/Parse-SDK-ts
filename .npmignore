@@ -1,7 +1,6 @@
 node_modules/
 **/.vs
 **/.vscode
-!**/.vscode/tasks.json
 .idea
 release/
 test/

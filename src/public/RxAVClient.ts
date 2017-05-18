@@ -44,7 +44,7 @@ export class RxAVClient {
      * 
      * @memberOf RxAVClient
      */
-    static init(config: {
+    static init(config?: {
         appId?: string,
         appKey?: string,
         region?: string,

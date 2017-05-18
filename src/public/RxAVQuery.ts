@@ -488,7 +488,6 @@ export class RxAVLiveQuery implements ICanSaved {
 
     bind() {
         this.on = this.RxWebSocketController.onMessage.filter(message => {
-            console.log('this.on', this.queryId, message);
             let data = JSON.parse(message);
             if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                 let rtn = false;
@@ -513,7 +512,10 @@ export class RxAVLiveQuery implements ICanSaved {
             msg.filter(item => {
                 return item.query_id == this.queryId;
             }).forEach(item => {
-                obsArray.push({ scope: item.op, object: item.object });
+                let objectState = SDKPlugins.instance.ObjectDecoder.decode(item.object, SDKPlugins.instance.Decoder);
+                let rxObject = new RxAVObject(this.query.className);
+                rxObject.handleFetchResult(objectState);
+                obsArray.push({ scope: item.op, object: rxObject });
             });
             return Observable.from(obsArray);
         });
@@ -534,7 +536,6 @@ export class RxAVLiveQuery implements ICanSaved {
     id: string;
     queryId: string;
     on: Observable<{ scope: string, object: RxAVObject }>;
-    //onX: Observable<{ scope: string, object: RxAVObject }>;
     query: RxAVQuery;
 
     sendAck(ids?: Array<string>) {

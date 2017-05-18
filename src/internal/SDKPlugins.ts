@@ -142,9 +142,19 @@ export /**
 
     get AnalyticsControllerInstance() {
         if (this._AnalyticsController == null) {
-            if (this._DevicePorvider != null) {
-                this._AnalyticsController = new AnalyticsController(this.CommandRunner, this._DevicePorvider);
+            if (this._DevicePorvider == null) {
+                throw new Error(`you musy set the device provider when invoke RxAVClient.init{
+                    ...
+                    plugins?: {
+                        ...
+                        device?: IDevice
+                        ...
+                    }
+                    ...
+                    }`);
             }
+            this._AnalyticsController = new AnalyticsController(this.CommandRunner, this._DevicePorvider);
+
         }
         return this._AnalyticsController;
     }

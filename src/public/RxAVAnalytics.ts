@@ -62,8 +62,8 @@ export class RxAVAnalytics {
      * 
      * @memberOf RxAVAnalytics
      */
-    public static init(): Observable<boolean> {
-        return RxAVAnalytics._analyticsController.getPolicy().flatMap(instance => {
+    public static init(app?: RxAVApp): Observable<boolean> {
+        return RxAVAnalytics._analyticsController.getPolicy(app).flatMap(instance => {
             RxAVAnalytics.setCurrentAnalytics(instance);
             return instance.startSesstion();
         }).map(started => {
