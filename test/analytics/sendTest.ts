@@ -4,6 +4,8 @@ import { RxAVClient, RxAVAnalytics, IDeviceInfo, RxAVAnalyticDevice } from '../.
 import * as init from "../utils/init";
 const os = require('os');
 
+init.init();
+
 describe('RxAVAnalytics', function () {
     before(() => {
 

@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import { Observable } from 'rxjs';
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime, RxAVApp } from '../../src/RxLeanCloud';
 import * as init from "../utils/init";
-
+init.init();
 describe('RxAVLiveQuery', () => {
     before(done => {
         done();
@@ -24,6 +24,9 @@ describe('RxAVLiveQuery', () => {
             console.log('pushData.scope', pushData.scope, 'pushData.object.objectId', pushData.object.objectId);
             chai.assert.isNotNull(pushData.scope);
             chai.assert.isNotNull(pushData.object);
+            let tag = pushData.object.get('tag');
+            chai.assert.isNotNull(tag);
+            console.log('tag', tag);
             done();
         });
     });
