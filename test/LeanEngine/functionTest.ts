@@ -7,7 +7,4 @@ describe('RxLeanEngine', function () {
     before(() => {
         
     });
-    it('RxLeanEngine#cloudParameters', done => {
-        
-    });
 });
