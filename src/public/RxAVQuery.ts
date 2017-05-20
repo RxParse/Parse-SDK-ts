@@ -402,6 +402,7 @@ export /**
                             return this.RxWebSocketController.execute(liveQueryLogIn);
                         }
                     }).map(logInResp => {
+                        this.realtime.heartBeating(true);
                         rtn.bind();
                         return rtn;
                     });
@@ -512,7 +513,15 @@ export class RxAVLiveQuery implements ICanSaved {
             msg.filter(item => {
                 return item.query_id == this.queryId;
             }).forEach(item => {
-                let objectState = SDKPlugins.instance.ObjectDecoder.decode(item.object, SDKPlugins.instance.Decoder);
+
+                let objectJson = {};
+                if (typeof item.object == 'string') {
+                    objectJson = JSON.parse(item.object);
+                } else if (typeof item.object == 'object') {
+                    objectJson = item.object;
+                }
+
+                let objectState = SDKPlugins.instance.ObjectDecoder.decode(objectJson, SDKPlugins.instance.Decoder);
                 let rxObject = new RxAVObject(this.query.className);
                 rxObject.handleFetchResult(objectState);
                 obsArray.push({ scope: item.op, object: rxObject });

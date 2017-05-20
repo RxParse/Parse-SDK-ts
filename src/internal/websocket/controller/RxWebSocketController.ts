@@ -8,6 +8,7 @@ import { IRxWebSocketController } from './IRxWebSocketController';
 import { IWebSocketClient } from '../IWebSocketClient';
 
 export class RxWebSocketController implements IRxHttpClient, IRxWebSocketController {
+
     websocketClient: IWebSocketClient;
     url: string;
     protocols: string | string[];
@@ -80,7 +81,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
             }
         );
         if (this.onState == undefined) {
-            
+
         }
         if (this.onMessage == undefined) {
             this.websocketClient.onmessage = (event) => {
@@ -132,11 +133,13 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
             return true;
         });;
     }
-
+    send(data: string | ArrayBuffer | Blob): void {
+        this.websocketClient.send(data);
+        console.log('websocket=>', data);
+    }
     execute(httpRequest: HttpRequest): Observable<HttpResponse> {
         let rawReq = JSON.stringify(httpRequest.data);
-        this.websocketClient.send(rawReq);
-        console.log('websocket=>', rawReq);
+        this.send(rawReq);
         return this.onMessage.filter(message => {
             let messageJSON = JSON.parse(message);
             if (Object.prototype.hasOwnProperty.call(messageJSON, 'i') && Object.prototype.hasOwnProperty.call(httpRequest.data, 'i')) {

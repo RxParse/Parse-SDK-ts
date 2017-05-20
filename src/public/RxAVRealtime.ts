@@ -62,6 +62,22 @@ export class RxAVRealtime {
         });
     }
 
+    heartBeatingInterval: number = 20;
+    timer: any;
+    heartBeating(toggle: boolean, seconds?: number) {
+        let internal = this.heartBeatingInterval;
+
+        if (seconds != null || typeof seconds != 'undefined') {
+            internal = seconds;
+        }
+        console.log('internal', internal, internal * 1000);
+        if (toggle)
+            this.timer = setInterval(() => {
+                this.RxWebSocketController.send("{}");
+            }, internal * 1000);
+        else clearInterval(this.timer);
+    }
+
     /**
      * 客户端打开聊天 v2 协议
      * 
