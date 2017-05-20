@@ -249,6 +249,22 @@ export /**
         });
     }
 
+    public seek(): Observable<RxAVObject> {
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVQuery._queryController.find(this, sessionToken).flatMap(serverStates => {
+                let resultList = serverStates.map((serverState, i, a) => {
+                    let rxObject = new RxAVObject(this.className);
+                    rxObject.handleFetchResult(serverState);
+                    return rxObject;
+                });
+                if (resultList == undefined || resultList == null) {
+                    resultList = [];
+                }
+                return Observable.from(resultList);
+            });
+        });
+    }
+
     /**
      * 
      * 

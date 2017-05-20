@@ -134,7 +134,6 @@ export class RxAVClient {
 
     public static printLog(message?: any, ...optionalParams: any[]) {
         if (RxAVClient.instance.currentConfiguration.log) {
-            console.log('===================================');
             if (optionalParams.length > 0)
                 console.log(message, optionalParams);
             else console.log(message);
@@ -361,7 +360,7 @@ export class RxAVApp {
         headers = {
             'X-LC-Id': this.appId,
             'X-LC-Key': this.appKey,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json;charset=utf-8'
         };
         if (RxAVClient.instance.isNode()) {
             headers['User-Agent'] = 'ts-sdk/' + pjson.version;

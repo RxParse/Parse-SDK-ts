@@ -8,23 +8,17 @@ describe('RxAVQuery', () => {
     it('RxAVQuery#where', done => {
         let query = new RxAVQuery('RxTodo');
 
-        query.equalTo('title', 'father');
+        query.equalTo('title', '开会');
         query.notEqualTo('time', '1');
 
         query.find().subscribe(list => {
-            list.forEach(obj => {
-                console.log('obj.objectId', obj.objectId);
-                console.log('obj.get(xx)', obj.get('xx'));
-                console.log('obj.get(title)', obj.get('title'));
-            });
-            console.log(list);
             done();
         }, error => {
             console.log(error);
             done();
         }, () => { });
     });
-    it('RxAVQuery#whereWithoutResult', done => {
+    it('RxAVQuery#WithoutResult', done => {
         let query = new RxAVQuery('RxTodo');
 
         query.equalTo('title', 'fatherxxx');
@@ -37,5 +31,24 @@ describe('RxAVQuery', () => {
             console.log(error);
             done();
         }, () => { });
+    });
+    it('RxAVQuery#seek', done => {
+        let uiList: Array<{ id: string, title: string }> = [];
+        let query = new RxAVQuery('RxTodo');
+
+        query.equalTo('title', '开会');
+
+        query.seek().map(obj => {
+            return {
+                id: obj.objectId,
+                title: obj.get('title')
+            }
+        }).subscribe(tupple => {
+            uiList.push(tupple);
+            console.log('tupple', tupple);
+            chai.assert.isTrue(tupple != null);
+        }, error => { }, () => {
+            done();
+        });
     });
 });
