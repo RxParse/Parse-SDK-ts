@@ -1,11 +1,11 @@
 {
-  "name": "leancloud-typescript-rx-sdk",
-  "version": "0.1.7",
+  "name": "rx-lean-js-core",
+  "version": "0.2.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wujun4code/leancloud-typescript-rx-sdk"
+    "url": "https://github.com/RxLeanCloud/rx-lean-js-core"
   },
-  "description": "leancloud-typescript-rx-sdk",
+  "description": "rx-lean-js-core",
   "scripts": {
     "ready": "tsc && node out/test/utils/init.js && mocha --timeout 30000 $(find out/test -name '*.js') && gulp",
     "pretest": "tsc && gulp devCopy",

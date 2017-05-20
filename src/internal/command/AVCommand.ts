@@ -34,6 +34,7 @@ export class AVCommand extends HttpRequest {
                     this.url = `${app.engine}/${apiVersion}${this.relativeUrl}`;
                 }
             }
+            this.url = encodeURI(this.url);
             this.method = options.method;
             this.data = options.data;
             this.headers = app.httpHeaders;

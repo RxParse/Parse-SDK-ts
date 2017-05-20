@@ -5,7 +5,7 @@ let app = new RxAVApp({
     appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
     appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
     server: {
-        rtm: `wss://rtm51.leancloud.cn`
+        rtm: `wss://rtm51.leancloud.cn`,
     }
 });
 let app2 = new RxAVApp({
@@ -21,6 +21,7 @@ import {
 
 export function init() {
     RxAVClient.init({
+        pluginVersion: 1,
         log: true,
         plugins: {
             websocket: new NodeJSWebSocketClient(),
