@@ -13,5 +13,6 @@ export interface IRxWebSocketController {
     onMessage: Observable<any>;
     onState: Observable<any>;
     open(url: string, protocols?: string | string[]): Observable<boolean>;
+    send(data: ArrayBuffer | string | Blob):void;
     execute(avCommand: AVCommand): Observable<AVCommandResponse>;
 }

@@ -6,5 +6,5 @@ export interface IWebSocketClient {
     readyState: number;
     open(url: string, protocols?: string | string[]): void;
     close(code: number, reason: string): void;
-    send(data: ArrayBuffer | string | Blob);
+    send(data: ArrayBuffer | string | Blob): void;
 }

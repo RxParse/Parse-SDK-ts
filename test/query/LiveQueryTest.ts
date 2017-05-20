@@ -9,6 +9,7 @@ describe('RxAVLiveQuery', () => {
     });
     it('RxAVLiveQuery#subscribe', done => {
         let query = new RxAVQuery('TodoLiveQuery');
+        query.realtime.heartBeatingInterval = 2;
         query.equalTo('tag', 'livequery');
         let subscription = query.subscribe();
         subscription.flatMap(subs => {
