@@ -18,6 +18,7 @@ export class RxHttpClient implements IRxHttpClient {
             statusCode: -1,
             error: { code: 0, error: 'Server error' }
         };
+        
         let response = new HttpResponse(tuple);
         RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
         if (RxAVClient.instance.currentConfiguration.isNode && this.version == 1) {

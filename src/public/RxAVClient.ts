@@ -195,32 +195,34 @@ export class RxAVClient {
             console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
         });
 
-        this.currentConfiguration.log = config.log;
-
         if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
             this.currentConfiguration.isNode = true;
         }
-        if (config.appId && config.appKey) {
-            let app = new RxAVApp({
-                appId: config.appId,
-                appKey: config.appKey,
-            });
+        if (typeof config != 'undefined') {
+            this.currentConfiguration.log = config.log;
 
-            this.add(app, true);
-        }
+            if (config.appId && config.appKey) {
+                let app = new RxAVApp({
+                    appId: config.appId,
+                    appKey: config.appKey,
+                });
 
-        this.currentConfiguration.pluginVersion = config.pluginVersion;
-        SDKPlugins.version = config.pluginVersion;
-        if (config.plugins) {
-            if (config.plugins.storage) {
-                SDKPlugins.instance.StorageProvider = config.plugins.storage;
-                SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
+                this.add(app, true);
             }
-            if (config.plugins.device) {
-                SDKPlugins.instance.DeviceProvider = config.plugins.device;
-            }
-            if (config.plugins.websocket) {
-                SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
+
+            this.currentConfiguration.pluginVersion = config.pluginVersion;
+            SDKPlugins.version = config.pluginVersion;
+            if (config.plugins) {
+                if (config.plugins.storage) {
+                    SDKPlugins.instance.StorageProvider = config.plugins.storage;
+                    SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
+                }
+                if (config.plugins.device) {
+                    SDKPlugins.instance.DeviceProvider = config.plugins.device;
+                }
+                if (config.plugins.websocket) {
+                    SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
+                }
             }
         }
 

@@ -98,7 +98,7 @@ export class RxAVRealtime {
                     peerId: clientId,
                     i: this.cmdId,
                     deviceId: 'xman',
-                    ua: `ts-sdk/${RxAVClient.instance.SDKVersion}`,
+                    ua: `rx-lean-js/${RxAVClient.instance.SDKVersion}`,
                 };
                 return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();

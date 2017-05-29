@@ -100,27 +100,61 @@ describe('RxAVLiveQuery', () => {
         });
     });
 
-    // it('rxjs#fuck', done => {
-    //     let source = Observable.from([1, 2, 3])
-    //     source.subscribe(val => console.log('obs1', val));
-    //     source.subscribe(val => console.log('obs2', val));
-    // });
-    // it('AVRealtime#rxMessage', done => {
-    //     RxAVRealtime.instance.open().subscribe(success => {
-    //         RxAVRealtime.instance.RxWebSocketController.onMessage.subscribe(val => console.log('obs1', val));
-    //         RxAVRealtime.instance.RxWebSocketController.onMessage.subscribe(val => console.log('obs2', val));
-    //         RxAVRealtime.instance.RxWebSocketController.websocketClient.send(`{"cmd":"login","appId":"uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap","installationId":"3hbbVAp2Oe","service":1,"i":-65535}`);
-    //     });
-    // });
-    // it('rxjs#Merge', done => {
-    //     let source1 = Observable.of(1, 2, 3);
+    it('RxAVLiveQuery#arrayContains', done => {
+        let query = new RxAVQuery('Boo');
+        query.realtime.heartBeatingInterval = 2;
+        query.equalTo('foo', [99]);
+        //query.equalTo('bar', '123');
+        query.find().subscribe(boos => {
+            console.log('boos.length', boos.length);
+        });
+        let subscription = query.subscribe();
+        subscription.flatMap(subs => {
+            //save a tofo for test
+            let boo = RxAVObject.createWithoutData('Boo', '59225865a22b9d0058858000');
+            boo.set('foo', [98]);
+            boo.save().subscribe(result => {
+                console.log('update the boo for test,', result);
+            });
+            return subs.on;
+        }).subscribe(pushData => {
+            console.log('pushData.scope', pushData.scope, 'pushData.object.objectId', pushData.object.objectId);
+            chai.assert.isNotNull(pushData.scope);
+            chai.assert.isNotNull(pushData.object);
+            let boo = RxAVObject.createWithoutData('Boo', '59225865a22b9d0058858000');
+            boo.set('foo', [99]);
+            boo.save().subscribe(result => {
+                console.log('restore the boo for test,', result);
+                done();
+            });
 
-    //     let source3 = Observable.of(4, 5, 6);
+        });
+    });
+    it('RxAVLiveQuery#updateKeys', done => {
 
-    //     let merged = Observable.merge(source1, source3);
+        let query = new RxAVQuery('TodoLiveQuery');
+        query.equalTo('tag', 'livequery');
 
-    //     let subscription = merged.subscribe(
-    //         x => { console.log('Next: %s', x); },
-    //         err => { console.log('Error: %s', err); }, () => { });
-    // });
+        query.subscribe().flatMap(subs => {
+            subs.on.subscribe(pushData => {
+                console.log('object', pushData.object);
+                console.log('scope', pushData.scope);
+                console.log('keys', pushData.keys);
+                let tag = pushData.object.get('tag');
+                console.log('tag', tag);
+                if (tag)
+                    if (tag === 'xlivequery') {
+                        chai.assert.isTrue(pushData.scope == 'leave');
+                        done();
+                    }
+            });
+            return query.find();
+        }).flatMap(todos => {
+            let todo = todos[1];
+            todo.set('tag', 'xlivequery');
+            return todo.save();
+        }).subscribe(success => {
+            console.log('waiting for update livequery invoke.');
+        });
+    });
 });
