@@ -524,8 +524,8 @@ export class RxAVLiveQuery implements ICanSaved {
             let data = JSON.parse(message);
             console.log('livequery<=', data);
             let ids = data.ids;
-            let msg: Array<{ object: any, op: string, query_id: string }> = data.msg;
-            let obsArray: Array<{ scope: string, object: RxAVObject }> = [];
+            let msg: Array<{ object: any, op: string, updatedKeys: string[], query_id: string }> = data.msg;
+            let obsArray: Array<{ scope: string, keys: string[], object: RxAVObject }> = [];
             msg.filter(item => {
                 return item.query_id == this.queryId;
             }).forEach(item => {
@@ -540,7 +540,7 @@ export class RxAVLiveQuery implements ICanSaved {
                 let objectState = SDKPlugins.instance.ObjectDecoder.decode(objectJson, SDKPlugins.instance.Decoder);
                 let rxObject = new RxAVObject(this.query.className);
                 rxObject.handleFetchResult(objectState);
-                obsArray.push({ scope: item.op, object: rxObject });
+                obsArray.push({ scope: item.op, keys: item.updatedKeys, object: rxObject });
             });
             return Observable.from(obsArray);
         });
@@ -560,7 +560,7 @@ export class RxAVLiveQuery implements ICanSaved {
     // }
     id: string;
     queryId: string;
-    on: Observable<{ scope: string, object: RxAVObject }>;
+    on: Observable<{ scope: string, keys: Array<string>, object: RxAVObject }>;
     query: RxAVQuery;
 
     sendAck(ids?: Array<string>) {
