@@ -127,7 +127,8 @@ export class ObjectController implements IObjectController {
         let batchRequest = new AVCommand({
             relativeUrl: '/batch',
             method: 'POST',
-            data: { requests: encodedRequests }
+            data: { requests: encodedRequests },
+            sessionToken: sessionToken
         });
         return this._commandRunner.runRxCommand(batchRequest).map(res => {
             let resultsArray = res.body;
@@ -142,7 +143,6 @@ export class ObjectController implements IObjectController {
                     rtn.push(subBody);
                 }
             }
-
             return rtn;
         });
     }
