@@ -19,15 +19,13 @@ export class RxAVUser extends RxAVObject {
     static readonly installationKey = 'installations';
     static readonly currenUserCacheKey = 'CurrentUser';
     private _username: string;
-    private _primaryRole: RxAVRole;
     email: string;
     private _mobilephone: string;
     roles: Array<RxAVRole>;
 
-    private static _currentUser: RxAVUser = null;
-    private static _currentUsers: Map<string, RxAVUser> = new Map<string, RxAVUser>();
+    static usersMap: Map<string, RxAVUser> = new Map<string, RxAVUser>();
     protected static saveCurrentUser(user: RxAVUser) {
-        RxAVUser._currentUsers.set(user.state.app.appId, user);
+        RxAVUser.usersMap.set(user.state.app.appId, user);
         return RxAVObject.saveToLocalStorage(user, `${user.state.app.appId}_${RxAVUser.currenUserCacheKey}`);
     }
 
@@ -42,8 +40,8 @@ export class RxAVUser extends RxAVObject {
     static current(options?: any): Observable<RxAVUser> {
         let rtn: RxAVUser = null;
         let app = RxAVClient.instance.take(options);
-        if (RxAVUser._currentUsers.has(app.appId)) {
-            rtn = RxAVUser._currentUsers.get(app.appId);
+        if (RxAVUser.usersMap.has(app.appId)) {
+            rtn = RxAVUser.usersMap.get(app.appId);
         } else if (SDKPlugins.instance.hasStorage) {
             return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxAVUser.currenUserCacheKey}`).map(userCache => {
                 if (userCache) {
@@ -177,7 +175,7 @@ export class RxAVUser extends RxAVObject {
      * 
      * @memberOf RxAVUser
      */
-    public activate(installation: RxAVInstallation, unique: boolean): Observable<boolean> {
+    public activate(installation: RxAVInstallation, unique?: boolean): Observable<boolean> {
         if (!installation || installation == null || !installation.objectId || installation.objectId == null) {
             throw new Error('installation can not be a unsaved object.')
         }
@@ -188,9 +186,9 @@ export class RxAVUser extends RxAVObject {
         } else {
             ch = Observable.from([true]);
         }
-        let opBody = this.buildRelation('add', [installation]);
-        this.set(RxAVUser.installationKey, opBody);
         return ch.flatMap(s1 => {
+            let opBody = this.buildRelation('add', [installation]);
+            this.set(RxAVUser.installationKey, opBody);
             return this.save();
         });
     }
@@ -357,7 +355,8 @@ export class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     public logOut(): Observable<boolean> {
-        return RxAVUser.saveCurrentUser(null);
+        RxAVUser.usersMap.delete(this.state.app.appId);
+        return RxAVObject.saveToLocalStorage(null, `${this.state.app.appId}_${RxAVUser.currenUserCacheKey}`);
     }
 
     /**

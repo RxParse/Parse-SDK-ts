@@ -31,6 +31,24 @@ describe('RxAVLiveQuery', () => {
             done();
         });
     });
+    it('RxAVLiveQuery#DateTimeZone', done => {
+        let query = new RxAVQuery('TodoLiveQuery');
+        query.equalTo('tag', 'livequery');
+        let subscription = query.subscribe();
+        subscription.flatMap(subs => {
+            let todo = new RxAVObject('TodoLiveQuery');
+            todo.set('tag', 'livequery');
+            todo.set('xDate', new Date());
+            todo.save().subscribe(result => {
+                console.log('save a todo for test,', result);
+            });
+            console.log('subs', subs);
+            return subs.on;
+        }).subscribe(pushData => {
+            console.log('pushData.scope', pushData.scope, 'pushData.object', pushData.object);
+            done();
+        });
+    });
     // it('RxAVLiveQuery#singleton', done => {
     //     let query1 = new RxAVQuery('TodoLiveQuery');
     //     query1.equalTo('name', 'livequery');

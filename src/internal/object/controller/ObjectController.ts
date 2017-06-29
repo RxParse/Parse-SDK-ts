@@ -25,7 +25,36 @@ export class ObjectController implements IObjectController {
             return serverState;
         });
     }
-    clearReadonlyFields(dictionary: { [key: string]: any }) {
+    delete(state: IObjectState, sessionToken: string): Observable<boolean> {
+        let cmd = new AVCommand({
+            app: state.app,
+            relativeUrl: `/classes/${state.className}/${state.objectId}`,
+            method: 'DELETE',
+            data: null,
+            sessionToken: sessionToken
+        });
+        return this._commandRunner.runRxCommand(cmd).map(res => {
+            return res.satusCode == 200;
+        });
+    }
+    batchDelete(states: Array<IObjectState>, sessionToken: string) {
+        let cmdArray = states.map(state => {
+            return new AVCommand({
+                app: state.app,
+                relativeUrl: `/classes/${state.className}/${state.objectId}`,
+                method: 'DELETE',
+                data: null,
+                sessionToken: sessionToken
+            })
+        });
+        return this.executeBatchCommands(cmdArray, sessionToken).map(batchRes => {
+            return batchRes.map(res => {
+                return res.satusCode == 200;
+            });
+        });
+    }
+    clearReadonlyFields(state: IObjectState, dictionary: { [key: string]: any }) {
+
         if (Object.prototype.hasOwnProperty.call(dictionary, 'objectId')) {
             delete dictionary['objectId'];
         }
@@ -35,9 +64,29 @@ export class ObjectController implements IObjectController {
         if (Object.prototype.hasOwnProperty.call(dictionary, 'updatedAt')) {
             delete dictionary['updatedAt'];
         }
+        if (Object.prototype.hasOwnProperty.call(dictionary, 'className')) {
+            delete dictionary['className'];
+        }
+        if (state.className == '_User') {
+            if (Object.prototype.hasOwnProperty.call(dictionary, 'sessionToken')) {
+                delete dictionary['sessionToken'];
+            }
+            if (Object.prototype.hasOwnProperty.call(dictionary, 'username')) {
+                delete dictionary['username'];
+            }
+            if (Object.prototype.hasOwnProperty.call(dictionary, 'emailVerified')) {
+                delete dictionary['emailVerified'];
+            }
+            if (Object.prototype.hasOwnProperty.call(dictionary, 'mobilePhoneVerified')) {
+                delete dictionary['mobilePhoneVerified'];
+            }
+            if (Object.prototype.hasOwnProperty.call(dictionary, 'email')) {
+                delete dictionary['email'];
+            }
+        }
     }
 
-    clearRelationFields(dictionary: { [key: string]: any }) {
+    clearRelationFields(state: IObjectState, dictionary: { [key: string]: any }) {
         for (let key in dictionary) {
             let v = dictionary[key];
             if (Object.prototype.hasOwnProperty.call(v, '__type')) {
@@ -54,15 +103,15 @@ export class ObjectController implements IObjectController {
         }
         return newDictionary;
     }
-    packForSave(dictionary: { [key: string]: any }) {
+    packForSave(state: IObjectState, dictionary: { [key: string]: any }) {
         let mutableDictionary = this.copyToMutable(dictionary);
-        this.clearReadonlyFields(mutableDictionary);
-        this.clearRelationFields(mutableDictionary);
+        this.clearReadonlyFields(state, mutableDictionary);
+        this.clearRelationFields(state, mutableDictionary);
         return mutableDictionary;
     }
 
     save(state: IObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<IObjectState> {
-        let mutableDictionary = this.packForSave(dictionary);
+        let mutableDictionary = this.packForSave(state, dictionary);
         let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
         let cmd = new AVCommand({
             app: state.app,
@@ -74,10 +123,19 @@ export class ObjectController implements IObjectController {
 
         return this._commandRunner.runRxCommand(cmd).map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
-            serverState = serverState.mutatedClone((s: IObjectState) => {
+            state = state.mutatedClone(s => {
                 s.isNew = res.satusCode == 201;
+                if (serverState.updatedAt) {
+                    s.updatedAt = serverState.updatedAt;
+                }
+                if (serverState.objectId) {
+                    s.objectId = serverState.objectId;
+                }
+                if (serverState.createdAt) {
+                    s.createdAt = serverState.createdAt;
+                }
             });
-            return serverState;
+            return state;
         });
     }
 
@@ -86,7 +144,7 @@ export class ObjectController implements IObjectController {
         let cmdArray: Array<AVCommand> = [];
 
         states.map((state, i, a) => {
-            let mutableDictionary = this.packForSave(dictionaries[i]);
+            let mutableDictionary = this.packForSave(states[i], dictionaries[i]);
             let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
             let cmd = new AVCommand({
                 app: state.app,

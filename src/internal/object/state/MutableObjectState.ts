@@ -26,6 +26,12 @@ export /**
         this.updatedAt = source.updatedAt;
         this.serverData = source.serverData;
     }
+    merge(source: IObjectState) {
+        this.isNew = source.isNew;
+        this.updatedAt = source.updatedAt;
+        this.objectId = source.objectId;
+        this.createdAt = source.createdAt;
+    }
     mutatedClone(func: (source: IObjectState) => void): IObjectState {
         let clone = this.mutableClone();
         func(clone);

@@ -8,7 +8,6 @@ export class RxAVRealtime {
 
     constructor(options?: any) {
         this._app = RxAVClient.instance.take(options);
-        console.log('this._app', this._app);
         if (!RxAVRealtime._realtimeInstances.has(this.app.appId)) {
             RxAVRealtime._realtimeInstances.set(this.app.appId, this);
         }
@@ -124,6 +123,19 @@ export class RxAVRealtime {
         });
     }
 
+    public add(convId: string, members: string[]): Observable<boolean> {
+        let convCMD = this.makeCommand()
+            .attribute('cmd', 'conv')
+            .attribute('cid', convId)
+            .attribute('op', 'add')
+            .attribute('m', members);
+
+        return this.RxWebSocketController.execute(convCMD).map(response => {
+            return response.satusCode < 300;
+        });
+
+    }
+
     /**
      * 
      * 
@@ -141,18 +153,24 @@ export class RxAVRealtime {
         if (Object.prototype.hasOwnProperty.call(data, 'type')) {
             mimeType = data.type;
         }
-        switch (mimeType) {
-            case 'text':
-                msg = this._makeText(data);
-                break;
-            case 'image' || 'img' || 'pic' || 'picture':
-                msg = this._makeImage(data);
-                break;
-            default:
-                msg = data;
-                break;
+        let typeStr = typeof mimeType;
+        if (typeStr == 'number') {
+            delete data.type;
+            msg = data;
+            msg['_lctype'] = mimeType;
+        } else if (typeStr == 'string') {
+            switch (mimeType) {
+                case 'text':
+                    msg = this._makeText(data);
+                    break;
+                case 'image' || 'img' || 'pic' || 'picture':
+                    msg = this._makeImage(data);
+                    break;
+                default:
+                    msg = data;
+                    break;
+            }
         }
-
         iMessage.content = JSON.stringify(msg);
 
         return this._send(convId, iMessage);
@@ -160,13 +178,17 @@ export class RxAVRealtime {
 
     private _makeText(data: { [key: string]: any }) {
         let text = '';
+
         if (Object.prototype.hasOwnProperty.call(data, 'text')) {
             text = data.text;
+            delete data.text;
         }
+
         let msg = {
             _lctype: -1,
             _lctext: text
         };
+        delete data.type;
         return this._makeArrtributes(msg, data);
     }
 
@@ -189,15 +211,24 @@ export class RxAVRealtime {
                 url: url
             }
         };
+        delete data.type;
         return this._makeArrtributes(msg, data);
     }
-
+    isEmpty(obj) {
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key))
+                return false;
+        }
+        return true;
+    }
     private _makeArrtributes(msg: any, data: any) {
         let attrs = {};
         for (var key in data) {
-            attrs[key] = data.key;
+            attrs[key] = data[key];
         }
-        msg['_lcattrs'] = attrs;
+        if (!this.isEmpty(attrs)) {
+            msg['_lcattrs'] = attrs;
+        }
         return msg;
     }
 
@@ -281,7 +312,7 @@ export class RxAVIMMessage implements IRxAVIMMessage {
             this.timestamp = data.timestamp;
         }
         if (Object.prototype.hasOwnProperty.call(data, 'fromPeerId')) {
-            this.from = data.cid;
+            this.from = data.fromPeerId;
         }
         if (Object.prototype.hasOwnProperty.call(data, 'offline')) {
             this.offline = data.offline;

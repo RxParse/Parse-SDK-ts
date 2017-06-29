@@ -10,7 +10,7 @@ let realtime = new RxAVRealtime();
 
 describe('AVRealtime', () => {
     before(done => {
-        realtime.connect('junwu').subscribe(success => {
+        realtime.connect('henry').subscribe(success => {
             done();
         });
     });
@@ -26,10 +26,31 @@ describe('AVRealtime', () => {
         });
     });
 
+    it('AVRealtime#receiveTranseint', done => {
+        realtime.add('5930e9738d6d8100589eb4cd', ['weichi']).subscribe(success => {
+            console.log('waiting for message received...');
+            realtime.messages.subscribe(message => {
+                console.log(message.serialize());
+                let msgMap = message.toJson();
+                console.log('msgMap', msgMap);
+                done();
+            });
+        });
+    });
+
     it('AVRealtime#send', done => {
-        realtime.send('58be1f5392509726c3dc1c8b', {
+        realtime.send('5930ea19fab00f41ddc7f42b', {
             type: 'text',
-            text: '我是个测试消息'
+            text: 'xxx',
+        }).subscribe(msg => {
+            chai.assert.isNotNull(msg.id);
+            done();
+        });
+    });
+    it('AVRealtime#sendEmoji', done => {
+        realtime.send('5930ea19fab00f41ddc7f42b', {
+            type: 2,
+            Ecode: 'u2123',
         }).subscribe(msg => {
             chai.assert.isNotNull(msg.id);
             done();

@@ -156,6 +156,26 @@ export class RxAVObject implements ICanSaved {
         });
     }
 
+    public delete(): Observable<boolean> {
+        if (this.objectId == null) throw new Error(`Cannot delete an object that hasn't been saved to the server.`);
+        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+            return RxAVObject._objectController.delete(this.state, sessionToken);
+        });
+    }
+
+    public static deleteAll(objects: Array<RxAVObject>): Observable<boolean> {
+        let r: Observable<boolean>;
+        objects.forEach(obj => {
+            let d = obj.delete();
+            if (r == null || typeof r == 'undefined') {
+                r = d;
+            } else {
+                r = d.concat(r);
+            }
+        });
+        return r;
+    }
+
     /**
      * 删除指定属性上的值
      * 
@@ -210,12 +230,17 @@ export class RxAVObject implements ICanSaved {
      * @memberOf RxAVObject
      */
     public static saveAll(objects: Array<RxAVObject>) {
-        let r: Observable<boolean>;
-        objects.map(obj => {
-            let y = obj.save();
-            r = Observable.concat(y);
-        });
-        return r;
+        // let r: Observable<boolean>;
+        // objects.forEach(obj => {
+        //     let y = obj.save();
+        //     if (r == null || typeof r == 'undefined') {
+        //         r = y;
+        //     } else {
+        //         r = y.concat(r);
+        //     }
+        // });
+        // return r;
+        return this.batchSave(objects);
     }
 
     protected static batchSave(objArray: Array<RxAVObject>) {
@@ -298,7 +323,8 @@ export class RxAVObject implements ICanSaved {
     }
 
     handlerSave(serverState: IObjectState) {
-        this.state.apply(serverState);
+
+        this.state.merge(serverState);
         this.isDirty = false;
         //this.rebuildEstimatedData();
     }
@@ -380,8 +406,9 @@ export class RxAVObject implements ICanSaved {
                     return provider != null;
                 });
             }
+        } else {
+            return Observable.from([true]);
         }
-        return Observable.from([true]);
     }
 
     toJSONObjectForSaving() {

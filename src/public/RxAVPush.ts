@@ -74,7 +74,7 @@ export class RxAVPush {
         return RxAVPush.sendContent(data, {
             query: query,
             prod: prod
-        })
+        });
     }
 
 

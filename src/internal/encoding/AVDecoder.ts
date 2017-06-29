@@ -1,5 +1,5 @@
 import { IAVDecoder } from './IAVDecoder';
-import { RxAVObject, RxAVACL } from '../../RxLeanCloud';
+import { RxAVObject, RxAVACL, RxAVUser } from '../../RxLeanCloud';
 
 export class AVDecoder implements IAVDecoder {
 
@@ -44,6 +44,9 @@ export class AVDecoder implements IAVDecoder {
         return data;
     }
     protected decodePointer(className: string, objectId: string) {
+        if (className == '_User') {
+            return RxAVUser.createWithoutData(objectId);
+        }
         return RxAVObject.createWithoutData(className, objectId);
     }
 

@@ -124,7 +124,7 @@ export class RxAVInstallation extends RxAVObject {
         return RxAVInstallation._currentInstallation;
     }
     private static _currentInstallation: RxAVInstallation = null
-    protected static saveCurrentInstallation(installation: RxAVInstallation) {
+    static saveCurrentInstallation(installation: RxAVInstallation) {
         RxAVInstallation._currentInstallation = installation;
         return RxAVObject.saveToLocalStorage(installation, RxAVInstallation.installationCacheKey);
     }

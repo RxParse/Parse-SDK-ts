@@ -2,6 +2,7 @@ import * as chai from 'chai';
 import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVApp } from '../../src/RxLeanCloud';
 import * as init from "../utils/init";
 
+init.init();
 describe('RxObject', function () {
     before(() => {
         

@@ -1,13 +1,23 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
 import { RxAVUser, RxAVClient } from '../../src/RxLeanCloud';
-
+init.init();
 describe('RxAVUser', function () {
     before(() => {
     });
-    it('RxAVUser#logIn', function (done) {
+    it('RxAVUser#currentSession', function (done) {
+        RxAVUser.logIn('junwu', 'leancloud').flatMap(user => {
+            console.log(RxAVUser.usersMap);
+            return RxAVUser.currentSessionToken();
+        }).subscribe(sesstionToken => {
+            console.log('sesstionToken', sesstionToken);
+            done();
+        });
+    });
+    it('RxAVUser#logInyyy', function (done) {
         RxAVUser.logIn('junwu', 'leancloud').subscribe(user => {
             console.log(user.username);
+            console.log(user.sesstionToken);
             console.log(user.state);
             chai.assert.isNotNull(user.username);
             user.isAuthenticated().subscribe(s => {

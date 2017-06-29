@@ -6,6 +6,7 @@ export class StorageController implements IStorageController {
     private storageFileName: string = 'RxApplicationSettings';
     provider: IStorage;
     isDirty: boolean;
+    hasLoaded: boolean = false;
     dictionary: { [key: string]: any } = null;
 
     constructor(storageProvider?: IStorage) {
@@ -20,7 +21,9 @@ export class StorageController implements IStorageController {
         }
         let obs = Observable.fromPromise(this.provider.get(this.storageFileName));
         return obs.map(data => {
-            this.dictionary = JSON.parse(data);
+            if (data)
+                this.dictionary = JSON.parse(data);
+            else this.dictionary = {};
             this.isDirty = false;
             return this.provider;
         });
@@ -32,9 +35,18 @@ export class StorageController implements IStorageController {
             console.warn('can not find a Storage Provider.');
             return Observable.from([null]);
         }
-        let jsonString = JSON.stringify(this.dictionary);
-        this.provider.add(this.storageFileName, jsonString);
-        return Observable.from([this.provider]);
+        if (this.dictionary && this.dictionary != null) {
+            let jsonString = JSON.stringify(this.dictionary);
+            let save = this.provider.add(this.storageFileName, jsonString);
+            return Observable.fromPromise(save).map(success => {
+                return this.provider;
+            });
+        } else {
+            return Observable.fromPromise(this.provider.remove(this.storageFileName)).map(removed => {
+                console.log('empty cache with key ' + this.storageFileName);
+                return this.provider;
+            });
+        }
     }
 
     get(key: string): Observable<any> {
@@ -50,16 +62,20 @@ export class StorageController implements IStorageController {
     }
 
     set(key: string, value: any): Observable<IStorage> {
-        if (this.dictionary == null) this.dictionary = {};
-        this.isDirty = true;
-        this.dictionary[key] = value;
-        return this.save(this.dictionary);
+        let loaded = Observable.from([this.provider]);
+        if (!this.hasLoaded) {
+            loaded = this.load();
+        }
+        return loaded.flatMap(provider => {
+            this.isDirty = true;
+            this.dictionary[key] = value;
+            return this.save(this.dictionary);
+        });
     }
     remove(key: string): Observable<IStorage> {
-        delete this.dictionary[key];
+        if (this.dictionary[key]) {
+            delete this.dictionary[key];
+        }
         return this.save(this.dictionary);
     }
-
-
-
 }
