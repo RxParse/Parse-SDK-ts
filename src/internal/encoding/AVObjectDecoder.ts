@@ -34,17 +34,22 @@ export /**
         }
 
         for (let key in serverResult) {
+
             var value = serverResult[key];
+            
             if (value != null) {
                 if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
                     if (value['__type'] == 'Pointer') {
                         let rxAVObject: RxAVObject = decoder.decodeItem(value);
+                        delete value.__type;
                         let serverState = this.decode(value, decoder);
                         rxAVObject.handleFetchResult(serverState);
                         mutableData[key] = rxAVObject;
                     } else {
                         mutableData[key] = decoder.decodeItem(value);
                     }
+                } else if (Array.isArray(value)) {
+                    mutableData[key] = decoder.decodeItem(value);
                 } else {
                     mutableData[key] = value;
                 }

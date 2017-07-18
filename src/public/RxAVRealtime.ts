@@ -35,6 +35,7 @@ export class RxAVRealtime {
         return SDKPlugins.instance.WebSocketController;
     }
     messages: Subject<RxAVIMMessage>;
+
     pushRouterState: any;
 
     private _clientId: string;
@@ -59,6 +60,10 @@ export class RxAVRealtime {
             this.pushRouterState = response.body;
             return this.RxWebSocketController.open(this.pushRouterState.server);
         });
+    }
+
+    public create() {
+        
     }
 
     heartBeatingInterval: number = 20;
@@ -292,6 +297,11 @@ export interface IRxAVIMMessage {
     deserialize(data: any);
     serialize(): string;
     validate(): boolean;
+}
+
+export class RxAVConversation {
+    id: string;
+    members: Array<string>;
 }
 
 export class RxAVIMMessage implements IRxAVIMMessage {

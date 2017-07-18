@@ -1,5 +1,8 @@
 import { RxAVClient, RxAVObject, RxAVACL } from '../../RxLeanCloud';
 import { IAVEncoder } from './IAVEncoder';
+import { AVAddOperation, AVAddUniqueOperation } from '../operation/AVAddOperation';
+import { AVDeleteOperation } from '../operation/AVDeleteOperation';
+import { AVRemoveOperation } from '../operation/AVRemoveOperation';
 
 export /**
  *  AVEncoder
@@ -17,6 +20,13 @@ export /**
         }
         return encodedDictionary;
     }
+
+    encodeList(list: Array<any>): Array<any> {
+        return list.map(item => {
+            return this.encodeItem(item);
+        });
+    }
+
     encodeItem(item: any): any {
         if (item instanceof Date) {
             return { '__type': 'Date', 'iso': item.toJSON() };
@@ -35,6 +45,18 @@ export /**
         }
         if (item instanceof RxAVACL) {
             return item.toJSON();
+        }
+        if (item instanceof AVDeleteOperation) {
+            return item.encode();
+        }
+        if (item instanceof AVAddOperation) {
+            return item.encode();
+        }
+        if (item instanceof AVAddUniqueOperation) {
+            return item.encode();
+        }
+        if (item instanceof AVRemoveOperation) {
+            return item.encode();
         }
 
         return item;

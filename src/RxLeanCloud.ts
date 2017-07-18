@@ -11,6 +11,6 @@ export { RxAVRole } from './public/RxAVRole';
 export { RxLeanEngine } from './public/RxLeanEngine';
 export { RxAVInstallation } from './public/RxAVInstallation';
 export { RxAVPush } from './public/RxAVPush';
-export { RxAVRealtime, RxAVIMMessage } from './public/RxAVRealtime';
+export { RxAVRealtime, RxAVIMMessage, RxAVConversation } from './public/RxAVRealtime';
 //export { RxAVAnalytics, RxAVAnalyticDevice, RxAVAnalyticEvent, RxAVAnalyticActivity, RxAVAnalyticTerminate, RxAVAnalyticLaunch } from './public/RxAVAnalytics';
 export { RxAVAnalytics, RxAVAnalyticDevice } from './public/RxAVAnalytics';

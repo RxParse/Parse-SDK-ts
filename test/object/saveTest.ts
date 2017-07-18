@@ -5,7 +5,7 @@ import * as init from "../utils/init";
 init.init();
 describe('RxObject', function () {
     before(() => {
-        
+
     });
     it('RxAVObject#saveBase', function (done) {
         let todo: RxAVObject = new RxAVObject('RxTodo');
@@ -153,6 +153,7 @@ describe('RxObject', function () {
             done();
         });
     });
+
     it('RxAVObject#saveDate', done => {
         let testTodo = new RxAVObject('Todo');
         testTodo.set('rDate', new Date());
@@ -174,6 +175,41 @@ describe('RxObject', function () {
             return s1.save();
         }).subscribe(s2 => {
             chai.assert.isTrue(s2);
+            done();
+        });
+    });
+
+    it('RxAVObject#add1', done => {
+        let testTodo = new RxAVObject('Todo');
+        testTodo.add('testArray', 1);
+        testTodo.save().flatMap(saved => {
+            testTodo.add('testArray', 2);
+            return testTodo.save();
+        }).subscribe(saved2 => {
+            console.log(testTodo.objectId);
+            console.log(testTodo.get('testArray'));
+            done();
+        });
+    });
+
+    it('RxAVObject#addUnique', done => {
+        let testTodo = new RxAVObject('Todo');
+        testTodo.add('testArray', 1);
+        testTodo.save().flatMap(saved => {
+            testTodo.addUnique('testArray', 1);
+            return testTodo.save();
+        }).subscribe(saved2 => {
+            console.log(testTodo.objectId);
+            console.log(testTodo.get('testArray'));
+            done();
+        });
+    });
+    it('RxAVObject#boolean', done => {
+        let testTodo = new RxAVObject('Todo');
+        testTodo.set('testBoolean', false);
+        testTodo.save().subscribe(saved2 => {
+            console.log(testTodo.objectId);
+            console.log(testTodo.get('testBoolean'));
             done();
         });
     });

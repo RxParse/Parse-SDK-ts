@@ -25,7 +25,9 @@ export class RxAVUser extends RxAVObject {
 
     static usersMap: Map<string, RxAVUser> = new Map<string, RxAVUser>();
     protected static saveCurrentUser(user: RxAVUser) {
+
         RxAVUser.usersMap.set(user.state.app.appId, user);
+        console.log('jsonToSaved', user.toJSONObjectForSaving());
         return RxAVObject.saveToLocalStorage(user, `${user.state.app.appId}_${RxAVUser.currenUserCacheKey}`);
     }
 
@@ -236,9 +238,8 @@ export class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     public signUp(): Observable<boolean> {
-        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
-            this.handlerSignUp(userState);
-            return true;
+        return RxAVUser.UserController.signUp(this.state, this.estimatedData).flatMap(userState => {
+            return this.handlerSignUp(userState);
         });
     }
 
@@ -259,7 +260,7 @@ export class RxAVUser extends RxAVObject {
             return true;
         });
     }
-
+    
     /**
      * 发送登录时需要的验证码
      * 
@@ -425,8 +426,9 @@ export class RxAVUser extends RxAVObject {
     }
 
     protected handlerSignUp(userState: IObjectState) {
-        super.handlerSave(userState);
+        this.handlerSave(userState);
         this.state.serverData = userState.serverData;
+        this.estimatedData['sessionToken'] = this.sesstionToken;
         return RxAVUser.saveCurrentUser(this);
     }
 

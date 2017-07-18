@@ -96,6 +96,13 @@ export class ObjectController implements IObjectController {
             }
         }
     }
+
+    mergeOperations(state: IObjectState, dictionary: { [key: string]: any }) {
+        for (let key in state.currentOperations) {
+            dictionary[key] = state.currentOperations[key];
+        }
+    }
+
     copyToMutable(dictionary: { [key: string]: any }) {
         let newDictionary: { [key: string]: any } = {};
         for (let key in dictionary) {
@@ -103,10 +110,12 @@ export class ObjectController implements IObjectController {
         }
         return newDictionary;
     }
+
     packForSave(state: IObjectState, dictionary: { [key: string]: any }) {
         let mutableDictionary = this.copyToMutable(dictionary);
         this.clearReadonlyFields(state, mutableDictionary);
         this.clearRelationFields(state, mutableDictionary);
+        this.mergeOperations(state, mutableDictionary);
         return mutableDictionary;
     }
 

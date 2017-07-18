@@ -19,8 +19,19 @@ export class AVDecoder implements IAVDecoder {
     }
 
     decodeItem(data: any): any {
+        
         if (data == null) {
             return null;
+        }
+
+        if (this.isBuiltInType(data))
+            return data;
+
+        if (Array.isArray(data)) {
+            
+            return data.map(item => {
+                return this.decodeItem(item);
+            });
         }
 
         let dict = data as { [key: string]: any };
@@ -41,6 +52,7 @@ export class AVDecoder implements IAVDecoder {
                 return this.decodePointer(dict['className'], dict['objectId']);
             }
         }
+
         return data;
     }
     protected decodePointer(className: string, objectId: string) {
@@ -64,5 +76,11 @@ export class AVDecoder implements IAVDecoder {
             value instanceof RxAVObject ||
             value instanceof RxAVACL ||
             value instanceof Date;
+    }
+
+    private isBuiltInType(value: any): boolean {
+        return typeof value == 'number' ||
+            typeof value == 'string' ||
+            typeof value == 'boolean';
     }
 }

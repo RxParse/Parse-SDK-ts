@@ -1,5 +1,9 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
+import { IAVFieldOperation } from '../internal/operation/IAVFieldOperation';
+import { AVAddOperation, AVAddUniqueOperation } from '../internal/operation/AVAddOperation';
+import { AVDeleteOperation } from '../internal/operation/AVDeleteOperation';
+import { AVRemoveOperation } from '../internal/operation/AVRemoveOperation';
 import { IObjectController } from '../internal/object/controller/IObjectController';
 import { IStorageController } from '../internal/storage/controller/IStorageController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
@@ -15,6 +19,7 @@ import { Observable } from 'rxjs';
 export class RxAVObject implements ICanSaved {
 
     estimatedData: { [key: string]: any };
+    currentOperations: { [key: string]: Array<IAVFieldOperation> };
     state: MutableObjectState;
     private _isDirty: boolean;
     private _isNew: boolean;
@@ -28,6 +33,7 @@ export class RxAVObject implements ICanSaved {
     constructor(className: string, options?: any) {
 
         this.estimatedData = {};
+        this.currentOperations = {};
         this._isDirty = true;
 
         this.state = new MutableObjectState({ className: className });
@@ -110,6 +116,30 @@ export class RxAVObject implements ICanSaved {
 
     get(key: string) {
         return this.estimatedData[key];
+    }
+
+    addUnique(key: string, value: any) {
+        this.performOperation(key, 'addUnique', value);
+    }
+
+    add(key: string, value: any) {
+        this.addRange(key, [value]);
+    }
+
+    addRange(key: string, value: Array<any>) {
+        if (this.currentOperations[key] == undefined) {
+            this.currentOperations[key] = new Array<AVAddOperation>();
+        }
+        this.currentOperations[key].push(new AVAddOperation(value));
+        this.performOperation(key, 'addRange', value);
+    }
+
+    removeRange(key: string, value: Array<any>) {
+        if (this.currentOperations[key] == undefined) {
+            this.currentOperations[key] = new Array<AVRemoveOperation>();
+        }
+        this.currentOperations[key].push(new AVRemoveOperation(value));
+        this.performOperation(key, 'removeRange ', value);
     }
 
     /**
@@ -326,6 +356,8 @@ export class RxAVObject implements ICanSaved {
 
         this.state.merge(serverState);
         this.isDirty = false;
+        this.state.currentOperations = {};
+        this.currentOperations = {};
         //this.rebuildEstimatedData();
     }
 
@@ -361,9 +393,52 @@ export class RxAVObject implements ICanSaved {
         return null;
     }
 
-    performOperation(key: string, operation: string) {
+    performOperation(key: string, operation: string, value?: any) {
         if (operation == 'remove') {
-            this.set(key, { __op: 'Delete' });
+            this.state.currentOperations[key] = new AVDeleteOperation();
+            delete this.estimatedData[key];
+        } else {
+            if (operation == 'add' || operation == 'addUnique' || operation == 'addRange' || operation == 'removeRange') {
+                let arrayValue = [];
+
+                if (operation == 'addRange' || operation == 'removeRange') {
+                    this.currentOperations[key].forEach((op, i, a) => {
+                        if (op instanceof AVAddOperation) {
+                            // if (i == 0) arrayValue = op.objects;
+                            // else {
+                            //     op.objects.forEach(o => {
+                            //         arrayValue.push(o);
+                            //     });
+                            // }
+
+                            arrayValue = arrayValue.concat(op.objects);
+                        }
+                    });
+                    if (operation == 'addRange')
+                        this.state.currentOperations[key] = new AVAddOperation(arrayValue);
+                    else if (operation == 'removeRange') {
+                        this.state.currentOperations[key] = new AVRemoveOperation(arrayValue);
+                    }
+                } else if (operation == 'addUnique') {
+                    this.state.currentOperations[key] = new AVAddUniqueOperation(arrayValue);
+                }
+
+                let oldValue = this.get(key);
+                if (oldValue != undefined) {
+                    if (oldValue instanceof Array) {
+                        if (operation == 'add') {
+                            oldValue = oldValue.concat(value);
+                        } else if (operation == 'addUnique') {
+                            oldValue = oldValue.concat(arrayValue);
+                        } else if (operation == 'addRange') {
+                            oldValue = oldValue.concat(arrayValue);
+                        }
+                    }
+                } else {
+                    oldValue = arrayValue;
+                }
+                this.set(key, oldValue);
+            }
         }
     }
 
