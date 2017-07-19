@@ -245,7 +245,7 @@ export class RxAVObject implements ICanSaved {
      * @memberOf RxAVObject
      */
     public static createSubclass<T extends RxAVObject>(
-        ctor: { new (): T; }, objectId: string): T {
+        ctor: { new(): T; }, objectId: string): T {
         let rtn = new ctor();
         rtn.objectId = objectId;
         return rtn;
@@ -377,6 +377,15 @@ export class RxAVObject implements ICanSaved {
     protected rebuildEstimatedData() {
         this.estimatedData = {};
         this.estimatedData = this.state.serverData;
+    }
+
+    protected initProperty(propertyName: string, value: any) {
+        if (!this.objectId) {
+            this.set(propertyName, value);
+        }
+        else {
+            throw new Error(`can not reset property '${propertyName}'`);
+        }
     }
 
     protected setProperty(propertyName: string, value: any) {

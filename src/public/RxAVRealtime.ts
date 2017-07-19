@@ -3,6 +3,7 @@ import { RxAVClient, RxAVApp } from './RxAVClient';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { AVCommand } from '../internal/command/AVCommand';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
+import { RxAVObject } from './RxAVObject';
 
 export class RxAVRealtime {
 
@@ -62,10 +63,6 @@ export class RxAVRealtime {
         });
     }
 
-    public create() {
-        
-    }
-
     heartBeatingInterval: number = 20;
     timer: any;
     heartBeating(toggle: boolean, seconds?: number) {
@@ -74,7 +71,7 @@ export class RxAVRealtime {
         if (seconds != null || typeof seconds != 'undefined') {
             internal = seconds;
         }
-        console.log('internal', internal, internal * 1000);
+
         if (toggle)
             this.timer = setInterval(() => {
                 this.RxWebSocketController.send("{}");
@@ -128,6 +125,8 @@ export class RxAVRealtime {
         });
     }
 
+    
+
     public add(convId: string, members: string[]): Observable<boolean> {
         let convCMD = this.makeCommand()
             .attribute('cmd', 'conv')
@@ -138,7 +137,6 @@ export class RxAVRealtime {
         return this.RxWebSocketController.execute(convCMD).map(response => {
             return response.satusCode < 300;
         });
-
     }
 
     /**
@@ -270,7 +268,7 @@ export class RxAVRealtime {
         this.RxWebSocketController.execute(ackCmd);
     }
 
-    private makeCommand() {
+    makeCommand() {
         let cmd = new AVCommand();
         cmd.attribute('appId', this.app.appId);
         cmd.attribute('peerId', this.clientId);
@@ -299,9 +297,55 @@ export interface IRxAVIMMessage {
     validate(): boolean;
 }
 
-export class RxAVConversation {
-    id: string;
-    members: Array<string>;
+export class RxAVIMConversation extends RxAVObject {
+
+    get id() {
+        return this.objectId;
+    }
+
+    set id(value: string) {
+        this.objectId = value;
+    }
+
+    get members() {
+        return this.getProperty('m');
+    }
+
+    get name() {
+        return this.getProperty('name');
+    }
+
+    set name(value: string) {
+        this.setProperty('name', value);
+    }
+
+    get unique() {
+        return this.getProperty('unique');
+    }
+
+    set unique(value: boolean) {
+        this.initProperty('unique', value);
+    }
+
+    get transient() {
+        return this.getProperty('tr');
+    }
+
+    set transient(value: boolean) {
+        this.initProperty('tr', value);
+    }
+
+    get system() {
+        return this.getProperty('sys');
+    }
+
+    set system(value: boolean) {
+        this.initProperty('sys', value);
+    }
+
+    get creator() {
+        return this.getProperty('c');
+    }
 }
 
 export class RxAVIMMessage implements IRxAVIMMessage {
