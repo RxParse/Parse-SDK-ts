@@ -1,5 +1,5 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { RxAVClient, RxAVObject, RxAVACL, RxAVUser } from '../RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVACL, RxAVUser, RxAVQuery } from '../RxLeanCloud';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IUserController } from '../internal/user/controller/IUserController';
@@ -48,7 +48,7 @@ export /**
             this.ACL = acl;
         }
         else {
-            
+
         }
     }
 
@@ -171,5 +171,20 @@ export /**
         rtn.objectId = objectId;
         return rtn;
     }
-    
+
+    public static getByName(roleName: string) {
+        let query = new RxAVQuery('_Role');
+        query.equalTo('name', roleName);
+        return query.find().map(roleList => {
+            if (roleList.length > 0) {
+                let obj = roleList[0];
+                let roleId = obj.objectId;
+                let roleName = obj.get('name');
+                let role = RxAVRole.createWithName(roleName, roleId);
+                return role;
+            }
+            return undefined;
+        });
+    }
+
 }

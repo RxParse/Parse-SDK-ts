@@ -7,4 +7,5 @@ export interface IWebSocketClient {
     open(url: string, protocols?: string | string[]): void;
     close(code: number, reason: string): void;
     send(data: ArrayBuffer | string | Blob): void;
+    newInstance(): IWebSocketClient;
 }

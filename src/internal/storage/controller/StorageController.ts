@@ -21,8 +21,14 @@ export class StorageController implements IStorageController {
         }
         let obs = Observable.fromPromise(this.provider.get(this.storageFileName));
         return obs.map(data => {
-            if (data)
-                this.dictionary = JSON.parse(data);
+            if (data) {
+                let firstJson = JSON.parse(data);
+                if (typeof firstJson == 'string') {
+                    this.dictionary = JSON.parse(firstJson);
+                } else {
+                    this.dictionary = firstJson;
+                }
+            }
             else this.dictionary = {};
             this.isDirty = false;
             return this.provider;

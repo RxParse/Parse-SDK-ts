@@ -237,9 +237,7 @@ export /**
         return RxAVUser.currentSessionToken().flatMap(sessionToken => {
             return RxAVQuery._queryController.find(this, sessionToken).map(serverStates => {
                 let resultList = serverStates.map((serverState, i, a) => {
-                    let rxObject = new RxAVObject(this.className);
-                    rxObject.handleFetchResult(serverState);
-                    return rxObject;
+                    return RxAVObject.instantiateSubclass(this.className, serverState);
                 });
                 if (resultList == undefined || resultList == null) {
                     resultList = [];
@@ -248,6 +246,7 @@ export /**
             });
         });
     }
+
 
     public seek(): Observable<RxAVObject> {
         return RxAVUser.currentSessionToken().flatMap(sessionToken => {
@@ -346,8 +345,8 @@ export /**
     public get selectedKeys() {
         return this._select;
     }
-    get RxWebSocketController() {
-        return SDKPlugins.instance.WebSocketController;
+    get rxWebSocketController() {
+        return this.realtime.RxWebSocketController;
     }
     protected createSubscription(query: RxAVQuery, sessionToken: string): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery = null;
@@ -396,12 +395,13 @@ export /**
         }
         return this._realtime;
     }
+
     subscribe(): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery = null;
         return RxAVUser.currentSessionToken().flatMap(sessionToken => {
             return this.createSubscription(this, sessionToken).flatMap(liveQuerySubscription => {
                 rtn = liveQuerySubscription;
-                if (this.realtime.RxWebSocketController.websocketClient.readyState == 1) {
+                if (this.rxWebSocketController.websocketClient.readyState == 1) {
                     rtn.bind();
                     return Observable.from([rtn]);
                 } else {
@@ -415,7 +415,7 @@ export /**
                                 service: 1,
                                 i: RxAVRealtime.getInstance({ app: this.app }).cmdId
                             };
-                            return this.RxWebSocketController.execute(liveQueryLogIn);
+                            return this.rxWebSocketController.execute(liveQueryLogIn);
                         }
                     }).map(logInResp => {
                         this.realtime.heartBeating(true);
@@ -442,11 +442,16 @@ export class RxAVLiveQuery implements ICanSaved {
             }
             if (options.query) {
                 this.query = options.query;
+                this._websocketController = this.query.rxWebSocketController;
             }
         }
     }
-    get RxWebSocketController() {
-        return SDKPlugins.instance.WebSocketController;
+    _websocketController: IRxWebSocketController;
+    get rxWebSocketController() {
+        return this._websocketController;
+    }
+    set rxWebSocketController(c: IRxWebSocketController) {
+        this._websocketController = c;
     }
     static readonly LiveQuerySubscriptionCacheKey = 'LiveQuerySubscriptionCacheKey';
     private static _currentSubscriptions: Map<string, RxAVLiveQuery> = new Map<string, RxAVLiveQuery>();
@@ -504,7 +509,7 @@ export class RxAVLiveQuery implements ICanSaved {
     }
 
     bind() {
-        this.on = this.RxWebSocketController.onMessage.filter(message => {
+        this.on = this.rxWebSocketController.onMessage.filter(message => {
             let data = JSON.parse(message);
             if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                 let rtn = false;
@@ -573,6 +578,10 @@ export class RxAVLiveQuery implements ICanSaved {
         if (ids) {
             ackCmd = ackCmd.attribute('ids', ids);
         }
-        this.RxWebSocketController.execute(ackCmd);
+        this.rxWebSocketController.execute(ackCmd);
     }
+}
+
+export class RxAVQueryIterator {
+
 }

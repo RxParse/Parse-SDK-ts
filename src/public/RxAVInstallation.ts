@@ -61,6 +61,10 @@ export class RxAVInstallation extends RxAVObject {
         return this.get('installationId');
     }
 
+    set installationId(value: string) {
+        this.set('installationId', value);
+    }
+
     /**
      * 获取设备所在的地区/时区
      * 
@@ -101,17 +105,21 @@ export class RxAVInstallation extends RxAVObject {
      * @memberOf RxAVInstallation
      */
     public static current(): Observable<RxAVInstallation> {
-        return SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVInstallation.installationCacheKey).map(installationCache => {
-            if (installationCache) {
-                let installationState = SDKPlugins.instance.ObjectDecoder.decode(installationCache, SDKPlugins.instance.Decoder);
-                installationState = installationState.mutatedClone((s: IObjectState) => { });
-                let installation = RxAVObject.createSubclass(RxAVInstallation, '');
-                installation.handleFetchResult(installationState);
-                RxAVInstallation._currentInstallation = installation;
-            }
-            return RxAVInstallation._currentInstallation;
-        });
+        if (SDKPlugins.instance.hasStorage) {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxAVInstallation.installationCacheKey).map(installationCache => {
+                if (installationCache) {
+                    let installationState = SDKPlugins.instance.ObjectDecoder.decode(installationCache, SDKPlugins.instance.Decoder);
+                    installationState = installationState.mutatedClone((s: IObjectState) => { });
+                    let installation = RxAVObject.createSubclass(RxAVInstallation, '');
+                    installation.handleFetchResult(installationState);
+                    RxAVInstallation._currentInstallation = installation;
+                }
+                return RxAVInstallation._currentInstallation;
+            });
+        }
+        return Observable.from([RxAVInstallation._currentInstallation]);
     }
+    
     /**
      *  在调用本方法之前，请务必确保你已经调用了 RxAVInstallation.current()
      * 
@@ -123,7 +131,7 @@ export class RxAVInstallation extends RxAVObject {
     public static get currentInstallation() {
         return RxAVInstallation._currentInstallation;
     }
-    private static _currentInstallation: RxAVInstallation = null
+    private static _currentInstallation: RxAVInstallation;
     static saveCurrentInstallation(installation: RxAVInstallation) {
         RxAVInstallation._currentInstallation = installation;
         return RxAVObject.saveToLocalStorage(installation, RxAVInstallation.installationCacheKey);

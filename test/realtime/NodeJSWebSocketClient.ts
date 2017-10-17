@@ -3,6 +3,9 @@ var WebSocket = require('ws');
 import { IWebSocketClient } from '../../src/RxLeanCloud';
 
 export class NodeJSWebSocketClient implements IWebSocketClient {
+    newInstance(): IWebSocketClient {
+        return new NodeJSWebSocketClient();
+    }
     onopen: (event: { target: NodeJSWebSocketClient }) => void;
     onerror: (err: Error) => void;
     onclose: (event: { wasClean: boolean; code: number; reason: string; target: NodeJSWebSocketClient }) => void;

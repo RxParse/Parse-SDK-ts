@@ -85,8 +85,9 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
         }
         if (this.onMessage == undefined) {
             this.websocketClient.onmessage = (event) => {
+                console.log('websocket<=', event.data);
                 let messageJson = JSON.parse(event.data);
-                console.log('websocket<=', messageJson);
+                //console.log('websocket<=', messageJson);
                 this.messageSubject.next(event.data);
             };
             this.onMessage = this.messageSubject.asObservable();

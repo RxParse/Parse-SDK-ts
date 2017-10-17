@@ -5,7 +5,7 @@ import * as init from "../utils/init";
 init.init();
 describe('RxObject', () => {
     before(() => {
-
+        
     });
 
     it('RxAVObject#update', done => {
@@ -25,7 +25,6 @@ describe('RxObject', () => {
             console.log(testObj.objectId);
             done();
         });
-
     });
 
 });
