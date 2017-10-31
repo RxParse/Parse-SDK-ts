@@ -10,6 +10,11 @@ let app2 = new RxAVApp({
     appKey: `14t4wqop50t4rnq9e99j2b9cyg51o1232ppzzc1ia2u5e05e`,
     shortname: `dev`
 });
+let qcloudApp3 = new RxAVApp({
+    appId: `JXyR8vfpeSr8cfaYnob2zYl0-9Nh9j0Va`,
+    appKey: `Fgq2YlPdnP1KJEoWyF5tk2az`,
+    shortname: 'qcloud'
+});
 import {
     APP_ID,
     APP_KEY,
@@ -24,6 +29,6 @@ export function init() {
             websocket: new NodeJSWebSocketClient(),
             device: new PCInfo()
         }
-    }).add(app).add(app2);
+    }).add(app).add(app2).add(qcloudApp3, true);
 }
 

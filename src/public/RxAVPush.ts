@@ -1,5 +1,7 @@
-import { Observable } from 'rxjs';
-import { RxAVClient, RxAVObject, RxAVQuery, RxAVUser, RxAVApp } from '../RxLeanCloud';
+import { Observable, Subject } from 'rxjs';
+import { RxAVClient, RxAVObject, RxAVQuery, RxAVUser, RxAVApp, RxAVRealtime, RxAVInstallation } from '../RxLeanCloud';
+import { AVCommand } from '../internal/command/AVCommand';
+import { SDKPlugins } from '../internal/SDKPlugins';
 
 /**
  * 一条推送消息
@@ -68,9 +70,17 @@ export class RxAVPush {
      * 
      * @memberOf RxAVPush
      */
-    public static sendTo(user: RxAVUser, data: string | { [key: string]: any }, prod?: string) {
+    public static sendTo(user: RxAVUser | string, data: string | { [key: string]: any }, prod?: string) {
+        let u: RxAVUser;
+        if (user != undefined) {
+            if (typeof user == 'string') {
+                u = RxAVUser.createWithoutData(user);
+            } else if (user instanceof RxAVUser) {
+                u = user;
+            }
+        }
         let query = new RxAVQuery('_Installation');
-        query.relatedTo(user, RxAVUser.installationKey);
+        query.relatedTo(u, RxAVUser.installationKey);
         return RxAVPush.sendContent(data, {
             query: query,
             prod: prod
@@ -118,4 +128,59 @@ export class RxAVPush {
         return payload;
     }
 
+    public static getInstallation(deviceType: string) {
+        return RxAVInstallation.current().flatMap(currentInstallation => {
+            if (currentInstallation != undefined)
+                return Observable.from([currentInstallation]);
+            else {
+                let installation = new RxAVInstallation();
+                installation.deviceType = deviceType;
+                installation.installationId = SDKPlugins.instance.ToolControllerInstance.newObjectId();
+                return installation.save().map(created => {
+                    return installation;
+                });
+            }
+        });
+    }
+
+    public static realtime: RxAVRealtime;
+    public static open(options?: any) {
+        let deviceType = options && options.deviceType ? options.deviceType : 'web';
+        RxAVPush.realtime = new RxAVRealtime();
+        return RxAVPush.getInstallation(deviceType).flatMap(installation => {
+            return RxAVPush.realtime.open().flatMap(opened => {
+                if (opened) {
+                    let sessionOpenCmd = new AVCommand();
+                    sessionOpenCmd.data = {
+                        cmd: 'login',
+                        appId: RxAVPush.realtime.app.appId,
+                        installationId: installation.installationId,
+                        i: 9999999
+                    };
+                    return RxAVPush.realtime.RxWebSocketController.execute(sessionOpenCmd).map(response => {
+
+                        return installation;
+                    });
+                }
+                return Observable.from([installation]);
+            });
+        });
+    }
+
+    protected static _notification: Observable<any>;
+
+    public static notification(): Observable<any> {
+        if (RxAVPush._notification == undefined) {
+            RxAVPush._notification = RxAVPush.realtime.RxWebSocketController.onMessage.filter(pushData => {
+                let push = JSON.parse(pushData);
+                if (Object.prototype.hasOwnProperty.call(push, 'cmd')) {
+                    if (push.cmd == 'data') {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+        return RxAVPush._notification;
+    }
 }

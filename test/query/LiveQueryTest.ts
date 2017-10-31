@@ -3,13 +3,13 @@ import { Observable } from 'rxjs';
 import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime, RxAVApp } from '../../src/RxLeanCloud';
 import * as init from "../utils/init";
 init.init();
+
 describe('RxAVLiveQuery', () => {
     before(done => {
         done();
     });
     it('RxAVLiveQuery#subscribe', done => {
         let query = new RxAVQuery('TodoLiveQuery');
-        query.realtime.heartBeatingInterval = 2;
         query.equalTo('tag', 'livequery');
         let subscription = query.subscribe();
         subscription.flatMap(subs => {
@@ -47,6 +47,47 @@ describe('RxAVLiveQuery', () => {
         }).subscribe(pushData => {
             console.log('pushData.scope', pushData.scope, 'pushData.object', pushData.object);
             done();
+        });
+    });
+
+    it('RxAVLiveQuery#batch', done => {
+
+        let total = 0;
+        let s = [];
+        for (let i = 0; i < 20000; i++) {
+
+            let query = new RxAVQuery('TodoLiveQuery');
+            query.equalTo('seed', i);
+
+            let subscription = query.subscribe();
+
+            let x = query.subscribe().flatMap(subs => {
+                //save a tofo for test
+                // let todo = new RxAVObject('TodoLiveQuery');
+                // todo.set('seed', i);
+                // todo.save().subscribe(result => {
+                //     console.log('save a todo for test,', result);
+                // });
+                return subs.on;
+            }).map(pushData => {
+                console.log('pushData.scope', pushData.scope, 'pushData.object.objectId', pushData.object.objectId);
+                let seed = pushData.object.get('seed');
+                total++;
+                console.log('seed', seed, 'total', total);
+                return pushData;
+            });
+
+            s.push(subscription);
+        }
+
+        let finalSub = Observable.merge(...s).flatMap(subscribed => {
+            let todo = new RxAVObject('TodoLiveQuery');
+            todo.set('seed', 10);
+            return todo.save();
+        });
+
+        finalSub.subscribe(results => {
+            console.log('results', results);
         });
     });
     // it('RxAVLiveQuery#singleton', done => {
@@ -175,4 +216,26 @@ describe('RxAVLiveQuery', () => {
     //         console.log('waiting for update livequery invoke.');
     //     });
     // });
+
+    it('xxx', done => {
+        let app3 = new RxAVApp({
+            appId: `zT0IGOPo7qg8N9hYBFLT9Pi4`,
+            appKey: `mBUOQ2ViA0D8PQhjWbD2UygK`,
+        });
+
+        RxAVClient.instance.add(app3, true);
+
+        let query = new RxAVQuery('Dev_Wjfx_BanmaNumbers');
+        query.equalTo('ownedBy', 'banma');
+
+        let subscription = query.subscribe();
+        subscription.flatMap(subs => {
+            return subs.on;
+        }).subscribe(pushData => {
+            console.log('pushData.scope', pushData.scope, 'pushData.object.objectId', pushData.object.objectId);
+            chai.assert.isNotNull(pushData.scope);
+            chai.assert.isNotNull(pushData.object);
+            done();
+        });
+    });
 });

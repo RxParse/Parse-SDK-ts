@@ -1,5 +1,7 @@
 import * as chai from 'chai';
+import * as init from "../utils/init";
 import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVInstallation, RxAVPush } from '../../src/RxLeanCloud';
+init.init();
 
 describe('RxAVPush', function () {
     before(() => {
@@ -15,7 +17,24 @@ describe('RxAVPush', function () {
     //     });
 
     // });
-    it('RxAVPush#sendTo', done => {
-        done();
+    it('RxAVPush#open', done => {
+        RxAVPush.open().subscribe(opend => {
+            done();
+        });
+    });
+    it('RxAVPush#received', done => {
+        RxAVPush.open().flatMap(installation => {
+
+            let testPush = new RxAVPush();
+            testPush.alert = 'test pass-through';
+            testPush.query.equalTo('installationId', installation.installationId);
+            testPush.send().subscribe(sent => {
+                console.log('sent,waiting for received...');
+            });
+            return RxAVPush.notification();
+        }).subscribe(received => {
+            console.log('received', received);
+            done();
+        });
     });
 });

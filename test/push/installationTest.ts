@@ -3,6 +3,7 @@ import * as init from "../utils/init";
 import * as random from "../utils/random";
 import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVInstallation } from '../../src/RxLeanCloud';
 init.init();
+
 describe('RxAVInstallation', function () {
     before(() => {
 

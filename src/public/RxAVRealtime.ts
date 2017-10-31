@@ -2,7 +2,13 @@ import { Observable, Subject } from 'rxjs';
 import { RxAVClient, RxAVApp } from './RxAVClient';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { AVCommand } from '../internal/command/AVCommand';
+import { AVCommandResponse } from '../internal/command/AVCommandResponse';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
+import { RxWebSocketController } from '../internal/websocket/controller/RxWebSocketController';
+import { RxAVObject, RxAVStorageObject } from './RxAVObject';
+import { RxAVQuery } from './RxAVQuery';
+import { MutableObjectState } from '../internal/object/state/MutableObjectState';
+import { IObjectState } from "../internal/object/state/IObjectState";
 
 export class RxAVRealtime {
 
@@ -31,10 +37,17 @@ export class RxAVRealtime {
 
     private static _realtimeInstances: Map<string, RxAVRealtime> = new Map<string, RxAVRealtime>();
 
+
+    protected _webSocketController: IRxWebSocketController;
+
     get RxWebSocketController() {
-        return SDKPlugins.instance.WebSocketController;
+        if (this._webSocketController == undefined) {
+            let instance = SDKPlugins.instance.WebSocketProvider.newInstance();
+            this._webSocketController = new RxWebSocketController(instance);
+        }
+        return this._webSocketController;
     }
-    messages: Subject<RxAVIMMessage>;
+    messages: Observable<RxAVIMMessage>;
 
     pushRouterState: any;
 
@@ -62,10 +75,6 @@ export class RxAVRealtime {
         });
     }
 
-    public create() {
-        
-    }
-
     heartBeatingInterval: number = 20;
     timer: any;
     heartBeating(toggle: boolean, seconds?: number) {
@@ -74,7 +83,7 @@ export class RxAVRealtime {
         if (seconds != null || typeof seconds != 'undefined') {
             internal = seconds;
         }
-        console.log('internal', internal, internal * 1000);
+
         if (toggle)
             this.timer = setInterval(() => {
                 this.RxWebSocketController.send("{}");
@@ -90,36 +99,35 @@ export class RxAVRealtime {
      * 
      * @memberOf RxAVRealtime
      */
-    public connect(clientId: string): Observable<boolean> {
+    public connect(clientId: string, options?: any): Observable<boolean> {
         this._clientId = clientId;
+        let deviceId = options && options.deviceId ? options.deviceId : undefined;
         return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand();
                 sessionOpenCmd.data = {
                     cmd: 'session',
                     op: 'open',
-                    appId: this.app.appId,
-                    peerId: clientId,
-                    i: this.cmdId,
-                    deviceId: 'xman',
                     ua: `rx-lean-js/${RxAVClient.instance.SDKVersion}`,
                 };
-                return this.RxWebSocketController.execute(sessionOpenCmd).map(response => {
+                if (deviceId) sessionOpenCmd.data['deviceId'] = deviceId;
+                return this.execute(sessionOpenCmd).map(response => {
                     RxAVIMMessage.initValidators();
-                    // this.RxWebSocketController.onState.subscribe(state => {
-                    //     console.log(state);
-                    // });
-                    this.messages = new Subject<RxAVIMMessage>();
-                    this.RxWebSocketController.onMessage.subscribe(message => {
+
+                    this.messages = this.RxWebSocketController.onMessage.filter(message => {
                         let data = JSON.parse(message);
                         if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                             if (data.cmd == 'direct') {
-                                let newMessage = new RxAVIMMessage();
-                                newMessage.deserialize(data);
-                                this.messages.next(newMessage);
-                                this.sendAck(newMessage.convId, newMessage.id);
+                                return true;
                             }
                         }
+                        return false;
+                    }).map(message => {
+                        let data = JSON.parse(message);
+                        let newMessage = new RxAVIMMessage();
+                        newMessage.deserialize(data);
+                        this.sendAck(newMessage.convId, newMessage.id);
+                        return newMessage;
                     });
                     return response.body.op == 'opened';
                 });
@@ -127,6 +135,34 @@ export class RxAVRealtime {
             return Observable.from([opened]);
         });
     }
+
+    public get(convId: string) {
+
+    }
+
+    public create(conversation: RxAVIMConversation) {
+        let cmd = new RxAVIMConversationCommand(this, conversation).generateCreateCommand();
+        return this.execute(cmd).map(response => {
+            let state = new MutableObjectState();
+            state.objectId = response.body.cid;
+            state.createdAt = response.body.cdate;
+            conversation.handlerSaved(state);
+            return conversation;
+        });
+    }
+
+    public update(conversation: RxAVIMConversation) {
+
+    }
+
+    public save(conversation: RxAVIMConversation) {
+
+    }
+
+    public list() {
+        
+    }
+
 
     public add(convId: string, members: string[]): Observable<boolean> {
         let convCMD = this.makeCommand()
@@ -138,7 +174,6 @@ export class RxAVRealtime {
         return this.RxWebSocketController.execute(convCMD).map(response => {
             return response.satusCode < 300;
         });
-
     }
 
     /**
@@ -219,6 +254,7 @@ export class RxAVRealtime {
         delete data.type;
         return this._makeArrtributes(msg, data);
     }
+
     isEmpty(obj) {
         for (var key in obj) {
             if (obj.hasOwnProperty(key))
@@ -226,6 +262,7 @@ export class RxAVRealtime {
         }
         return true;
     }
+
     private _makeArrtributes(msg: any, data: any) {
         let attrs = {};
         for (var key in data) {
@@ -270,7 +307,14 @@ export class RxAVRealtime {
         this.RxWebSocketController.execute(ackCmd);
     }
 
-    private makeCommand() {
+    execute(cmd: AVCommand) {
+        cmd.attribute('appId', this.app.appId);
+        cmd.attribute('peerId', this.clientId);
+        cmd.attribute('i', this.cmdId);
+        return this.RxWebSocketController.execute(cmd);
+    }
+
+    makeCommand() {
         let cmd = new AVCommand();
         cmd.attribute('appId', this.app.appId);
         cmd.attribute('peerId', this.clientId);
@@ -299,9 +343,198 @@ export interface IRxAVIMMessage {
     validate(): boolean;
 }
 
-export class RxAVConversation {
-    id: string;
-    members: Array<string>;
+export class RxAVIMCommand {
+    protected realtime: RxAVRealtime;
+    protected appId: string;
+    protected clientId: string;
+    protected cmd: string;
+    protected op: string;
+    protected arguments: { [key: string]: any };
+
+    constructor(realtime: RxAVRealtime, options: any) {
+        this.realtime = realtime;
+
+        this.appId = this.realtime.app.appId;
+        this.clientId = this.realtime.clientId;
+        if (options) {
+            if (options.appId) {
+                this.appId = options.appId
+            }
+            if (options.clientId) {
+                this.clientId = options.clientId
+            }
+            if (options.cmd) {
+                this.cmd = options.cmd
+            }
+            if (options.op) {
+                this.op = options.op
+            }
+            if (options.arguments) {
+                this.arguments = options.arguments
+            }
+        }
+    }
+
+    set(key: string, value: any) {
+        if (!this.arguments) this.arguments = {};
+        this.arguments[key] = value;
+        return this;
+    }
+
+    protected makeCommand() {
+        let cmd = new AVCommand();
+        cmd.attribute('op', this.op);
+        cmd.attribute('cmd', this.cmd);
+        for (let key in this.arguments) {
+            cmd.attribute(key, this.arguments[key]);
+        }
+        return cmd;
+    }
+}
+
+export class RxAVIMConversationCommand extends RxAVIMCommand {
+
+    constructor(realtime: RxAVRealtime, conversation: RxAVIMConversation, options?: any) {
+
+        if (!options) {
+            options = {
+                cmd: 'conv',
+            };
+        }
+        super(realtime, options);
+        this.conversation = conversation;
+        this.attr = {};
+    }
+    conversation: RxAVIMConversation;
+
+    protected attr: { [key: string]: any };
+
+    generateCreateCommand() {
+        this.op = 'start';
+
+        let members = this.conversation.members;
+        if (members) {
+            if (members.length > 0) {
+                this.set('m', members);
+            }
+        }
+
+        this.set('attr', this.attr);
+        for (let key in this.conversation.estimatedData) {
+            if (!this.isInternalFields(key)) {
+                this.attr[key] = this.conversation.estimatedData[key];
+            }
+        }
+
+        this.set('unique', this.conversation.unique);
+        this.set('transient', this.conversation.transient);
+
+        return this.makeCommand();
+    }
+
+    isInternalFields(key: string) {
+        let internalFields = ['m', 'c', 'mu', 'sys', 'tr', 'unique', 'lm', 'name', RxAVIMConversation.memoryMembersKey];
+        return internalFields.indexOf(key) > -1;
+    }
+
+    get(convId: string) {
+        this.op = 'query';
+        let where = {};
+        where['objectId'] = convId;
+        this.set('where', where);
+
+        return this.realtime.RxWebSocketController.execute(this.makeCommand()).map(response => {
+            let conv = new RxAVIMConversation()
+            let results = response.body.op;
+            if (results) {
+                if (results.length > 0) {
+                    let r = results[0];
+                    let state = new MutableObjectState();
+                    state.serverData = [];
+                    for (let key in r) {
+                        state.serverData[key] = r[key];
+                    }
+                    state.objectId = response.body.cid;
+                    state.createdAt = response.body.cdate;
+                    conv.state = state;
+                }
+            }
+            return conv;
+        });
+    }
+}
+
+
+export class RxAVIMConversation extends RxAVStorageObject {
+
+    constructor() {
+        super('_Conversation');
+        this.unique = true;
+        this.transient = false;
+    }
+
+    static readonly memoryMembersKey = '_members';
+
+    get id() {
+        return this.objectId;
+    }
+
+    set id(value: string) {
+        this.objectId = value;
+    }
+
+    get m() {
+        return this.getProperty('m');
+    }
+
+    get members() {
+        return this.get(RxAVIMConversation.memoryMembersKey);
+    }
+
+    set members(m: Array<string>) {
+        this.set(RxAVIMConversation.memoryMembersKey, m);
+    }
+
+    get name() {
+        return this.getProperty('name');
+    }
+
+    set name(value: string) {
+        this.setProperty('name', value);
+    }
+
+    get unique() {
+        return this.getProperty('unique');
+    }
+
+    set unique(value: boolean) {
+        this.initProperty('unique', value);
+    }
+
+    get transient() {
+        return this.getProperty('tr');
+    }
+
+    set transient(value: boolean) {
+        this.initProperty('tr', value);
+    }
+
+    get system() {
+        return this.getProperty('sys');
+    }
+
+    set system(value: boolean) {
+        this.initProperty('sys', value);
+    }
+
+    get creator() {
+        return this.getProperty('c');
+    }
+
+    handlerSaved(serverState: IObjectState) {
+        this.state.merge(serverState);
+        this.isDirty = false;
+    }
 }
 
 export class RxAVIMMessage implements IRxAVIMMessage {

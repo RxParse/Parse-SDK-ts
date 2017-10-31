@@ -23,6 +23,5 @@ export class RxLeanEngine {
         return RxAVUser.currentSessionToken().flatMap(sessionToken => {
             return RxLeanEngine.LeanEngineController.callFunction(name, parameters, sessionToken);
         });
-
     }
 }

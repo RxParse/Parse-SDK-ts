@@ -10,39 +10,17 @@ import { MutableObjectState } from '../internal/object/state/MutableObjectState'
 import { RxAVUser, RxAVACL, RxAVClient, RxAVQuery, RxAVApp } from '../RxLeanCloud';
 import { Observable } from 'rxjs';
 
-/**
- * 代表的一个 free-schema 的对象
- * 
- * @export
- * @class RxAVObject
- */
-export class RxAVObject implements ICanSaved {
-
+export class RxAVStorageObject {
     estimatedData: { [key: string]: any };
-    currentOperations: { [key: string]: Array<IAVFieldOperation> };
     state: MutableObjectState;
-    private _isDirty: boolean;
-    private _isNew: boolean;
-    private _acl: RxAVACL;
 
-    /**
-     * RxAVObject 类，代表一个结构化存储的对象.
-     * @constructor
-     * @param {string} className - className:对象在云端数据库对应的表名.
-     */
-    constructor(className: string, options?: any) {
-
-        this.estimatedData = {};
-        this.currentOperations = {};
-        this._isDirty = true;
-
-        this.state = new MutableObjectState({ className: className });
-        this.state.app = RxAVClient.instance.take(options);
-        this.className = className;
+    protected _isDirty: boolean;
+    get isDirty() {
+        return this._isDirty;
     }
 
-    protected static get _objectController() {
-        return SDKPlugins.instance.ObjectControllerInstance;
+    set isDirty(v: boolean) {
+        this._isDirty = v;
     }
 
     /**
@@ -65,6 +43,15 @@ export class RxAVObject implements ICanSaved {
         this.state.className = className;
     }
 
+    constructor(className: string, options?: any) {
+        this.state = new MutableObjectState({ className: className });
+        this.state.serverData = {};
+        this.state.app = RxAVClient.instance.take(options);
+
+        this.estimatedData = {};
+        this.isDirty = true;
+    }
+
     /**
      * 获取当前对象的 objectId
      * 
@@ -82,15 +69,17 @@ export class RxAVObject implements ICanSaved {
      * @memberOf RxAVObject
      */
     set objectId(id: string) {
-        this._isDirty = true;
+        this.isDirty = true;
         this.state.objectId = id;
     }
 
-    get isDirty() {
-        return this._isDirty;
+    set(key: string, value: any) {
+        this.isDirty = true;
+        this.estimatedData[key] = value;
     }
-    set isDirty(v: boolean) {
-        this._isDirty = v;
+
+    get(key: string) {
+        return this.estimatedData[key];
     }
 
     get createdAt() {
@@ -101,21 +90,66 @@ export class RxAVObject implements ICanSaved {
         return this.state.updatedAt;
     }
 
+    protected initProperty(propertyName: string, value: any) {
+        if (!this.objectId) {
+            this.state.serverData[propertyName] = value;
+        }
+        else {
+            throw new Error(`can not reset property '${propertyName}'`);
+        }
+    }
+
+    protected setProperty(propertyName: string, value: any) {
+        if (this.state && this.state != null) {
+            this.state.serverData[propertyName] = value;
+        }
+    }
+
+    protected getProperty(propertyName: string) {
+        if (this.state != null) {
+            if (this.state.containsKey(propertyName))
+                return this.state.serverData[propertyName];
+        }
+        return null;
+    }
+}
+
+/**
+ * 代表的一个 free-schema 的对象
+ * 
+ * @export
+ * @class RxAVObject
+ */
+export class RxAVObject extends RxAVStorageObject implements ICanSaved {
+
+    currentOperations: { [key: string]: Array<IAVFieldOperation> };
+
+    private _isNew: boolean;
+    private _acl: RxAVACL;
+
+    /**
+     * RxAVObject 类，代表一个结构化存储的对象.
+     * @constructor
+     * @param {string} className - className:对象在云端数据库对应的表名.
+     */
+    constructor(className: string, options?: any) {
+
+        super(className, options);
+
+        this.currentOperations = {};
+        this.className = className;
+    }
+
+    protected static get _objectController() {
+        return SDKPlugins.instance.ObjectControllerInstance;
+    }
+
     get ACL() {
         return this._acl;
     }
     set ACL(acl: RxAVACL) {
         this._acl = acl;
         this.set('ACL', this._acl);
-    }
-
-    set(key: string, value: any) {
-        this.isDirty = true;
-        this.estimatedData[key] = value;
-    }
-
-    get(key: string) {
-        return this.estimatedData[key];
     }
 
     addUnique(key: string, value: any) {
@@ -230,6 +264,7 @@ export class RxAVObject implements ICanSaved {
     public static createWithoutData(classnName: string, objectId: string) {
         let rtn = new RxAVObject(classnName);
         rtn.objectId = objectId;
+        rtn.isDirty = false;
         return rtn;
     }
 
@@ -245,10 +280,22 @@ export class RxAVObject implements ICanSaved {
      * @memberOf RxAVObject
      */
     public static createSubclass<T extends RxAVObject>(
-        ctor: { new (): T; }, objectId: string): T {
+        ctor: { new(): T; }, objectId: string): T {
         let rtn = new ctor();
         rtn.objectId = objectId;
+        rtn.isDirty = false;
         return rtn;
+    }
+
+    public static instantiateSubclass(className: string, serverState: IObjectState) {
+        if (className == '_User') {
+            let user = RxAVObject.createSubclass(RxAVUser, serverState.objectId);
+            user.handleFetchResult(serverState);
+            return user;
+        }
+        let rxObject = new RxAVObject(className);
+        rxObject.handleFetchResult(serverState);
+        return rxObject;
     }
 
     /**
@@ -379,20 +426,6 @@ export class RxAVObject implements ICanSaved {
         this.estimatedData = this.state.serverData;
     }
 
-    protected setProperty(propertyName: string, value: any) {
-        if (this.state && this.state != null) {
-            this.state.serverData[propertyName] = value;
-        }
-    }
-
-    protected getProperty(propertyName: string) {
-        if (this.state != null) {
-            if (this.state.containsKey(propertyName))
-                return this.state.serverData[propertyName];
-        }
-        return null;
-    }
-
     performOperation(key: string, operation: string, value?: any) {
         if (operation == 'remove') {
             this.state.currentOperations[key] = new AVDeleteOperation();
@@ -499,3 +532,4 @@ export class RxAVObject implements ICanSaved {
 export interface ICanSaved {
     toJSONObjectForSaving(): { [key: string]: any };
 }
+
