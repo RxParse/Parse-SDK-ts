@@ -1,4 +1,4 @@
-import { RxAVClient, RxAVObject, RxAVACL } from '../../RxLeanCloud';
+import { RxAVClient, RxAVObject, RxAVACL, RxAVStorageObject } from '../../RxLeanCloud';
 import { IAVEncoder } from './IAVEncoder';
 import { AVAddOperation, AVAddUniqueOperation } from '../operation/AVAddOperation';
 import { AVDeleteOperation } from '../operation/AVDeleteOperation';
@@ -32,6 +32,13 @@ export /**
             return { '__type': 'Date', 'iso': item.toJSON() };
         }
         if (item instanceof RxAVObject) {
+            return {
+                __type: "Pointer",
+                className: item.className,
+                objectId: item.objectId
+            };
+        }
+        if (item instanceof RxAVStorageObject) {
             return {
                 __type: "Pointer",
                 className: item.className,

@@ -9,6 +9,7 @@ import { RxAVObject, RxAVStorageObject } from './RxAVObject';
 import { RxAVQuery } from './RxAVQuery';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IObjectState } from "../internal/object/state/IObjectState";
+import { IRxAVIMMemberModifiable } from 'extentions/components/IRxAVIMMemberModifiable';
 
 export class RxAVRealtime {
 
@@ -17,12 +18,19 @@ export class RxAVRealtime {
         if (!RxAVRealtime._realtimeInstances.has(this.app.appId)) {
             RxAVRealtime._realtimeInstances.set(this.app.appId, this);
         }
+        if (options) {
+            if (options.hbi && typeof options.hbi == 'number') {
+                this._heartBeatingInterval = options.hbi;
+            }
+            if (options.ari && typeof options.ari == 'number') {
+                this._autoReconnectInternal = options.ari;
+            }
+        }
     }
     protected _app: RxAVApp;
     get app() {
         return this._app;
     }
-    private static singleton: RxAVRealtime;
 
     static getInstance(options?: any) {
         let rtn: RxAVRealtime = null;
@@ -47,7 +55,12 @@ export class RxAVRealtime {
         }
         return this._webSocketController;
     }
-    messages: Observable<RxAVIMMessage>;
+
+    onConversationNotice: Observable<RxAVIMConversationNotice>;
+
+    onMemberModified: Observable<RxAVIMMembersModifyNotice>;
+
+    onMessage: Observable<RxAVIMMessage>;
 
     pushRouterState: any;
 
@@ -63,34 +76,107 @@ export class RxAVRealtime {
      * 
      * @memberOf RxAVRealtime
      */
-    public open(): Observable<boolean> {
-        if (this.app.rtm != null)
-            return this.RxWebSocketController.open(this.app.rtm);
+    public open(wss?: string): Observable<boolean> {
+        if (this.RxWebSocketController.websocketClient.readyState == 1) {
+            if (wss) {
+                if (wss != this._lastUsedWebsocketAddress) {
+                    RxAVClient.printLog(`wss updated,try to connect new wss with ${wss}.`);
+                    return this._open(wss);
+                }
+            }
+            else {
+                RxAVClient.printLog(`current connection with ${wss} is still available.`);
+                return Observable.from([true]);
+            }
+        }
+
+        if (wss) {
+            return this._open(wss)
+        }
+
+        if (this._lastUsedWebsocketAddress) {
+            return this._open(this._lastUsedWebsocketAddress);
+        }
+
+        if (this.app.rtm != null) {
+            return this._open(this.app.rtm);
+        }
 
         let pushRouter = `${this.app.realtimeRouter}/v1/route?appId=${this.app.appId}&secure=1`;
 
         return RxAVClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
-            return this.RxWebSocketController.open(this.pushRouterState.server);
+            return this._open(this.pushRouterState.server);
         });
     }
 
-    heartBeatingInterval: number = 20;
-    timer: any;
-    heartBeating(toggle: boolean, seconds?: number) {
-        let internal = this.heartBeatingInterval;
-
-        if (seconds != null || typeof seconds != 'undefined') {
-            internal = seconds;
-        }
-
-        if (toggle)
-            this.timer = setInterval(() => {
-                this.RxWebSocketController.send("{}");
-            }, internal * 1000);
-        else clearInterval(this.timer);
+    private _open(wss: string) {
+        return this.RxWebSocketController.open(wss, 'lc.json.3').map(connected => {
+            this._lastUsedWebsocketAddress = wss;
+            return connected;
+        });
     }
 
+    private _isOpend() {
+
+    }
+
+    /**
+     * 心跳包的时间间隔，默认是 3 分钟一次
+     * 
+     * @type {number}
+     * @memberof RxAVRealtime
+     */
+    private _heartBeatingInterval: number = 180;
+    private _heartBeatingTimer: Observable<number>;
+    startHeartBeating(seconds?: number) {
+        if (seconds) {
+            if (typeof seconds == 'number') {
+                this._heartBeatingInterval = seconds;
+            }
+        }
+        this._heartBeatingTimer = Observable.timer(this._heartBeatingInterval, 1000 * this._heartBeatingInterval);
+        return this._heartBeatingTimer.map(t => {
+            this.RxWebSocketController.send("{}");
+            return t;
+        });
+        // let internal = this.heartBeatingInterval;
+
+        // if (seconds != null || typeof seconds != 'undefined') {
+        //     internal = seconds;
+        // }
+
+        // if (toggle)
+        //     this.timer = setInterval(() => {
+        //         this.RxWebSocketController.send("{}");
+        //     }, internal * 1000);
+        // else clearInterval(this.timer);
+    }
+    private _sesstionToken: string;
+    private _lastUsedWebsocketAddress: string;
+    private _deviceId: string;
+    private _tag: string;
+    private _autoReconnectInternal: number = 5;
+
+    startAutoReconnect() {
+        return this.RxWebSocketController.onState.flatMap(stateChanged => {
+            if (stateChanged == 3) {
+                let timer = Observable.timer(this._autoReconnectInternal, 1000 * this._autoReconnectInternal);
+                let resumed = this.RxWebSocketController.onState.map(resumedState => {
+                    return resumedState == 1;
+                });
+                return timer.takeUntil(resumed);
+            }
+        }).flatMap(disconnected => {
+            if (this._sesstionToken) {
+                return this._reconnect(this._sesstionToken);
+            } else {
+                return this._connect(this.clientId, this._connectionOptions);
+            }
+        });
+    }
+
+    private _connectionOptions: any;
     /**
      * 客户端打开聊天 v2 协议
      * 
@@ -100,8 +186,38 @@ export class RxAVRealtime {
      * @memberOf RxAVRealtime
      */
     public connect(clientId: string, options?: any): Observable<boolean> {
+
+        return this._connect(clientId, options).map(sessionOpend => {
+            if (sessionOpend) {
+                RxAVIMMessage.initValidators();
+                this._bindMemberNotice();
+                this._bindConversationNotice();
+                this._bindMessageNotice();
+
+                this.startAutoReconnect().subscribe(reconnected => {
+                    if (reconnected) {
+                        RxAVClient.printLog('auto reconnect successful.')
+                    } else {
+                        RxAVClient.printLog('auto reconnect failed..')
+                    }
+                });
+
+                this.startHeartBeating().subscribe(ticks => {
+                    RxAVClient.printLog('auto heart beating ticks.');
+                });
+            }
+            return sessionOpend;
+        });
+
+    }
+
+    private _connect(clientId: string, options?: any) {
         this._clientId = clientId;
+        if (options) {
+            this._connectionOptions = options;
+        }
         let deviceId = options && options.deviceId ? options.deviceId : undefined;
+        let tag = options && options.tag ? options.tag : undefined;
         return this.open().flatMap(opened => {
             if (opened) {
                 let sessionOpenCmd = new AVCommand();
@@ -110,29 +226,38 @@ export class RxAVRealtime {
                     op: 'open',
                     ua: `rx-lean-js/${RxAVClient.instance.SDKVersion}`,
                 };
-                if (deviceId) sessionOpenCmd.data['deviceId'] = deviceId;
+                if (deviceId) {
+                    sessionOpenCmd.data['deviceId'] = deviceId;
+                    this._deviceId = deviceId;
+                }
+                if (tag) {
+                    sessionOpenCmd.data['tag'] = tag;
+                    this._tag = tag;
+                }
                 return this.execute(sessionOpenCmd).map(response => {
-                    RxAVIMMessage.initValidators();
-
-                    this.messages = this.RxWebSocketController.onMessage.filter(message => {
-                        let data = JSON.parse(message);
-                        if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
-                            if (data.cmd == 'direct') {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }).map(message => {
-                        let data = JSON.parse(message);
-                        let newMessage = new RxAVIMMessage();
-                        newMessage.deserialize(data);
-                        this.sendAck(newMessage.convId, newMessage.id);
-                        return newMessage;
-                    });
                     return response.body.op == 'opened';
                 });
             }
             return Observable.from([opened]);
+        });
+    }
+
+    private _reconnect(sessionToken) {
+        let sessionOpenCmd = new AVCommand();
+        sessionOpenCmd.data = {
+            cmd: 'session',
+            op: 'open',
+            r: 1,
+            st: sessionToken,
+            ua: `rx-lean-js/${RxAVClient.instance.SDKVersion}`,
+        };
+        if (this._tag) {
+            if (this._tag != 'default') {
+                sessionOpenCmd['deviceId'] = this._deviceId;
+            }
+        }
+        return this.execute(sessionOpenCmd).map(response => {
+            return response.body.op == 'opened';
         });
     }
 
@@ -160,7 +285,7 @@ export class RxAVRealtime {
     }
 
     public list() {
-        
+
     }
 
 
@@ -174,6 +299,15 @@ export class RxAVRealtime {
         return this.RxWebSocketController.execute(convCMD).map(response => {
             return response.satusCode < 300;
         });
+    }
+
+    public history(convId: string, date?: Date, limit?: number) {
+        let iterator = new RxAVIMHistoryIterator();
+        iterator.convId = convId;
+        iterator.realtime = this;
+        iterator.limit = limit ? limit : 20;
+        iterator.startedAt = date ? date : new Date();
+        return iterator;
     }
 
     /**
@@ -216,6 +350,78 @@ export class RxAVRealtime {
         return this._send(convId, iMessage);
     }
 
+    private _bindMessageNotice() {
+        this.onMessage = this.RxWebSocketController.onMessage.filter(message => {
+            let data = JSON.parse(message);
+            if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
+                if (data.cmd == 'direct') {
+                    if (Object.prototype.hasOwnProperty.call(data, 'offline')) {
+
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }).map(message => {
+            let data = JSON.parse(message);
+            let newMessage = new RxAVIMMessage();
+            newMessage.deserialize(data);
+            this.sendAck(newMessage.convId, newMessage.id);
+            return newMessage;
+        });
+    }
+
+    private _bindMemberNotice() {
+
+        this.onMemberModified = this.RxWebSocketController.onMessage.filter(message => {
+            let data = JSON.parse(message);
+            if (Object.prototype.hasOwnProperty.call(data, 'cmd') && Object.prototype.hasOwnProperty.call(data, 'op')) {
+                if (data.cmd == 'conv') {
+                    return data.op == 'members-joined'
+                        || data.op == 'members-left';
+                }
+            }
+            return false;
+        }).map(message => {
+            let data = JSON.parse(message);
+            let notice = new RxAVIMMembersModifyNotice();
+            notice.operatedBy = data.initBy;
+            notice.convId = data.cid;
+            if (data.op == 'members-joined') {
+                notice.added = data.m;
+            } else if (data.op == 'members-left') {
+                notice.removed = data.m;
+            }
+            return notice;
+        });
+    }
+
+    public _bindConversationNotice() {
+        this.onConversationNotice = this.RxWebSocketController.onMessage.filter(message => {
+            let data = JSON.parse(message);
+            if (Object.prototype.hasOwnProperty.call(data, 'cmd') && Object.prototype.hasOwnProperty.call(data, 'op')) {
+                if (data.cmd == 'conv') {
+                    return data.op == 'joined'
+                        || data.op == 'left';
+                }
+            }
+            return false;
+        }).map(message => {
+            let data = JSON.parse(message);
+            let notice = new RxAVIMConversationNotice();
+            notice.joined = false;
+            notice.left = false;
+            notice.operatedBy = data.initBy;
+            notice.convId = data.cid;
+            if (data.op == 'joined') {
+                notice.joined = true;
+            } else if (data.op == 'left') {
+                notice.left = true;
+            }
+            return notice;
+        });
+    }
+
     private _makeText(data: { [key: string]: any }) {
         let text = '';
 
@@ -255,7 +461,7 @@ export class RxAVRealtime {
         return this._makeArrtributes(msg, data);
     }
 
-    isEmpty(obj) {
+    private isEmpty(obj) {
         for (var key in obj) {
             if (obj.hasOwnProperty(key))
                 return false;
@@ -285,6 +491,8 @@ export class RxAVRealtime {
         return this.RxWebSocketController.execute(msgCmd).map(response => {
             if (Object.prototype.hasOwnProperty.call(response.body, 'uid')) {
                 iMessage.id = response.body.uid;
+                iMessage.from = this.clientId;
+                iMessage.timestamp = response.body.t;
             }
             return iMessage;
         });
@@ -330,6 +538,89 @@ export class RxAVRealtime {
         return this.cmdIdAutomation();
     }
 }
+export class RxAVIMHistoryIterator {
+    convId: string;
+    realtime: RxAVRealtime;
+    startedAt: Date;
+    endedAt: Date;
+    previousIndexMessageId: string;
+    nextIndexMessageId: string;
+    previousIndexTimestamp: Date;
+    nextIndexTimestamp: Date;
+    limit: number;
+    previous(fixedSort?: boolean) {
+        let cmd = this.makeCommand();
+        if (this.previousIndexMessageId && this.previousIndexTimestamp) {
+            cmd = cmd.attribute('mid', this.previousIndexMessageId)
+                .attribute('t', this.previousIndexTimestamp.getTime());
+        } else {
+            cmd = cmd.attribute('t', this.startedAt.getTime())
+                .attribute('tIncluded', true);
+        }
+        if (this.endedAt) {
+            cmd = cmd.attribute('tt', this.endedAt.getTime()).attribute('ttIncluded', true);
+        }
+        return this.realtime.RxWebSocketController.execute(cmd).map(response => {
+            let messages = this.unpackMessages(response);
+
+            if (messages.length > 0) {
+                this.previousIndexMessageId = messages[0].id;
+                this.previousIndexTimestamp = new Date(messages[0].timestamp);
+            }
+            if (fixedSort) {
+                return messages.sort((a, b) => a.timestamp - b.timestamp);
+            }
+            return messages.sort((a, b) => b.timestamp - a.timestamp);
+        });
+    }
+    next(fixedSort?: boolean) {
+        let cmd = this.makeCommand().attribute('direction', 'NEW');
+        if (this.nextIndexMessageId && this.nextIndexTimestamp) {
+            cmd = cmd.attribute('mid', this.nextIndexMessageId)
+                .attribute('t', this.nextIndexTimestamp.getTime());
+        } else {
+            cmd = cmd.attribute('t', this.startedAt.getTime())
+                .attribute('tIncluded', true);
+        }
+        if (this.endedAt) {
+            cmd = cmd.attribute('tt', this.endedAt.getTime()).attribute('ttIncluded', true);
+        }
+        return this.realtime.RxWebSocketController.execute(cmd).map(response => {
+            let messages = this.unpackMessages(response);
+
+            if (messages.length > 0) {
+                this.nextIndexMessageId = messages[messages.length - 1].id;
+                this.nextIndexTimestamp = new Date(messages[messages.length - 1].timestamp);
+            }
+            if (fixedSort) {
+                return messages.sort((a, b) => b.timestamp - a.timestamp);
+            }
+            return messages.sort((a, b) => a.timestamp - b.timestamp);
+        });
+    }
+
+    unpackMessages(response: AVCommandResponse) {
+        let logs = response.body['logs'] as Array<any>;
+
+        let messages = logs.map(metaLog => {
+            let message = new RxAVIMMessage();
+            message.from = metaLog['from'];
+            message.timestamp = metaLog['timestamp'];
+            message.bin = metaLog['bin'];
+            message.id = metaLog['msgId'];
+            message.content = metaLog['data'];
+            return message;
+        });
+        return messages;
+    }
+    makeCommand() {
+        let cmd = this.realtime.makeCommand()
+            .attribute('cmd', 'logs')
+            .attribute('cid', this.convId)
+            .attribute('l', this.limit);
+        return cmd;
+    }
+}
 
 export interface IRxAVIMMessage {
     convId: string;
@@ -338,9 +629,27 @@ export interface IRxAVIMMessage {
     timestamp: number;
     content: string;
     offline: boolean;
+    bin: boolean;
     deserialize(data: any);
     serialize(): string;
     validate(): boolean;
+}
+
+export class RxAVIMConversationNotice {
+    clientId: string;
+    convId: string;
+    left: boolean;
+    joined: boolean;
+    operatedBy: string;
+}
+
+export class RxAVIMMembersModifyNotice {
+    convId: string;
+    decrease: boolean;
+    removed: string[];
+    increase: boolean;
+    added: string[];
+    operatedBy: string;
 }
 
 export class RxAVIMCommand {
@@ -433,7 +742,7 @@ export class RxAVIMConversationCommand extends RxAVIMCommand {
     }
 
     isInternalFields(key: string) {
-        let internalFields = ['m', 'c', 'mu', 'sys', 'tr', 'unique', 'lm', 'name', RxAVIMConversation.memoryMembersKey];
+        let internalFields = ['m', 'c', 'mu', 'sys', 'tr', 'unique', 'lm', RxAVIMConversation.memoryMembersKey];
         return internalFields.indexOf(key) > -1;
     }
 
@@ -544,6 +853,7 @@ export class RxAVIMMessage implements IRxAVIMMessage {
     timestamp: number;
     content: string;
     offline: boolean;
+    bin: boolean;
     public deserialize(data: any) {
         if (Object.prototype.hasOwnProperty.call(data, 'cid')) {
             this.convId = data.cid;

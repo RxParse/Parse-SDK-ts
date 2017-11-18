@@ -11,9 +11,8 @@ let app2 = new RxAVApp({
     shortname: `dev`
 });
 let qcloudApp3 = new RxAVApp({
-    appId: `JXyR8vfpeSr8cfaYnob2zYl0-9Nh9j0Va`,
-    appKey: `Fgq2YlPdnP1KJEoWyF5tk2az`,
-    shortname: 'qcloud'
+    appId: `cfpwdlo41ujzbozw8iazd8ascbpoirt2q01c4adsrlntpvxr`,
+    appKey: `lmar9d608v4qi8rvc53zqir106h0j6nnyms7brs9m082lnl7`,
 });
 import {
     APP_ID,

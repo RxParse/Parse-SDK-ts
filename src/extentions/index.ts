@@ -1,0 +1,1 @@
+export { RXAVIMGroupChat } from './RXAVIMGroupChat';
