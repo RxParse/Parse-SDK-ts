@@ -1,6 +1,6 @@
 {
   "name": "rx-lean-js-core",
-  "version": "0.4.9",
+  "version": "0.5.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/RxLeanCloud/rx-lean-js-core"
@@ -32,7 +32,7 @@
   "dependencies": {
     "axios": "^0.15.3",
     "jstz": "^1.0.8",
-    "rxjs": "^5.4.2",
+    "rxjs": "^5.5.2",
     "superagent": "^3.1.0"
   },
   "main": "./dist/RxLeanCloud.js",

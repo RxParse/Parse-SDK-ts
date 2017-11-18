@@ -418,7 +418,7 @@ export /**
                             return this.rxWebSocketController.execute(liveQueryLogIn);
                         }
                     }).map(logInResp => {
-                        this.realtime.heartBeating(true);
+                        this.realtime.startHeartBeating();
                         rtn.bind();
                         return rtn;
                     });

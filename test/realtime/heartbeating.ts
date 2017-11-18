@@ -6,13 +6,18 @@ import { NodeJSWebSocketClient } from './NodeJSWebSocketClient';
 
 init.init();
 
-let realtime = new RxAVRealtime({ hbi: 2, ari: 2 });
+let realtime = new RxAVRealtime();
 
 describe('AVRealtime', () => {
 
-    it('AVRealtime#connect', done => {
-        realtime.connect('junwu').subscribe(connectd => {
-            //done();
+    it('AVRealtime#heartBeating', done => {
+        realtime.connect('junwu').flatMap(connected => {
+            return realtime.startHeartBeating(2);
+        }).subscribe(sum => {
+            console.log(sum);
+            if (sum > 5) {
+                done();
+            }
         });
     });
 });

@@ -78,7 +78,9 @@ export class RxAVClient {
 
     take(options?: any) {
         let app: RxAVApp = null;
-        if (options) {
+        if (!options) {
+            return RxAVClient.instance.currentApp;
+        } else {
             if (options.app) {
                 if (options.app instanceof RxAVApp) {
                     app = options.app;
@@ -92,9 +94,9 @@ export class RxAVClient {
                         app = tempApp;
                     }
                 }
+            } else {
+                app = RxAVClient.instance.currentApp;
             }
-        } else {
-            app = RxAVClient.instance.currentApp;
         }
         return app;
     }
