@@ -21,6 +21,7 @@ export class RXAVIMProperties implements IRXAVIMProperties {
         return this.metaPropertyObject.save();
     }
     public static _rxAVIMPropertiesClassName = 'Conversation_Properties';
+    public static _rxAVIMGroupChatClassName = 'RxGroupChat';
     _onUpdated: Observable<any>;
 
     get admins() {

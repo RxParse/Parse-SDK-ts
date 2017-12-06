@@ -297,7 +297,7 @@ export class RxAVApp {
             stats?: string,
             engine?: string
         },
-        additionalHeaders?: { [key: string]: any }
+        additionalHeaders?: { [key: string]: any };
     }) {
         this.appId = options.appId;
         this.appKey = options.appKey;

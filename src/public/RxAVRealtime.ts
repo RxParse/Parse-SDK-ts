@@ -85,7 +85,7 @@ export class RxAVRealtime {
                 }
             }
             else {
-                RxAVClient.printLog(`current connection with ${wss} is still available.`);
+                RxAVClient.printLog(`current connection with ${this._lastUsedWebsocketAddress} is still available.`);
                 return Observable.from([true]);
             }
         }
@@ -157,6 +157,7 @@ export class RxAVRealtime {
     private _deviceId: string;
     private _tag: string;
     private _autoReconnectInternal: number = 5;
+    private _autoReconnectSubject: Subject<boolean> = new Subject<boolean>();
 
     startAutoReconnect() {
         return this.RxWebSocketController.onState.flatMap(stateChanged => {
@@ -165,7 +166,9 @@ export class RxAVRealtime {
                 let resumed = this.RxWebSocketController.onState.map(resumedState => {
                     return resumedState == 1;
                 });
-                return timer.takeUntil(resumed);
+                let autoReconnectSuccessd = this._autoReconnectSubject.asObservable();
+                let merged = Observable.merge(autoReconnectSuccessd, resumed);
+                return timer.takeUntil(merged);
             }
         }).flatMap(disconnected => {
             if (this._sesstionToken) {
@@ -194,11 +197,16 @@ export class RxAVRealtime {
                 this._bindConversationNotice();
                 this._bindMessageNotice();
 
+                this._startAutoACKResponse().subscribe(ackSent => {
+
+                });
+
                 this.startAutoReconnect().subscribe(reconnected => {
                     if (reconnected) {
-                        RxAVClient.printLog('auto reconnect successful.')
+                        this._autoReconnectSubject.next(true);
+                        RxAVClient.printLog('auto reconnect successful.');
                     } else {
-                        RxAVClient.printLog('auto reconnect failed..')
+                        RxAVClient.printLog('auto reconnect failed...');
                     }
                 });
 
@@ -258,6 +266,22 @@ export class RxAVRealtime {
         }
         return this.execute(sessionOpenCmd).map(response => {
             return response.body.op == 'opened';
+        });
+    }
+
+    close() {
+        return this._close();
+    }
+
+    private _close() {
+        let sessionCloseCmd = new AVCommand();
+        sessionCloseCmd.data = {
+            cmd: 'session',
+            op: 'close'
+        };
+
+        return this.execute(sessionCloseCmd).map(response => {
+            return response.body.op == 'closed';
         });
     }
 
@@ -350,6 +374,32 @@ export class RxAVRealtime {
         return this._send(convId, iMessage);
     }
 
+    /**
+     * 对话内可订阅的消息队列
+     * 
+     * @param {(string | RxAVIMConversation)} conv 
+     * @returns 
+     * @memberof RxAVRealtime
+     */
+    public onConversationMessage(conv: string | RxAVIMConversation): Observable<RxAVIMMessage> {
+        if (!conv) {
+            throw new Error('conv can NOT be undifined.');
+        }
+        let _convId = '';
+        if (typeof conv == 'string') {
+            _convId = conv;
+        } else if (conv instanceof RxAVIMConversation) {
+            _convId = conv.id;
+        } else {
+            throw new Error('conv must be a string or RxAVIMConversation');
+        }
+        return this.onMessage.filter(message => {
+            return message.convId == conv;
+        }).map(message => {
+            return message;
+        });
+    }
+
     private _bindMessageNotice() {
         this.onMessage = this.RxWebSocketController.onMessage.filter(message => {
             let data = JSON.parse(message);
@@ -366,8 +416,13 @@ export class RxAVRealtime {
             let data = JSON.parse(message);
             let newMessage = new RxAVIMMessage();
             newMessage.deserialize(data);
-            this.sendAck(newMessage.convId, newMessage.id);
             return newMessage;
+        });
+    }
+
+    private _startAutoACKResponse() {
+        return this.onMessage.flatMap(message => {
+            return this.sendAck(message.convId, message.id);
         });
     }
 
@@ -512,7 +567,7 @@ export class RxAVRealtime {
         if (tots) {
             ackCmd = ackCmd.attribute('tots', tots);
         }
-        this.RxWebSocketController.execute(ackCmd);
+        return this.RxWebSocketController.execute(ackCmd);
     }
 
     execute(cmd: AVCommand) {

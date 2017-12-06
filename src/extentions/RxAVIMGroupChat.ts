@@ -77,6 +77,7 @@ export class RXAVIMGroupChat implements IRxAVIMReceivable, IRxAVIMCreatable, IRX
     metaConversation: RxAVIMConversation;
 
     create(): Observable<boolean> {
+        this.metaConversation.set('root', RXAVIMProperties._rxAVIMPropertiesClassName);
         return this.realtimne.create(this.metaConversation).map(convesation => {
             this.convId = convesation.id;
             return convesation.id;
@@ -101,3 +102,4 @@ export class RXAVIMGroupChat implements IRxAVIMReceivable, IRxAVIMCreatable, IRX
         return channel;
     }
 }
+

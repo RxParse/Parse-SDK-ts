@@ -15,4 +15,4 @@ export { RxAVRealtime, RxAVIMMessage, RxAVIMConversation, RxAVIMHistoryIterator,
 //export { RxAVAnalytics, RxAVAnalyticDevice, RxAVAnalyticEvent, RxAVAnalyticActivity, RxAVAnalyticTerminate, RxAVAnalyticLaunch } from './public/RxAVAnalytics';
 export { RxAVAnalytics, RxAVAnalyticDevice } from './public/RxAVAnalytics';
 
-export { RXAVIMGroupChat as ExtRXAVIMGroupChat } from './extentions';
+export { RXAVIMGroupChat as ExtRXAVIMGroupChat, RxAVIMExtGroupChat, RxAVIMBulletin, RxAVIMBaseConversation } from './extentions';

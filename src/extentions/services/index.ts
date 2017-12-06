@@ -1,0 +1,1 @@
+export { RxAVIMBulletin } from './RxAVIMBulletin';
