@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVApp } from '../../src/RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
 import * as init from "../utils/init";
 
 init.init();
@@ -8,7 +8,7 @@ describe('RxObject', function () {
 
     });
     it('RxAVObject#saveBase', function (done) {
-        let todo: RxAVObject = new RxAVObject('RxTodo');
+        let todo: RxParseObject = new RxParseObject('RxTodo');
 
         todo.set('title', '开会');
         todo.set('time', '2016-12-03');
@@ -33,30 +33,30 @@ describe('RxObject', function () {
     });
 
     it('RxAVObject#saveAll', done => {
-        let todo1: RxAVObject = new RxAVObject('RxTodo');
+        let todo1: RxParseObject = new RxParseObject('RxTodo');
         todo1.set('title', '开会');
         todo1.set('time', '2016-12-03');
         todo1.set('reminder', new Date());
 
-        let todo2: RxAVObject = new RxAVObject('RxTodo');
+        let todo2: RxParseObject = new RxParseObject('RxTodo');
         todo2.set('title', '开会');
         todo2.set('time', '2016-12-03');
         todo2.set('reminder', new Date());
 
 
-        let todo3: RxAVObject = new RxAVObject('RxTodo');
+        let todo3: RxParseObject = new RxParseObject('RxTodo');
         todo3.set('title', '开会');
         todo3.set('time', '2016-12-03');
         todo3.set('reminder', new Date());
 
-        let todo4: RxAVObject = new RxAVObject('RxTodo');
+        let todo4: RxParseObject = new RxParseObject('RxTodo');
         todo4.set('title', '开会');
         todo4.set('time', '2016-12-03');
         todo4.set('reminder', new Date());
 
         let obja = [todo1, todo2, todo3, todo4];
 
-        RxAVObject.saveAll(obja).subscribe(next => {
+        RxParseObject.saveAll(obja).subscribe(next => {
             console.log('1');
         }, error => {
             console.log(error);
@@ -67,17 +67,17 @@ describe('RxObject', function () {
     });
 
     it('RxAVObject#savePointer', done => {
-        let todo1: RxAVObject = new RxAVObject('RxTodo');
+        let todo1: RxParseObject = new RxParseObject('RxTodo');
         todo1.set('title', 'father');
         todo1.set('time', '2016-12-07');
         todo1.set('likes', 9);
 
-        let todo2: RxAVObject = new RxAVObject('RxTodo');
+        let todo2: RxParseObject = new RxParseObject('RxTodo');
         todo2.set('title', 'son');
 
         todo1.set('xx', todo2);
 
-        let todo3: RxAVObject = new RxAVObject('RxTodo');
+        let todo3: RxParseObject = new RxParseObject('RxTodo');
         todo3.set('title', 'grandson');
 
         todo1.set('yy', todo3);
@@ -92,13 +92,13 @@ describe('RxObject', function () {
     });
 
     it('RxAVObject#saveUnderACL', done => {
-        RxAVUser.logIn('junwu', 'leancloud').subscribe(user => {
-            let team: RxAVObject = new RxAVObject('teams');
+        RxParseUser.logIn('junwu', 'leancloud').subscribe(user => {
+            let team: RxParseObject = new RxParseObject('teams');
 
             let teamPrefix = 'hua';
             let admin = `${teamPrefix}_admin`;
 
-            let acl = new RxAVACL();
+            let acl = new RxParseACL();
             acl.setRoleWriteAccess(admin, true);
             acl.setReadAccess(admin, true);
             acl.setPublicWriteAccess(false);
@@ -114,20 +114,20 @@ describe('RxObject', function () {
     });
 
     it('RxAVObject#collectChildrenTwoHierarchies', done => {
-        let todo: RxAVObject = new RxAVObject('RxTodo');
+        let todo: RxParseObject = new RxParseObject('RxTodo');
         todo.set('title', 'todo');
 
-        let todo2: RxAVObject = new RxAVObject('RxTodo');
+        let todo2: RxParseObject = new RxParseObject('RxTodo');
         todo2.set('title', 'todo2');
 
-        let todo3: RxAVObject = new RxAVObject('RxTodo');
+        let todo3: RxParseObject = new RxParseObject('RxTodo');
         todo3.set('title', 'todo3');
 
-        let todo4: RxAVObject = new RxAVObject('RxTodo');
+        let todo4: RxParseObject = new RxParseObject('RxTodo');
         todo4.set('title', 'todo4');
 
 
-        let todo5: RxAVObject = new RxAVObject('RxTodo');
+        let todo5: RxParseObject = new RxParseObject('RxTodo');
         todo5.set('title', 'todo5');
 
         todo4.set('t', todo5);
@@ -155,10 +155,10 @@ describe('RxObject', function () {
     });
 
     it('RxAVObject#saveDate', done => {
-        let testTodo = new RxAVObject('Todo');
+        let testTodo = new RxParseObject('Todo');
         testTodo.set('rDate', new Date());
         testTodo.save().flatMap(s => {
-            let query = new RxAVQuery('Todo');
+            let query = new RxParseQuery('Todo');
             query.equalTo('objectId', testTodo.objectId);
             return query.find();
         }).map(todos => {
@@ -179,38 +179,44 @@ describe('RxObject', function () {
         });
     });
 
-    it('RxAVObject#add1', done => {
-        let testTodo = new RxAVObject('Todo');
-        testTodo.add('testArray', 1);
-        testTodo.save().flatMap(saved => {
-            testTodo.add('testArray', 2);
-            return testTodo.save();
-        }).subscribe(saved2 => {
-            console.log(testTodo.objectId);
-            console.log(testTodo.get('testArray'));
-            done();
-        });
-    });
+    // it('RxAVObject#add1', done => {
+    //     let testTodo = new RxAVObject('Todo');
+    //     testTodo.add('testArray', 1);
+    //     testTodo.save().flatMap(saved => {
+    //         testTodo.add('testArray', 2);
+    //         return testTodo.save();
+    //     }).subscribe(saved2 => {
+    //         console.log(testTodo.objectId);
+    //         console.log(testTodo.get('testArray'));
+    //         done();
+    //     });
+    // });
 
-    it('RxAVObject#addUnique', done => {
-        let testTodo = new RxAVObject('Todo');
-        testTodo.add('testArray', 1);
-        testTodo.save().flatMap(saved => {
-            testTodo.addUnique('testArray', 1);
-            return testTodo.save();
-        }).subscribe(saved2 => {
-            console.log(testTodo.objectId);
-            console.log(testTodo.get('testArray'));
-            done();
-        });
-    });
+    // it('RxAVObject#addUnique', done => {
+    //     let testTodo = new RxAVObject('Todo');
+    //     testTodo.add('testArray', 1);
+    //     testTodo.save().flatMap(saved => {
+    //         testTodo.addUnique('testArray', 1);
+    //         return testTodo.save();
+    //     }).subscribe(saved2 => {
+    //         console.log(testTodo.objectId);
+    //         console.log(testTodo.get('testArray'));
+    //         done();
+    //     });
+    // });
     it('RxAVObject#boolean', done => {
-        let testTodo = new RxAVObject('Todo');
+        let testTodo = new RxParseObject('Todo');
         testTodo.set('testBoolean', false);
         testTodo.save().subscribe(saved2 => {
             console.log(testTodo.objectId);
             console.log(testTodo.get('testBoolean'));
             done();
+        });
+    });
+    it('RxAVObject#fetch', done => {
+        let todo = RxParseObject.createWithoutData("RxTodo", "59fc0fd52f301e0069c76a67");
+        todo.fetch().subscribe(obj => {
+            console.log('todo.title',todo.get('title'))
         });
     });
 

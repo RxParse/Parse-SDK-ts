@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { RxAVClient, RxAVObject } from '../RxLeanCloud';
+import { RxParseClient, RxParseObject } from 'RxParse';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import * as jstz from 'jstz';
@@ -9,9 +9,9 @@ import * as jstz from 'jstz';
  * 
  * @export
  * @class RxAVInstallation
- * @extends {RxAVObject}
+ * @extends {RxParseObject}
  */
-export class RxAVInstallation extends RxAVObject {
+export class RxAVInstallation extends RxParseObject {
     static readonly installationCacheKey = 'CurrentInstallation';
     /**
      * 获取频道
@@ -110,7 +110,7 @@ export class RxAVInstallation extends RxAVObject {
                 if (installationCache) {
                     let installationState = SDKPlugins.instance.ObjectDecoder.decode(installationCache, SDKPlugins.instance.Decoder);
                     installationState = installationState.mutatedClone((s: IObjectState) => { });
-                    let installation = RxAVObject.createSubclass(RxAVInstallation, '');
+                    let installation = RxParseObject.createSubclass(RxAVInstallation, '');
                     installation.handleFetchResult(installationState);
                     RxAVInstallation._currentInstallation = installation;
                 }
@@ -134,6 +134,6 @@ export class RxAVInstallation extends RxAVObject {
     private static _currentInstallation: RxAVInstallation;
     static saveCurrentInstallation(installation: RxAVInstallation) {
         RxAVInstallation._currentInstallation = installation;
-        return RxAVObject.saveToLocalStorage(installation, RxAVInstallation.installationCacheKey);
+        return RxParseObject.saveToLocalStorage(installation, RxAVInstallation.installationCacheKey);
     }
 }

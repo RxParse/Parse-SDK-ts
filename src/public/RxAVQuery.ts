@@ -1,11 +1,11 @@
-import { RxAVClient, RxAVObject, RxAVUser, ICanSaved } from '../RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseUser, ICanSaved } from 'RxParse';
 import { IQueryController } from '../internal/query/controller/IQueryController';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAVEncoder } from '../internal/encoding/IAVEncoder';
 import { Observer, Observable, Subject } from 'rxjs';
 import { AVCommandResponse } from '../internal/command/AVCommandResponse';
-import { RxAVRealtime, RxAVApp } from '../RxLeanCloud';
+import { RxAVRealtime, ParseApp } from 'RxParse';
 /**
  * 针对 RxAVObject 的查询构建类
  * 
@@ -15,13 +15,13 @@ import { RxAVRealtime, RxAVApp } from '../RxLeanCloud';
 export /**
  * RxAVQuery
  */
-    class RxAVQuery {
+    class RxParseQuery {
 
-    constructor(objectClass: string | RxAVObject, options?: any) {
+    constructor(objectClass: string | RxParseObject, options?: any) {
         if (typeof objectClass === 'string') {
             this.className = objectClass;
-            this._app = RxAVClient.instance.take(options);
-        } else if (objectClass instanceof RxAVObject) {
+            this._app = RxParseClient.instance.take(options);
+        } else if (objectClass instanceof RxParseObject) {
             this.className = objectClass.className;
             this._app = objectClass.state.app;
         }
@@ -36,7 +36,7 @@ export /**
     }
 
     className: string;
-    protected _app: RxAVApp;
+    protected _app: ParseApp;
     get app() {
         return this._app;
     }
@@ -60,70 +60,70 @@ export /**
         key: string,
         constraint: string,
         value: any
-    }>, limit: number, skip: number, include: string[], select: string[]): RxAVQuery {
-        return new RxAVQuery(this.className);
+    }>, limit: number, skip: number, include: string[], select: string[]): RxParseQuery {
+        return new RxParseQuery(this.className);
     }
 
-    equalTo(key: string, value: any): RxAVQuery {
+    equalTo(key: string, value: any): RxParseQuery {
         this._where[key] = this._encode(value, false, true);
         return this;
     }
 
-    notEqualTo(key: string, value: any): RxAVQuery {
+    notEqualTo(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$ne', value);
     }
 
-    lessThan(key: string, value: any): RxAVQuery {
+    lessThan(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$lt', value);
     }
 
-    lessThanOrEqualTo(key: string, value: any): RxAVQuery {
+    lessThanOrEqualTo(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$lte', value);
     }
 
-    greaterThan(key: string, value: any): RxAVQuery {
+    greaterThan(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$gt', value);
     }
 
-    greaterThanOrEqualTo(key: string, value: any): RxAVQuery {
+    greaterThanOrEqualTo(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$gte', value);
     }
 
-    containedIn(key: string, value: any): RxAVQuery {
+    containedIn(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$in', value);
     }
 
-    notContainedIn(key: string, value: any): RxAVQuery {
+    notContainedIn(key: string, value: any): RxParseQuery {
         return this._addCondition(key, '$nin', value);
     }
 
-    containsAll(key: string, values: Array<any>): RxAVQuery {
+    containsAll(key: string, values: Array<any>): RxParseQuery {
         return this._addCondition(key, '$all', values);
     }
 
-    exists(key: string): RxAVQuery {
+    exists(key: string): RxParseQuery {
         return this._addCondition(key, '$exists', true);
     }
 
-    doesNotExist(key: string): RxAVQuery {
+    doesNotExist(key: string): RxParseQuery {
         return this._addCondition(key, '$exists', false);
     }
 
-    contains(key: string, value: string): RxAVQuery {
+    contains(key: string, value: string): RxParseQuery {
         if (typeof value !== 'string') {
             throw new Error('The value being searched for must be a string.');
         }
         return this._addCondition(key, '$regex', this.quote(value));
     }
 
-    startsWith(key: string, value: string): RxAVQuery {
+    startsWith(key: string, value: string): RxParseQuery {
         if (typeof value !== 'string') {
             throw new Error('The value being searched for must be a string.');
         }
         return this._addCondition(key, '$regex', '^' + this.quote(value));
     }
 
-    endsWith(key: string, value: string): RxAVQuery {
+    endsWith(key: string, value: string): RxParseQuery {
         if (typeof value !== 'string') {
             throw new Error('The value being searched for must be a string.');
         }
@@ -134,7 +134,7 @@ export /**
         return '\\Q' + s.replace('\\E', '\\E\\\\E\\Q') + '\\E';
     }
 
-    relatedTo(parent: RxAVObject, key: string) {
+    relatedTo(parent: RxParseObject, key: string) {
         this._addCondition('$relatedTo', 'object', {
             __type: 'Pointer',
             className: parent.className,
@@ -143,12 +143,12 @@ export /**
         return this._addCondition('$relatedTo', 'key', key);
     }
 
-    ascending(...keys: Array<string>): RxAVQuery {
+    ascending(...keys: Array<string>): RxParseQuery {
         this._order = [];
         return this.addAscending.apply(this, keys);
     }
 
-    addAscending(...keys: Array<string>): RxAVQuery {
+    addAscending(...keys: Array<string>): RxParseQuery {
         if (!this._order) {
             this._order = [];
         }
@@ -162,12 +162,12 @@ export /**
         return this;
     }
 
-    descending(...keys: Array<string>): RxAVQuery {
+    descending(...keys: Array<string>): RxParseQuery {
         this._order = [];
         return this.addDescending.apply(this, keys);
     }
 
-    addDescending(...keys: Array<string>): RxAVQuery {
+    addDescending(...keys: Array<string>): RxParseQuery {
         if (!this._order) {
             this._order = [];
         }
@@ -185,7 +185,7 @@ export /**
         return this;
     }
 
-    skip(n: number): RxAVQuery {
+    skip(n: number): RxParseQuery {
         if (typeof n !== 'number' || n < 0) {
             throw new Error('You can only skip by a positive number');
         }
@@ -193,7 +193,7 @@ export /**
         return this;
     }
 
-    limit(n: number): RxAVQuery {
+    limit(n: number): RxParseQuery {
         if (typeof n !== 'number') {
             throw new Error('You can only set the limit to a numeric value');
         }
@@ -201,7 +201,7 @@ export /**
         return this;
     }
 
-    include(...keys: Array<string>): RxAVQuery {
+    include(...keys: Array<string>): RxParseQuery {
         keys.forEach((key) => {
             if (Array.isArray(key)) {
                 this._include = this._include.concat(key);
@@ -212,7 +212,7 @@ export /**
         return this;
     }
 
-    select(...keys: Array<string>): RxAVQuery {
+    select(...keys: Array<string>): RxParseQuery {
         if (!this._select) {
             this._select = [];
         }
@@ -229,15 +229,15 @@ export /**
     /**
      * 执行查询
      * 
-     * @returns {Observable<Array<RxAVObject>>}
+     * @returns {Observable<Array<RxParseObject>>}
      * 
      * @memberOf RxAVQuery
      */
-    public find(): Observable<Array<RxAVObject>> {
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVQuery._queryController.find(this, sessionToken).map(serverStates => {
+    public find(): Observable<Array<RxParseObject>> {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseQuery._queryController.find(this, sessionToken).map(serverStates => {
                 let resultList = serverStates.map((serverState, i, a) => {
-                    return RxAVObject.instantiateSubclass(this.className, serverState);
+                    return RxParseObject.instantiateSubclass(this.className, serverState);
                 });
                 if (resultList == undefined || resultList == null) {
                     resultList = [];
@@ -248,11 +248,11 @@ export /**
     }
 
 
-    public seek(): Observable<RxAVObject> {
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVQuery._queryController.find(this, sessionToken).flatMap(serverStates => {
+    public seek(): Observable<RxParseObject> {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseQuery._queryController.find(this, sessionToken).flatMap(serverStates => {
                 let resultList = serverStates.map((serverState, i, a) => {
-                    let rxObject = new RxAVObject(this.className);
+                    let rxObject = new RxParseObject(this.className);
                     rxObject.handleFetchResult(serverState);
                     return rxObject;
                 });
@@ -268,14 +268,14 @@ export /**
      * 
      * 
      * @static
-     * @param {...Array<RxAVQuery>} queries
-     * @returns {RxAVQuery}
+     * @param {...Array<RxParseQuery>} queries
+     * @returns {RxParseQuery}
      * 
      * @memberOf RxAVQuery
      */
-    public static or(...queries: Array<RxAVQuery>): RxAVQuery {
+    public static or(...queries: Array<RxParseQuery>): RxParseQuery {
         let className = null;
-        let app: RxAVApp;
+        let app: ParseApp;
         queries.forEach((q) => {
             if (!className) {
                 className = q.className;
@@ -287,14 +287,14 @@ export /**
             }
         });
 
-        let query = new RxAVQuery(className, {
+        let query = new RxParseQuery(className, {
             app: app
         });
         query._orQuery(queries);
         return query;
     }
 
-    protected _orQuery(queries: Array<RxAVQuery>): RxAVQuery {
+    protected _orQuery(queries: Array<RxParseQuery>): RxParseQuery {
         let queryJSON = queries.map((q) => {
             return q._where;
         });
@@ -304,7 +304,7 @@ export /**
         return this;
     }
 
-    protected _addCondition(key: string, condition: string, value: any): RxAVQuery {
+    protected _addCondition(key: string, condition: string, value: any): RxParseQuery {
         if (!this._where[key] || typeof this._where[key] === 'string') {
             this._where[key] = {};
         }
@@ -313,7 +313,7 @@ export /**
     }
 
     protected _encode(value: any, disallowObjects: boolean, forcePointers: boolean) {
-        return RxAVQuery._encoder.encodeItem(value);
+        return RxParseQuery._encoder.encode(value);
     }
 
 
@@ -348,7 +348,7 @@ export /**
     get rxWebSocketController() {
         return this.realtime.RxWebSocketController;
     }
-    protected createSubscription(query: RxAVQuery, sessionToken: string): Observable<RxAVLiveQuery> {
+    protected createSubscription(query: RxParseQuery, sessionToken: string): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery = null;
         return RxAVLiveQuery.getCurrent({ app: query.app }).flatMap(cacheLiveQuery => {
             let subscriptionId = '';
@@ -364,7 +364,7 @@ export /**
                 subscriptionId = state.id;
             }
 
-            return RxAVClient.runCommand(`/LiveQuery/subscribe`, 'POST', {
+            return RxParseClient.runCommand(`/LiveQuery/subscribe`, 'POST', {
                 query: {
                     where: query.where,
                     className: query.className,
@@ -398,7 +398,7 @@ export /**
 
     subscribe(): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery = null;
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
             return this.createSubscription(this, sessionToken).flatMap(liveQuerySubscription => {
                 rtn = liveQuerySubscription;
                 if (this.rxWebSocketController.websocketClient.readyState == 1) {
@@ -458,7 +458,7 @@ export class RxAVLiveQuery implements ICanSaved {
 
     static getMemory(options?: any) {
         let rtn: RxAVLiveQuery = null;
-        let app = RxAVClient.instance.take(options);
+        let app = RxParseClient.instance.take(options);
         let queryId = options.queryId;
         let key = `${app.appId}_${queryId}`;
         if (RxAVLiveQuery._currentSubscriptions.has(key) && queryId) {
@@ -469,7 +469,7 @@ export class RxAVLiveQuery implements ICanSaved {
 
     static getState(options?: any) {
         let state: RxAVLiveQuery = null;
-        let app = RxAVClient.instance.take(options);
+        let app = RxParseClient.instance.take(options);
         RxAVLiveQuery._currentSubscriptions.forEach((v, k, m) => {
             if (k.startsWith(app.appId)) {
                 state = v;
@@ -480,7 +480,7 @@ export class RxAVLiveQuery implements ICanSaved {
 
     static getCurrent(options?: any): Observable<RxAVLiveQuery> {
         let rtn: RxAVLiveQuery = null;
-        let app = RxAVClient.instance.take(options);
+        let app = RxParseClient.instance.take(options);
         if (SDKPlugins.instance.hasStorage) {
             return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxAVLiveQuery.LiveQuerySubscriptionCacheKey}`).map(cache => {
                 if (cache) {
@@ -495,7 +495,7 @@ export class RxAVLiveQuery implements ICanSaved {
         let app = this.query.app;
         let key = `${app.appId}_${this.queryId}`;
         RxAVLiveQuery._currentSubscriptions.set(key, this);
-        return RxAVObject.saveToLocalStorage(this as ICanSaved, `${app.appId}_${RxAVLiveQuery.LiveQuerySubscriptionCacheKey}`);
+        return RxParseObject.saveToLocalStorage(this as ICanSaved, `${app.appId}_${RxAVLiveQuery.LiveQuerySubscriptionCacheKey}`);
     }
     toJSONObjectForSaving(): {
         [key: string]: any;
@@ -530,7 +530,7 @@ export class RxAVLiveQuery implements ICanSaved {
             console.log('livequery<=', data);
             let ids = data.ids;
             let msg: Array<{ object: any, op: string, updatedKeys: string[], query_id: string }> = data.msg;
-            let obsArray: Array<{ scope: string, keys: string[], object: RxAVObject }> = [];
+            let obsArray: Array<{ scope: string, keys: string[], object: RxParseObject }> = [];
             msg.filter(item => {
                 return item.query_id == this.queryId;
             }).forEach(item => {
@@ -543,7 +543,7 @@ export class RxAVLiveQuery implements ICanSaved {
                 }
 
                 let objectState = SDKPlugins.instance.ObjectDecoder.decode(objectJson, SDKPlugins.instance.Decoder);
-                let rxObject = new RxAVObject(this.query.className);
+                let rxObject = new RxParseObject(this.query.className);
                 rxObject.handleFetchResult(objectState);
                 obsArray.push({ scope: item.op, keys: item.updatedKeys, object: rxObject });
             });
@@ -565,8 +565,8 @@ export class RxAVLiveQuery implements ICanSaved {
     // }
     id: string;
     queryId: string;
-    on: Observable<{ scope: string, keys: Array<string>, object: RxAVObject }>;
-    query: RxAVQuery;
+    on: Observable<{ scope: string, keys: Array<string>, object: RxParseObject }>;
+    query: RxParseQuery;
 
     sendAck(ids?: Array<string>) {
         let ackCmd = new AVCommand()

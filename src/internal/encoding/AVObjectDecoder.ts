@@ -2,7 +2,7 @@ import { IObjectState } from '../object/state/IObjectState';
 import { MutableObjectState } from '../object/state/MutableObjectState';
 import { IAVObjectDecoder } from './IAVObjectDecoder';
 import { IAVDecoder } from './IAVDecoder';
-import { RxAVObject } from '../../RxLeanCloud';
+import { RxParseObject } from 'RxParse';
 
 export /**
  * AVDecoder
@@ -18,7 +18,7 @@ export /**
     }
 
     handlerServerResult(state: MutableObjectState, serverResult: any, decoder: IAVDecoder): IObjectState {
-        let mutableData: { [key: string]: any } = {};
+        let mutableData = new Map<string, object>();
         if (serverResult.createdAt) {
             state.createdAt = serverResult.createdAt;
             state.updatedAt = serverResult.createdAt;
@@ -36,11 +36,11 @@ export /**
         for (let key in serverResult) {
 
             var value = serverResult[key];
-            
+
             if (value != null) {
                 if (Object.prototype.hasOwnProperty.call(value, '__type') || Object.prototype.hasOwnProperty.call(value, 'className')) {
                     if (value['__type'] == 'Pointer') {
-                        let rxAVObject: RxAVObject = decoder.decodeItem(value);
+                        let rxAVObject: RxParseObject = decoder.decodeItem(value);
                         delete value.__type;
                         let serverState = this.decode(value, decoder);
                         rxAVObject.handleFetchResult(serverState);

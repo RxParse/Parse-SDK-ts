@@ -2,7 +2,7 @@ import { Observable, Observer, Subject, ConnectableObservable } from 'rxjs';
 import { HttpRequest } from '../../httpClient/HttpRequest';
 import { HttpResponse } from '../../httpClient/HttpResponse';
 import { IRxHttpClient } from '../../httpClient/IRxHttpClient';
-import { RxAVClient } from '../../../public/RxAVClient';
+import { RxParseClient } from '../../../public/RxAVClient';
 import { IRxWebSocketClient } from '../IRxWebSocketClient';
 import { IRxWebSocketController } from './IRxWebSocketController';
 import { IWebSocketClient } from '../IWebSocketClient';
@@ -151,7 +151,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
             let messageJSON = JSON.parse(message);
             let resp = new HttpResponse();
             resp.body = messageJSON;
-            resp.satusCode = 200;
+            resp.statusCode = 200;
             return resp;
         });
     }

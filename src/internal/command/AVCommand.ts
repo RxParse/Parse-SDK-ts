@@ -1,5 +1,5 @@
 import { HttpRequest } from '../httpClient/HttpRequest';
-import { RxAVClient, RxAVUser, RxAVApp } from '../../RxLeanCloud';
+import { RxParseClient, RxParseUser, ParseApp } from 'RxParse';
 
 export class AVCommand extends HttpRequest {
     relativeUrl: string;
@@ -15,7 +15,7 @@ export class AVCommand extends HttpRequest {
             let apiVersion = '1.1';
             if (this.relativeUrl == null || typeof this.relativeUrl == 'undefined') throw new Error('command must have a relative url.');
             let protocol = 'https://';
-            let app = RxAVClient.instance.currentApp;
+            let app = RxParseClient.instance.currentApp;
 
             if (options.app != null) {
                 app = options.app;

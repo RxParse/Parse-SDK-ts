@@ -1,12 +1,12 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVQuery } from '../../src/RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseQuery } from 'RxParse';
 import * as init from "../utils/init";
 
 describe('RxAVQuery', () => {
     before(() => {
     });
     it('RxAVQuery#where', done => {
-        let query = new RxAVQuery('RxTodo');
+        let query = new RxParseQuery('RxTodo');
 
         query.equalTo('title', '开会');
         query.notEqualTo('time', '1');
@@ -19,7 +19,7 @@ describe('RxAVQuery', () => {
         }, () => { });
     });
     it('RxAVQuery#WithoutResult', done => {
-        let query = new RxAVQuery('RxTodo');
+        let query = new RxParseQuery('RxTodo');
 
         query.equalTo('title', 'fatherxxx');
 
@@ -34,7 +34,7 @@ describe('RxAVQuery', () => {
     });
     it('RxAVQuery#seek', done => {
         let uiList: Array<{ id: string, title: string }> = [];
-        let query = new RxAVQuery('RxTodo');
+        let query = new RxParseQuery('RxTodo');
 
         query.equalTo('title', '开会');
 

@@ -2,11 +2,11 @@ export /**
  * HttpResponse
  */
     class HttpResponse {
-    satusCode: number;
+    statusCode: number;
     body: any;
     constructor(option?: [number, any]) {
         if (option != null) {
-            this.satusCode = option[0];
+            this.statusCode = option[0];
             this.body = option[1];
         }
     }

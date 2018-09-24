@@ -2,7 +2,7 @@ import { IObjectState } from '../../object/state/IObjectState';
 import { IQueryController } from './IQueryController';
 import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
-import { RxAVQuery } from '../../../public/RxAVQuery';
+import { RxParseQuery } from '../../../public/RxAVQuery';
 import { SDKPlugins } from '../../SDKPlugins';
 import { Observable } from 'rxjs';
 
@@ -16,7 +16,7 @@ export /**
         this._commandRunner = commandRunner;
     }
 
-    find(query: RxAVQuery, sessionToken: string): Observable<Array<IObjectState>> {
+    find(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>> {
         let qu = this.buildQueryString(query);
         let cmd = new AVCommand({
             app: query.app,
@@ -34,15 +34,15 @@ export /**
         });
     }
 
-    count(query: RxAVQuery, sesstionToken: string): Observable<number> {
+    count(query: RxParseQuery, sesstionToken: string): Observable<number> {
         return Observable.from([0]);
     }
 
-    fitst(query: RxAVQuery, sesstionToken: string): Observable<Array<IObjectState>> {
+    fitst(query: RxParseQuery, sesstionToken: string): Observable<Array<IObjectState>> {
         return null;
     }
 
-    buildQueryString(query: RxAVQuery) {
+    buildQueryString(query: RxParseQuery) {
         let queryJson = query.buildParameters();
         let queryArray = [];
         let queryUrl = '';

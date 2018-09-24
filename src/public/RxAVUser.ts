@@ -1,5 +1,5 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { RxAVClient, RxAVObject, RxAVRole, RxAVQuery, RxAVInstallation } from '../RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseRole, RxParseQuery, RxAVInstallation } from 'RxParse';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IUserController } from '../internal/user/controller/IUserController';
@@ -10,9 +10,9 @@ import { Observable } from 'rxjs';
  * 
  * @export
  * @class RxAVUser 一个用户对应的是 _User 的一个对象，它的查询权限是关闭的，默认是不可以通过 RxAVQuery 查询用户的
- * @extends {RxAVObject}
+ * @extends {RxParseObject}
  */
-export class RxAVUser extends RxAVObject {
+export class RxParseUser extends RxParseObject {
     constructor() {
         super('_User');
     }
@@ -21,14 +21,14 @@ export class RxAVUser extends RxAVObject {
     private _username: string;
     email: string;
     private _mobilephone: string;
-    roles: Array<RxAVRole>;
+    roles: Array<RxParseRole>;
 
-    static usersMap: Map<string, RxAVUser> = new Map<string, RxAVUser>();
-    protected static saveCurrentUser(user: RxAVUser) {
+    static usersMap: Map<string, RxParseUser> = new Map<string, RxParseUser>();
+    protected static saveCurrentUser(user: RxParseUser) {
 
-        RxAVUser.usersMap.set(user.state.app.appId, user);
+        RxParseUser.usersMap.set(user.state.app.appId, user);
         console.log('jsonToSaved', user.toJSONObjectForSaving());
-        return RxAVObject.saveToLocalStorage(user, `${user.state.app.appId}_${RxAVUser.currenUserCacheKey}`);
+        return RxParseObject.saveToLocalStorage(user, `${user.state.app.appId}_${RxParseUser.currenUserCacheKey}`);
     }
 
     /**
@@ -36,20 +36,20 @@ export class RxAVUser extends RxAVObject {
      * 
      * @readonly
      * @static
-     * @type {Observable<RxAVUser>}
+     * @type {Observable<RxParseUser>}
      * @memberOf RxAVUser
      */
-    static current(options?: any): Observable<RxAVUser> {
-        let rtn: RxAVUser = null;
-        let app = RxAVClient.instance.take(options);
-        if (RxAVUser.usersMap.has(app.appId)) {
-            rtn = RxAVUser.usersMap.get(app.appId);
+    static current(options?: any): Observable<RxParseUser> {
+        let rtn: RxParseUser = null;
+        let app = RxParseClient.instance.take(options);
+        if (RxParseUser.usersMap.has(app.appId)) {
+            rtn = RxParseUser.usersMap.get(app.appId);
         } else if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxAVUser.currenUserCacheKey}`).map(userCache => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxParseUser.currenUserCacheKey}`).map(userCache => {
                 if (userCache) {
                     let userState = SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins.instance.Decoder);
                     userState = userState.mutatedClone((s: IObjectState) => { });
-                    let user = RxAVUser.createWithoutData();
+                    let user = RxParseUser.createWithoutData();
                     user.handlerLogIn(userState);
                     rtn = user;
                 }
@@ -60,7 +60,7 @@ export class RxAVUser extends RxAVObject {
     }
 
     static currentSessionToken(): Observable<string> {
-        return RxAVUser.current().map(user => {
+        return RxParseUser.current().map(user => {
             if (user != null)
                 return user.sesstionToken as string;
             return null;
@@ -160,7 +160,7 @@ export class RxAVUser extends RxAVObject {
      */
     public isAuthenticated(): Observable<boolean> {
         try {
-            return !!this.sesstionToken && RxAVClient.runCommand('/users/me', 'GET', null, this.sesstionToken, this.state.app).map(body => {
+            return !!this.sesstionToken && RxParseClient.runCommand('/users/me', 'GET', null, this.sesstionToken, this.state.app).map(body => {
                 return true;
             });
         } catch (error) {
@@ -183,14 +183,14 @@ export class RxAVUser extends RxAVObject {
         }
         let ch: Observable<boolean>;
         if (unique) {
-            this.remove(RxAVUser.installationKey);
+            this.remove(RxParseUser.installationKey);
             ch = this.save();
         } else {
             ch = Observable.from([true]);
         }
         return ch.flatMap(s1 => {
             let opBody = this.buildRelation('add', [installation]);
-            this.set(RxAVUser.installationKey, opBody);
+            this.set(RxParseUser.installationKey, opBody);
             return this.save();
         });
     }
@@ -205,23 +205,23 @@ export class RxAVUser extends RxAVObject {
      */
     public inactive(installation: RxAVInstallation): Observable<boolean> {
         let opBody = this.buildRelation('remove', [installation]);
-        this.set(RxAVUser.installationKey, opBody);
+        this.set(RxParseUser.installationKey, opBody);
         return this.save();
     }
 
     /**
      * 从服务端获取当前用户所拥有的角色
      * 
-     * @returns {Observable<Array<RxAVRole>>}
+     * @returns {Observable<Array<RxParseRole>>}
      * 
      * @memberOf RxAVUser
      */
-    public fetchRoles(): Observable<Array<RxAVRole>> {
-        let query = new RxAVQuery('_Role');
+    public fetchRoles(): Observable<Array<RxParseRole>> {
+        let query = new RxParseQuery('_Role');
         query.equalTo('users', this);
         return query.find().map(roles => {
             let fetched = roles.map(currentItem => {
-                let role = RxAVRole.createWithName(currentItem.get('name'), currentItem.objectId);
+                let role = RxParseRole.createWithName(currentItem.get('name'), currentItem.objectId);
                 return role;
             });
             this.roles = fetched;
@@ -238,7 +238,7 @@ export class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     public signUp(): Observable<boolean> {
-        return RxAVUser.UserController.signUp(this.state, this.estimatedData).flatMap(userState => {
+        return RxParseUser.UserController.signUp(this.state, this.estimatedData).flatMap(userState => {
             return this.handlerSignUp(userState);
         });
     }
@@ -256,11 +256,11 @@ export class RxAVUser extends RxAVObject {
         let data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxAVClient.runCommand('/requestSmsCode', 'POST', data).map(body => {
+        return RxParseClient.runCommand('/requestSmsCode', 'POST', data).map(body => {
             return true;
         });
     }
-    
+
     /**
      * 发送登录时需要的验证码
      * 
@@ -274,7 +274,7 @@ export class RxAVUser extends RxAVObject {
         let data = {
             mobilePhoneNumber: mobilephone
         };
-        return RxAVClient.runCommand('/requestLoginSmsCode', 'POST', data).map(body => {
+        return RxParseClient.runCommand('/requestLoginSmsCode', 'POST', data).map(body => {
             return true;
         });
     }
@@ -284,23 +284,23 @@ export class RxAVUser extends RxAVObject {
      * @static
      * @param {string} mobilephone 手机号，目前支持几乎所有主流国家
      * @param {string} shortCode 6位数的数字组成的字符串
-     * @returns {Observable<RxAVUser>}
+     * @returns {Observable<RxParseUser>}
      * 
      * @memberOf RxAVUser
      */
-    public static signUpByMobilephone(mobilephone: string, shortCode: string, newUser: RxAVUser): Observable<RxAVUser> {
+    public static signUpByMobilephone(mobilephone: string, shortCode: string, newUser: RxParseUser): Observable<RxParseUser> {
         let encoded = SDKPlugins.instance.Encoder.encode(newUser.estimatedData);
         encoded['mobilePhoneNumber'] = mobilephone;
         encoded['smsCode'] = shortCode;
 
-        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', encoded).flatMap(userState => {
-            let user = RxAVUser.createWithoutData();
+        return RxParseUser.UserController.logInWithParamters('/usersByMobilePhone', encoded).flatMap(userState => {
+            let user = RxParseUser.createWithoutData();
             if (userState.isNew)
                 return user.handlerSignUp(userState).map(s => {
                     return user;
                 });
             else {
-                return RxAVUser.processLogIn(userState);
+                return RxParseUser.processLogIn(userState);
             }
         });
     }
@@ -311,23 +311,23 @@ export class RxAVUser extends RxAVObject {
      * @static
      * @param {string} mobilephone
      * @param {string} shortCode
-     * @returns {Observable<RxAVUser>}
+     * @returns {Observable<RxParseUser>}
      * 
      * @memberOf RxAVUser
      */
-    public static logInByMobilephone(mobilephone: string, shortCode: string): Observable<RxAVUser> {
+    public static logInByMobilephone(mobilephone: string, shortCode: string): Observable<RxParseUser> {
         let data = {
             "mobilePhoneNumber": mobilephone,
             "smsCode": shortCode
         };
-        return RxAVUser.UserController.logInWithParamters('/usersByMobilePhone', data).flatMap(userState => {
-            let user = RxAVUser.createWithoutData();
+        return RxParseUser.UserController.logInWithParamters('/usersByMobilePhone', data).flatMap(userState => {
+            let user = RxParseUser.createWithoutData();
             if (userState.isNew)
                 return user.handlerSignUp(userState).map(s => {
                     return user;
                 });
             else {
-                return RxAVUser.processLogIn(userState);
+                return RxParseUser.processLogIn(userState);
             }
         });
     }
@@ -338,13 +338,13 @@ export class RxAVUser extends RxAVObject {
      * @static
      * @param {string} username 用户名
      * @param {string} password 密码
-     * @returns {Observable<RxAVUser>}
+     * @returns {Observable<RxParseUser>}
      * 
      * @memberOf RxAVUser
      */
-    public static logIn(username: string, password: string): Observable<RxAVUser> {
-        return RxAVUser.UserController.logIn(username, password).flatMap(userState => {
-            return RxAVUser.processLogIn(userState);
+    public static logIn(username: string, password: string): Observable<RxParseUser> {
+        return RxParseUser.UserController.logIn(username, password).flatMap(userState => {
+            return RxParseUser.processLogIn(userState);
         });
     }
 
@@ -356,8 +356,8 @@ export class RxAVUser extends RxAVObject {
      * @memberOf RxAVUser
      */
     public logOut(): Observable<boolean> {
-        RxAVUser.usersMap.delete(this.state.app.appId);
-        return RxAVObject.saveToLocalStorage(null, `${this.state.app.appId}_${RxAVUser.currenUserCacheKey}`);
+        RxParseUser.usersMap.delete(this.state.app.appId);
+        return RxParseObject.saveToLocalStorage(null, `${this.state.app.appId}_${RxParseUser.currenUserCacheKey}`);
     }
 
     /**
@@ -366,53 +366,42 @@ export class RxAVUser extends RxAVObject {
      * @static
      * @param {string} mobilephone 手机号
      * @param {string} password 密码
-     * @returns {Observable<RxAVUser>}
+     * @returns {Observable<RxParseUser>}
      * 
      * @memberOf RxAVUser
      */
-    public static logInWithMobilephone(mobilephone: string, password: string): Observable<RxAVUser> {
+    public static logInWithMobilephone(mobilephone: string, password: string): Observable<RxParseUser> {
         let data = {
             "mobilePhoneNumber": mobilephone,
             "password": password
         };
-        return RxAVUser.UserController.logInWithParamters('/login', data).flatMap(userState => {
-            return RxAVUser.processLogIn(userState);
+        return RxParseUser.UserController.logInWithParamters('/login', data).flatMap(userState => {
+            return RxParseUser.processLogIn(userState);
         });
     }
 
     /**
      * 创建一个用户，区别于 signUp，调用 create 方法并不会覆盖本地的 currentUser.
      * 
-     * @param {RxAVUser} user
+     * @param {RxParseUser} user
      * @returns {Observable<boolean>}
      * 
      * @memberOf RxAVUser
      */
     public create(): Observable<boolean> {
-        return RxAVUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
+        return RxParseUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
             super.handlerSave(userState);
             this.state.serverData = userState.serverData;
             return true;
         });
     }
 
-    // /**
-    //  * 
-    //  * 
-    //  * @param {{ [key: string]: any }} authData 
-    //  * 
-    //  * @memberOf RxAVUser
-    //  */
-    // public logInWithOAuth2Data(authData: { [key: string]: any }) {
-
-    // }
-
     public static createWithoutData(objectId?: string) {
-        return RxAVObject.createSubclass(RxAVUser, objectId);
+        return RxParseObject.createSubclass(RxParseUser, objectId);
     }
 
-    protected static processLogIn(userState: IObjectState): Observable<RxAVUser> {
-        let user = RxAVUser.createWithoutData();
+    protected static processLogIn(userState: IObjectState): Observable<RxParseUser> {
+        let user = RxParseUser.createWithoutData();
         return user.handlerLogIn(userState).map(s => {
             if (s)
                 return user;
@@ -422,14 +411,13 @@ export class RxAVUser extends RxAVObject {
 
     protected handlerLogIn(userState: IObjectState) {
         this.handleFetchResult(userState);
-        return RxAVUser.saveCurrentUser(this);
+        return RxParseUser.saveCurrentUser(this);
     }
 
     protected handlerSignUp(userState: IObjectState) {
         this.handlerSave(userState);
         this.state.serverData = userState.serverData;
         this.estimatedData['sessionToken'] = this.sesstionToken;
-        return RxAVUser.saveCurrentUser(this);
+        return RxParseUser.saveCurrentUser(this);
     }
-
 }

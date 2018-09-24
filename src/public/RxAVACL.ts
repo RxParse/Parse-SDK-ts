@@ -1,82 +1,35 @@
-import { RxAVUser } from './RxAVUser';
-import { RxAVRole } from './RxAVRole';
+import { RxParseUser } from './RxAVUser';
+import { RxParseRole } from './RxAVRole';
 
 export type PermissionsMap = { [permission: string]: boolean };
 export type ByIdMap = { [userId: string]: PermissionsMap };
 var PUBLIC_KEY = '*';
 
-/**
- * 
- * 基于角色的权限管理
- * @export
- * @class RxAVACL
- */
-export class RxAVACL {
+export class RxParseACL {
 
     private permissionsById: ByIdMap;
 
-    /**
-     * Creates an instance of RxAVACL.
-     * @param {...any[]} arg 
-     * 
-     * @memberOf RxAVACL
-     */
     constructor(...arg: any[]) {
         this.permissionsById = {};
         if (arg.length > 0) {
             arg.forEach(currentItem => {
-                if (currentItem instanceof RxAVUser) {
+                if (currentItem instanceof RxParseUser) {
                     this.setReadAccess(currentItem, true);
                     this.setWriteAccess(currentItem, true);
-                } else if (currentItem instanceof RxAVRole) {
+                } else if (currentItem instanceof RxParseRole) {
                     this.setReadAccess(currentItem, true);
                     this.setWriteAccess(currentItem, true);
                 } else if (typeof currentItem === 'string') {
                     this.setRoleWriteAccess(currentItem, true);
                     this.setRoleReadAccess(currentItem, true);
                 } else if (currentItem !== undefined) {
-                    throw new TypeError('RxAVACL.constructor need RxAVUser or RxAVRole.');
+                    throw new TypeError('ParseACL constructor need RxAVUser or RxAVRole.');
                 }
             });
         } else {
             this.setPublicReadAccess(true);
             this.setPublicWriteAccess(true);
         }
-
-        // if (arg1 && typeof arg1 === 'object') {
-        //     if (arg1 instanceof RxAVUser) {
-        //         this.setReadAccess(arg1, true);
-        //         this.setWriteAccess(arg1, true);
-        //     } else {
-        //         for (var userId in arg1) {
-        //             var accessList = arg1[userId];
-        //             if (typeof userId !== 'string') {
-        //                 throw new TypeError(
-        //                     'Tried to create an ACL with an invalid user id.'
-        //                 );
-        //             }
-        //             this.permissionsById[userId] = {};
-        //             for (var permission in accessList) {
-        //                 var allowed = accessList[permission];
-        //                 if (permission !== 'read' && permission !== 'write') {
-        //                     throw new TypeError(
-        //                         'Tried to create an ACL with an invalid permission type.'
-        //                     );
-        //                 }
-        //                 if (typeof allowed !== 'boolean') {
-        //                     throw new TypeError(
-        //                         'Tried to create an ACL with an invalid permission value.'
-        //                     );
-        //                 }
-        //                 this.permissionsById[userId][permission] = allowed;
-        //             }
-        //         }
-        //     }
-        // } else if (typeof arg1 === 'function') {
-        //     throw new TypeError(
-        //         'RxAVACL constructed with a function. Did you forget ()?'
-        //     );
-        // }
     }
 
     toJSON(): ByIdMap {
@@ -87,16 +40,8 @@ export class RxAVACL {
         return permissions;
     }
 
-    /**
-     * 判断两个 ACL 对象是否相等
-     * 
-     * @param {RxAVACL} other 
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
-    equals(other: RxAVACL): boolean {
-        if (!(other instanceof RxAVACL)) {
+    equals(other: RxParseACL): boolean {
+        if (!(other instanceof RxParseACL)) {
             return false;
         }
         let users = Object.keys(this.permissionsById);
@@ -118,10 +63,10 @@ export class RxAVACL {
         return true;
     }
 
-    private _setAccess(accessType: string, userId: RxAVUser | RxAVRole | string, allowed: boolean) {
-        if (userId instanceof RxAVUser) {
+    private _setAccess(accessType: string, userId: RxParseUser | RxParseRole | string, allowed: boolean) {
+        if (userId instanceof RxParseUser) {
             userId = userId.objectId;
-        } else if (userId instanceof RxAVRole) {
+        } else if (userId instanceof RxParseRole) {
             const name = userId.name;
             if (!name) {
                 throw new TypeError('Role must have a name');
@@ -157,14 +102,14 @@ export class RxAVACL {
 
     private _getAccess(
         accessType: string,
-        userId: RxAVUser | RxAVRole | string
+        userId: RxParseUser | RxParseRole | string
     ): boolean {
-        if (userId instanceof RxAVUser) {
+        if (userId instanceof RxParseUser) {
             userId = userId.objectId;
             if (!userId) {
                 throw new Error('Cannot get access for a RxAVUser without an ID');
             }
-        } else if (userId instanceof RxAVRole) {
+        } else if (userId instanceof RxParseRole) {
             const name = userId.name;
             if (!name) {
                 throw new TypeError('Role must have a name');
@@ -178,18 +123,11 @@ export class RxAVACL {
         return !!permissions[accessType];
     }
 
-    /**
-     * 查找 Write 权限
-     * 
-     * @returns {boolean}
-     * 
-     * @memberOf RxAVACL
-     */
     public findWriteAccess(): boolean {
         let rtn = false;
         for (let key in this.permissionsById) {
-            let permisstion = this.permissionsById[key];
-            if (permisstion['write']) {
+            let permission = this.permissionsById[key];
+            if (permission['write']) {
                 rtn = true;
                 break;
             }
@@ -197,109 +135,40 @@ export class RxAVACL {
         return rtn;
     }
 
-    /**
-     * 设置 Read 权限
-     * 
-     * @param {any} userId {(RxAVUser | RxAVRole | string)}  
-     * @param {boolean} allowed 
-     * 
-     * @memberOf RxAVACL
-     */
-    public setReadAccess(userId: RxAVUser | RxAVRole | string, allowed: boolean) {
+    public setReadAccess(userId: RxParseUser | RxParseRole | string, allowed: boolean) {
         this._setAccess('read', userId, allowed);
     }
 
-    /**
-     * 获取 Read 权限
-     * 
-     * @param {any}  userId {(RxAVUser | RxAVRole | string)}  
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
-    public getReadAccess(userId: RxAVUser | RxAVRole | string): boolean {
+    public getReadAccess(userId: RxParseUser | RxParseRole | string): boolean {
         return this._getAccess('read', userId);
     }
 
-    /**
-     * 设置 Write 权限
-     * 
-     * @param {any} userId {(RxAVUser | RxAVRole | string)}  
-     * @param {boolean} allowed 
-     * 
-     * @memberOf RxAVACL
-     */
-    public setWriteAccess(userId: RxAVUser | RxAVRole | string, allowed: boolean) {
+    public setWriteAccess(userId: RxParseUser | RxParseRole | string, allowed: boolean) {
         this._setAccess('write', userId, allowed);
     }
 
-    /**
-     * 获取 Write 权限
-     * 
-     * @param {any} userId {(RxAVUser | RxAVRole | string)} userId 
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
-    public getWriteAccess(userId: RxAVUser | RxAVRole | string): boolean {
+    public getWriteAccess(userId: RxParseUser | RxParseRole | string): boolean {
         return this._getAccess('write', userId);
     }
 
-    /**
-     * 设置所有人的 Read 权限
-     * 
-     * @param {boolean} allowed 
-     * 
-     * @memberOf RxAVACL
-     */
     public setPublicReadAccess(allowed: boolean) {
         this.setReadAccess(PUBLIC_KEY, allowed);
     }
 
-    /**
-     *  获取所有人的 Read 权限
-     * 
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
     public getPublicReadAccess(): boolean {
         return this.getReadAccess(PUBLIC_KEY);
     }
 
-
-    /**
-     * 设置所有人的 Write 权限
-     * 
-     * @param {boolean} allowed 
-     * 
-     * @memberOf RxAVACL
-     */
     public setPublicWriteAccess(allowed: boolean) {
         this.setWriteAccess(PUBLIC_KEY, allowed);
     }
 
-    /**
-     * 获取所有人的 Write 权限
-     * 
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
     public getPublicWriteAccess(): boolean {
         return this.getWriteAccess(PUBLIC_KEY);
     }
 
-    /**
-     * 设置角色的 Read 权限
-     * 
-     * @param {any} role {(RxAVRole | string)}  
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
-    public getRoleReadAccess(role: RxAVRole | string): boolean {
-        if (role instanceof RxAVRole) {
+    public getRoleReadAccess(role: RxParseRole | string): boolean {
+        if (role instanceof RxParseRole) {
             // Normalize to the String name
             role = role.name;
         }
@@ -311,16 +180,8 @@ export class RxAVACL {
         return this.getReadAccess('role:' + role);
     }
 
-    /**
-     *  获取角色的 Write 权限
-     * 
-     * @param {any} role {(RxAVRole | string)}  
-     * @returns {boolean} 
-     * 
-     * @memberOf RxAVACL
-     */
-    public getRoleWriteAccess(role: RxAVRole | string): boolean {
-        if (role instanceof RxAVRole) {
+    public getRoleWriteAccess(role: RxParseRole | string): boolean {
+        if (role instanceof RxParseRole) {
             // Normalize to the String name
             role = role.name;
         }
@@ -332,16 +193,8 @@ export class RxAVACL {
         return this.getWriteAccess('role:' + role);
     }
 
-    /**
-     * 设置角色的 Read 权限
-     * 
-     * @param {any} role {(RxAVRole | string)}  
-     * @param {boolean} allowed 
-     * 
-     * @memberOf RxAVACL
-     */
-    public setRoleReadAccess(role: RxAVRole | string, allowed: boolean) {
-        if (role instanceof RxAVRole) {
+    public setRoleReadAccess(role: RxParseRole | string, allowed: boolean) {
+        if (role instanceof RxParseRole) {
             // Normalize to the String name
             role = role.name;
         }
@@ -353,16 +206,8 @@ export class RxAVACL {
         this.setReadAccess('role:' + role, allowed);
     }
 
-    /**
-     * 设置角色 Write 权限
-     * 
-     * @param {any} role {(RxAVRole | string)}  
-     * @param {boolean} allowed 
-     * 
-     * @memberOf RxAVACL
-     */
-    public setRoleWriteAccess(role: RxAVRole | string, allowed: boolean) {
-        if (role instanceof RxAVRole) {
+    public setRoleWriteAccess(role: RxParseRole | string, allowed: boolean) {
+        if (role instanceof RxParseRole) {
             // Normalize to the String name
             role = role.name;
         }

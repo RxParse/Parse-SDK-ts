@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as random from "../utils/random";
-import { RxAVClient } from '../../src/RxLeanCloud';
-import { RxAVUser, RxAVACL, RxAVRole } from '../../src/RxLeanCloud';
+import { RxParseClient } from 'RxParse';
+import { RxParseUser, RxParseACL, RxParseRole } from 'RxParse';
 import * as init from "../utils/init";
 
 let randomUsername = '';
@@ -11,7 +11,7 @@ describe('RxAVUser', function () {
         randomUsername = random.randomString(8);
     });
     it('RxAVUser#signUp-1', function (done) {
-        let user: RxAVUser = new RxAVUser();
+        let user: RxParseUser = new RxParseUser();
         user.username = randomUsername;
         user.password = 'leancloud';
         user.set('title', 'CEO');
@@ -36,12 +36,12 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#requestShortcode', done => {
-        if (RxAVClient.instance.currentApp.region.toLowerCase() == 'us' || 'cn') {
+        if (RxParseClient.instance.currentApp.region.toLowerCase() == 'us' || 'cn') {
             done();
             return;
         }
 
-        RxAVUser.sendSignUpShortcode('18612438929').subscribe(success => {
+        RxParseUser.sendSignUpShortcode('18612438929').subscribe(success => {
             done();
         }, error => {
             console.log(error);
@@ -51,40 +51,8 @@ describe('RxAVUser', function () {
         });
     });
 
-    it('RxAVUser#signUpOrLoginByMobilephone', done => {
-        if (RxAVClient.instance.currentApp.region.toLowerCase() == 'us' || 'cn') {
-            done();
-            return;
-        }
-        let user = new RxAVUser();
-        user.username = random.randomString(8);
-        user.password = 'leancloud';
-        user.set('nickName', 'hahaha');
-        RxAVUser.signUpByMobilephone('18612438929', '064241', user).subscribe(s => {
-            done();
-        }, error => {
-            console.log(error);
-            //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
-            chai.assert.isNull(error);
-        });
-    });
-    // it('RxAVUser#signUpWithPrimaryRole', done => {
-    //     let user: RxAVUser = new RxAVUser();
-    //     user.username = random.randomString(8);
-    //     user.password = 'leancloud';
-    //     user.signUp().flatMap<boolean>(s => {
-    //         let randomRoleName1 = random.randomHexString(8);
-    //         let randomRole1 = new RxAVRole(randomRoleName1, new RxAVACL(user));
-    //         return user.setPrimaryRole(randomRole1);
-    //     }).flatMap<Array<RxAVRole>>(s3 => {
-    //         return user.fetchRoles();
-    //     }).subscribe(roles => {
-    //         chai.assert.isTrue(roles.length == 1);
-    //         done();
-    //     });
-    // });
     it('RxAVUser#create', done => {
-        let user: RxAVUser = new RxAVUser();
+        let user: RxParseUser = new RxParseUser();
         user.username = random.randomString(8);
         user.password = 'leancloud';
         user.create().subscribe(s => {

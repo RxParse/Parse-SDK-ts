@@ -1,4 +1,5 @@
 import { HttpRequest } from './httpClient/HttpRequest';
+import { AxiosRxHttpClient } from './httpClient/AxiosRxHttpClient';
 import { IRxHttpClient } from './httpClient/IRxHttpClient';
 import { RxHttpClient } from './httpClient/RxHttpClient';
 import { AVCommand } from './command/AVCommand';
@@ -38,7 +39,7 @@ import { IWebSocketClient } from './websocket/IWebSocketClient';
 import { RxWebSocketController } from './websocket/controller/RxWebSocketController';
 import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
 
-import { RxAVClient } from '../public/RxAVClient';
+import { RxParseClient } from '../public/RxAVClient';
 
 export /**
  * SDKPlugins
@@ -70,7 +71,7 @@ export /**
 
     get HttpClient() {
         if (this._HttpClient == null) {
-            this._HttpClient = new RxHttpClient(this._version);
+            this._HttpClient = new AxiosRxHttpClient();
         }
         return this._HttpClient;
     }

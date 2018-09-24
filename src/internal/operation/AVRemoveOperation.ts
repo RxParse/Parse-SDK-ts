@@ -5,7 +5,7 @@ export class AVRemoveOperation implements IAVFieldOperation {
     encode(): any {
         return {
             __op: 'Remove',
-            objects: SDKPlugins.instance.Encoder.encodeList(this.objects)
+            objects: SDKPlugins.instance.Encoder.encode(this.objects)
         };
     }
     mergeWithPrevious(previous: IAVFieldOperation): IAVFieldOperation {

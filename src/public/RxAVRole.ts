@@ -1,5 +1,5 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { RxAVClient, RxAVObject, RxAVACL, RxAVUser, RxAVQuery } from '../RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseACL, RxParseUser, RxParseQuery } from 'RxParse';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IUserController } from '../internal/user/controller/IUserController';
@@ -10,23 +10,23 @@ import { Observable } from 'rxjs';
  * 
  * @export
  * @class RxAVRole 一个角色对应的是 _Role 表里的一个对象
- * @extends {RxAVObject}
+ * @extends {RxParseObject}
  */
 export /**
  * RxAVRole
  */
-    class RxAVRole extends RxAVObject {
+    class RxParseRole extends RxParseObject {
     /**
      * Creates an instance of RxAVRole.
      * 
      * @param {string} [name] 角色名称
-     * @param {Array<RxAVUser>} [users] 拥有当前角色的用户
-     * @param {Array<RxAVRole>} [roles] 继承当前角色的角色
-     * @param {RxAVACL} [acl] 当前 RxAVRole 的 ACL，这里规定了谁能对当前 RxAVRole 进行后续的操作
+     * @param {Array<RxParseUser>} [users] 拥有当前角色的用户
+     * @param {Array<RxParseRole>} [roles] 继承当前角色的角色
+     * @param {RxParseACL} [acl] 当前 RxAVRole 的 ACL，这里规定了谁能对当前 RxAVRole 进行后续的操作
      * 
      * @memberOf RxAVRole
      */
-    constructor(name?: string, acl?: RxAVACL, users?: Array<RxAVUser>, roles?: Array<RxAVRole>) {
+    constructor(name?: string, acl?: RxParseACL, users?: Array<RxParseUser>, roles?: Array<RxParseRole>) {
         super('_Role');
         let idChecker = (element, index, array) => {
             return element.objectId != null;
@@ -64,8 +64,8 @@ export /**
         this.set('name', name);
     }
 
-    protected users: Array<RxAVUser>;
-    protected roles: Array<RxAVRole>;
+    protected users: Array<RxParseUser>;
+    protected roles: Array<RxParseRole>;
 
 
     /**
@@ -94,20 +94,20 @@ export /**
 
     protected _postRelation(op: string, ...args: any[]) {
         let body: { [key: string]: any } = {};
-        let users: Array<RxAVUser> = [];
-        let roles: Array<RxAVRole> = [];
+        let users: Array<RxParseUser> = [];
+        let roles: Array<RxParseRole> = [];
         args.forEach(currentItem => {
-            if (currentItem instanceof RxAVUser) {
+            if (currentItem instanceof RxParseUser) {
                 users.push(currentItem);
-            } else if (currentItem instanceof RxAVRole) {
+            } else if (currentItem instanceof RxParseRole) {
                 roles.push(currentItem);
             } else {
                 throw new TypeError('args type must be RxAVRole or RxAVUser.');
             }
         });
         this._buildRoleRelation(op, users, roles, body);
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVUser._objectController.save(this.state, body, sessionToken).map(serverState => {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseUser._objectController.save(this.state, this.currentOperations, sessionToken).map(serverState => {
                 return serverState != null;
             });
         });
@@ -121,14 +121,14 @@ export /**
             throw new Error('can NOT set Role.ACL public write access in true.');
         }
 
-        if (!(this.ACL.findWriteAccess() && RxAVClient.inLeanEngine)) {
+        if (!(this.ACL.findWriteAccess() && RxParseClient.inLeanEngine)) {
             throw new Error('can NOT set Role.ACL write access in closed.');
         }
 
         return super.save();
     }
 
-    protected _buildRoleRelation(op: string, users: Array<RxAVUser>, roles: Array<RxAVRole>, postBody: { [key: string]: any }) {
+    protected _buildRoleRelation(op: string, users: Array<RxParseUser>, roles: Array<RxParseRole>, postBody: { [key: string]: any }) {
         if (users && users.length > 0) {
             let usersBody: { [key: string]: any } = this.buildRelation(op, users);
             postBody['users'] = usersBody;
@@ -144,12 +144,12 @@ export /**
      * 
      * @static
      * @param {string} [objectId]
-     * @returns {RxAVRole}
+     * @returns {RxParseRole}
      * 
      * @memberOf RxAVRole
      */
     public static createWithoutData(objectId?: string) {
-        let rtn = new RxAVRole();
+        let rtn = new RxParseRole();
         if (objectId)
             rtn.objectId = objectId;
         return rtn;
@@ -161,26 +161,26 @@ export /**
      * @static
      * @param {string} name
      * @param {string} objectId
-     * @returns {RxAVRole}
+     * @returns {RxParseRole}
      * 
      * @memberOf RxAVRole
      */
     public static createWithName(name: string, objectId: string) {
-        let rtn = new RxAVRole();
+        let rtn = new RxParseRole();
         rtn.name = name;
         rtn.objectId = objectId;
         return rtn;
     }
 
     public static getByName(roleName: string) {
-        let query = new RxAVQuery('_Role');
+        let query = new RxParseQuery('_Role');
         query.equalTo('name', roleName);
         return query.find().map(roleList => {
             if (roleList.length > 0) {
                 let obj = roleList[0];
                 let roleId = obj.objectId;
                 let roleName = obj.get('name');
-                let role = RxAVRole.createWithName(roleName, roleId);
+                let role = RxParseRole.createWithName(roleName, roleId);
                 return role;
             }
             return undefined;

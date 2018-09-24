@@ -9,6 +9,7 @@
       "es2015"
     ],
     "outDir": "out",
+    // "declarationDir": "out/typings",
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2017",

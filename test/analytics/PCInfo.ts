@@ -1,4 +1,4 @@
-import { RxAVClient, RxAVAnalytics, IDeviceInfo, RxAVAnalyticDevice } from '../../src/RxLeanCloud';
+import { RxParseClient, RxAVAnalytics, IDeviceInfo, RxAVAnalyticDevice } from 'RxParse';
 
 export class PCInfo implements IDeviceInfo {
     getDevice(): Promise<RxAVAnalyticDevice> {
@@ -9,7 +9,7 @@ export class PCInfo implements IDeviceInfo {
         device.os = 'iOS';
         device.device_id = '665188eb-1a7e-4fd5-928e-cd334b0be54e';
         device.os_version = '10.11.0';
-        device.sdk_version = RxAVClient.instance.SDKVersion;
+        device.sdk_version = RxParseClient.instance.SDKVersion;
         return Promise.resolve<RxAVAnalyticDevice>(device);
     }
 }

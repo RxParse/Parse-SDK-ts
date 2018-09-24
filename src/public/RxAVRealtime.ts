@@ -1,20 +1,19 @@
 import { Observable, Subject } from 'rxjs';
-import { RxAVClient, RxAVApp } from './RxAVClient';
+import { RxParseClient, ParseApp } from './RxAVClient';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { AVCommand } from '../internal/command/AVCommand';
 import { AVCommandResponse } from '../internal/command/AVCommandResponse';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
 import { RxWebSocketController } from '../internal/websocket/controller/RxWebSocketController';
-import { RxAVObject, RxAVStorageObject } from './RxAVObject';
-import { RxAVQuery } from './RxAVQuery';
+import { RxParseObject, StorageObject } from './RxAVObject';
+import { RxParseQuery } from './RxAVQuery';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { IObjectState } from "../internal/object/state/IObjectState";
-import { IRxAVIMMemberModifiable } from 'extentions/components/IRxAVIMMemberModifiable';
 
 export class RxAVRealtime {
 
     constructor(options?: any) {
-        this._app = RxAVClient.instance.take(options);
+        this._app = RxParseClient.instance.take(options);
         if (!RxAVRealtime._realtimeInstances.has(this.app.appId)) {
             RxAVRealtime._realtimeInstances.set(this.app.appId, this);
         }
@@ -27,14 +26,15 @@ export class RxAVRealtime {
             }
         }
     }
-    protected _app: RxAVApp;
+
+    protected _app: ParseApp;
     get app() {
         return this._app;
     }
 
     static getInstance(options?: any) {
         let rtn: RxAVRealtime = null;
-        let app = RxAVClient.instance.take(options);
+        let app = RxParseClient.instance.take(options);
         if (RxAVRealtime._realtimeInstances.has(app.appId)) {
             rtn = RxAVRealtime._realtimeInstances.get(app.appId);
         } else {
@@ -80,12 +80,12 @@ export class RxAVRealtime {
         if (this.RxWebSocketController.websocketClient.readyState == 1) {
             if (wss) {
                 if (wss != this._lastUsedWebsocketAddress) {
-                    RxAVClient.printLog(`wss updated,try to connect new wss with ${wss}.`);
+                    RxParseClient.printLog(`wss updated,try to connect new wss with ${wss}.`);
                     return this._open(wss);
                 }
             }
             else {
-                RxAVClient.printLog(`current connection with ${this._lastUsedWebsocketAddress} is still available.`);
+                RxParseClient.printLog(`current connection with ${this._lastUsedWebsocketAddress} is still available.`);
                 return Observable.from([true]);
             }
         }
@@ -104,7 +104,7 @@ export class RxAVRealtime {
 
         let pushRouter = `${this.app.realtimeRouter}/v1/route?appId=${this.app.appId}&secure=1`;
 
-        return RxAVClient.instance.request(pushRouter).flatMap(response => {
+        return RxParseClient.instance.request(pushRouter).flatMap(response => {
             this.pushRouterState = response.body;
             return this._open(this.pushRouterState.server);
         });
@@ -204,14 +204,14 @@ export class RxAVRealtime {
                 this.startAutoReconnect().subscribe(reconnected => {
                     if (reconnected) {
                         this._autoReconnectSubject.next(true);
-                        RxAVClient.printLog('auto reconnect successful.');
+                        RxParseClient.printLog('auto reconnect successful.');
                     } else {
-                        RxAVClient.printLog('auto reconnect failed...');
+                        RxParseClient.printLog('auto reconnect failed...');
                     }
                 });
 
                 this.startHeartBeating().subscribe(ticks => {
-                    RxAVClient.printLog('auto heart beating ticks.');
+                    RxParseClient.printLog('auto heart beating ticks.');
                 });
             }
             return sessionOpend;
@@ -232,7 +232,7 @@ export class RxAVRealtime {
                 sessionOpenCmd.data = {
                     cmd: 'session',
                     op: 'open',
-                    ua: `rx-lean-js/${RxAVClient.instance.SDKVersion}`,
+                    ua: `rx-lean-js/${RxParseClient.instance.SDKVersion}`,
                 };
                 if (deviceId) {
                     sessionOpenCmd.data['deviceId'] = deviceId;
@@ -257,7 +257,7 @@ export class RxAVRealtime {
             op: 'open',
             r: 1,
             st: sessionToken,
-            ua: `rx-lean-js/${RxAVClient.instance.SDKVersion}`,
+            ua: `rx-lean-js/${RxParseClient.instance.SDKVersion}`,
         };
         if (this._tag) {
             if (this._tag != 'default') {
@@ -321,7 +321,7 @@ export class RxAVRealtime {
             .attribute('m', members);
 
         return this.RxWebSocketController.execute(convCMD).map(response => {
-            return response.satusCode < 300;
+            return response.statusCode < 300;
         });
     }
 
@@ -814,7 +814,7 @@ export class RxAVIMConversationCommand extends RxAVIMCommand {
                 if (results.length > 0) {
                     let r = results[0];
                     let state = new MutableObjectState();
-                    state.serverData = [];
+                    state.serverData = new Map<string, object>();
                     for (let key in r) {
                         state.serverData[key] = r[key];
                     }
@@ -829,7 +829,7 @@ export class RxAVIMConversationCommand extends RxAVIMCommand {
 }
 
 
-export class RxAVIMConversation extends RxAVStorageObject {
+export class RxAVIMConversation extends StorageObject {
 
     constructor() {
         super('_Conversation');

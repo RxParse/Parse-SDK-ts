@@ -1,4 +1,4 @@
-import { RxAVClient, RxAVObject, RxAVACL, RxAVStorageObject } from '../../RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseACL, StorageObject } from 'RxParse';
 import { IAVEncoder } from './IAVEncoder';
 import { AVAddOperation, AVAddUniqueOperation } from '../operation/AVAddOperation';
 import { AVDeleteOperation } from '../operation/AVDeleteOperation';
@@ -8,71 +8,49 @@ export /**
  *  AVEncoder
  */
     class AVEncoder implements IAVEncoder {
-    constructor() {
 
+    constructor() {
     }
 
-    encode(dictionary: { [key: string]: any }) {
-        let encodedDictionary: { [key: string]: any } = {};
-        for (let key in dictionary) {
-            let v = dictionary[key];
-            encodedDictionary[key] = this.encodeItem(v);
+    encode(value: any): any {
+        if (value instanceof Map) {
+            let encodedDictionary = new Map<string, object>();
+            value.forEach((v, k, m) => {
+                let encodedV = this.encode(v);
+                encodedDictionary.set(k, encodedV);
+            });
+            return encodedDictionary;
+        } else if (Array.isArray(value)) {
+            return this.encodeList(value);
+        } else if (value instanceof Date) {
+            return { '__type': 'Date', 'iso': value.toJSON() };
+        } else if (value instanceof RxParseObject) {
+            return {
+                __type: "Pointer",
+                className: value.className,
+                objectId: value.objectId
+            };
+        } else if (typeof value.encode === 'function') {
+            return value.encode();
         }
-        return encodedDictionary;
+
+        return value;
     }
 
     encodeList(list: Array<any>): Array<any> {
         return list.map(item => {
-            return this.encodeItem(item);
+            return this.encode(item);
         });
     }
 
-    encodeItem(item: any): any {
-        if (item instanceof Date) {
-            return { '__type': 'Date', 'iso': item.toJSON() };
-        }
-        if (item instanceof RxAVObject) {
-            return {
-                __type: "Pointer",
-                className: item.className,
-                objectId: item.objectId
-            };
-        }
-        if (item instanceof RxAVStorageObject) {
-            return {
-                __type: "Pointer",
-                className: item.className,
-                objectId: item.objectId
-            };
-        }
-        if (item instanceof Array) {
-            return item.map((v, i, a) => {
-                return this.encodeItem(v);
-            });
-        }
-        if (item instanceof RxAVACL) {
-            return item.toJSON();
-        }
-        if (item instanceof AVDeleteOperation) {
-            return item.encode();
-        }
-        if (item instanceof AVAddOperation) {
-            return item.encode();
-        }
-        if (item instanceof AVAddUniqueOperation) {
-            return item.encode();
-        }
-        if (item instanceof AVRemoveOperation) {
-            return item.encode();
-        }
-
-        return item;
-    }
-    private isValidType(value: any): boolean {
-        return value == null ||
+    isValidType(value: any): boolean {
+        return value != null ||
+            value != undefined ||
             value instanceof String ||
-            value instanceof RxAVObject ||
-            value instanceof RxAVACL ||
-            value instanceof Date;
+            value instanceof RxParseObject ||
+            value instanceof RxParseACL ||
+            value instanceof Date ||
+            value instanceof Map ||
+            Array.isArray(value);
     }
 }

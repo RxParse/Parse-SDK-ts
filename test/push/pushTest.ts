@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVInstallation, RxAVPush } from '../../src/RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, RxAVInstallation, RxParsePush } from 'RxParse';
 init.init();
 
 describe('RxAVPush', function () {
@@ -18,20 +18,20 @@ describe('RxAVPush', function () {
 
     // });
     it('RxAVPush#open', done => {
-        RxAVPush.open().subscribe(opend => {
+        RxParsePush.open().subscribe(opend => {
             done();
         });
     });
     it('RxAVPush#received', done => {
-        RxAVPush.open().flatMap(installation => {
+        RxParsePush.open().flatMap(installation => {
 
-            let testPush = new RxAVPush();
+            let testPush = new RxParsePush();
             testPush.alert = 'test pass-through';
             testPush.query.equalTo('installationId', installation.installationId);
             testPush.send().subscribe(sent => {
                 console.log('sent,waiting for received...');
             });
-            return RxAVPush.notification();
+            return RxParsePush.notification();
         }).subscribe(received => {
             console.log('received', received);
             done();

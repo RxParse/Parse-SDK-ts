@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
 import * as random from "../utils/random";
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVInstallation } from '../../src/RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, RxAVInstallation } from 'RxParse';
 init.init();
 
 describe('RxAVInstallation', function () {
@@ -14,7 +14,7 @@ describe('RxAVInstallation', function () {
         installation.deviceToken = random.newToken();
         installation.channels = ['public', 'fuck'];
         installation.save().flatMap(insSaved => {
-            return RxAVUser.logIn('junwu', 'leancloud');
+            return RxParseUser.logIn('junwu', 'leancloud');
         }).flatMap(logedIn => {
             console.log('logedIn');
             return logedIn.activate(installation, true);

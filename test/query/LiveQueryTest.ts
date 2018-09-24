@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import { Observable } from 'rxjs';
-import { RxAVClient, RxAVObject, RxAVQuery, RxAVLiveQuery, RxAVRealtime, RxAVApp } from '../../src/RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseQuery, RxAVLiveQuery, RxAVRealtime, ParseApp } from 'RxParse';
 import * as init from "../utils/init";
 init.init();
 
@@ -9,12 +9,12 @@ describe('RxAVLiveQuery', () => {
         done();
     });
     it('RxAVLiveQuery#subscribe', done => {
-        let query = new RxAVQuery('TodoLiveQuery');
+        let query = new RxParseQuery('TodoLiveQuery');
         query.equalTo('tag', 'livequery');
         let subscription = query.subscribe();
         subscription.flatMap(subs => {
             //save a tofo for test
-            let todo = new RxAVObject('TodoLiveQuery');
+            let todo = new RxParseObject('TodoLiveQuery');
             todo.set('tag', 'livequery');
             todo.save().subscribe(result => {
                 console.log('save a todo for test,', result);
@@ -32,11 +32,11 @@ describe('RxAVLiveQuery', () => {
         });
     });
     it('RxAVLiveQuery#DateTimeZone', done => {
-        let query = new RxAVQuery('TodoLiveQuery');
+        let query = new RxParseQuery('TodoLiveQuery');
         query.equalTo('tag', 'livequery');
         let subscription = query.subscribe();
         subscription.flatMap(subs => {
-            let todo = new RxAVObject('TodoLiveQuery');
+            let todo = new RxParseObject('TodoLiveQuery');
             todo.set('tag', 'livequery');
             todo.set('xDate', new Date());
             todo.save().subscribe(result => {
@@ -56,7 +56,7 @@ describe('RxAVLiveQuery', () => {
         let s = [];
         for (let i = 0; i < 20000; i++) {
 
-            let query = new RxAVQuery('TodoLiveQuery');
+            let query = new RxParseQuery('TodoLiveQuery');
             query.equalTo('seed', i);
 
             let subscription = query.subscribe();
@@ -81,7 +81,7 @@ describe('RxAVLiveQuery', () => {
         }
 
         let finalSub = Observable.merge(...s).flatMap(subscribed => {
-            let todo = new RxAVObject('TodoLiveQuery');
+            let todo = new RxParseObject('TodoLiveQuery');
             todo.set('seed', 10);
             return todo.save();
         });
@@ -218,14 +218,14 @@ describe('RxAVLiveQuery', () => {
     // });
 
     it('xxx', done => {
-        let app3 = new RxAVApp({
+        let app3 = new ParseApp({
             appId: `zT0IGOPo7qg8N9hYBFLT9Pi4`,
             appKey: `mBUOQ2ViA0D8PQhjWbD2UygK`,
         });
 
-        RxAVClient.instance.add(app3, true);
+        RxParseClient.instance.add(app3, true);
 
-        let query = new RxAVQuery('Dev_Wjfx_BanmaNumbers');
+        let query = new RxParseQuery('Dev_Wjfx_BanmaNumbers');
         query.equalTo('ownedBy', 'banma');
 
         let subscription = query.subscribe();

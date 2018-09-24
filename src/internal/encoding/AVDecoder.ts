@@ -1,5 +1,5 @@
 import { IAVDecoder } from './IAVDecoder';
-import { RxAVObject, RxAVACL, RxAVUser } from '../../RxLeanCloud';
+import { RxParseObject, RxParseACL, RxParseUser } from 'RxParse';
 
 export class AVDecoder implements IAVDecoder {
 
@@ -57,9 +57,9 @@ export class AVDecoder implements IAVDecoder {
     }
     protected decodePointer(className: string, objectId: string) {
         if (className == '_User') {
-            return RxAVUser.createWithoutData(objectId);
+            return RxParseUser.createWithoutData(objectId);
         }
-        return RxAVObject.createWithoutData(className, objectId);
+        return RxParseObject.createWithoutData(className, objectId);
     }
 
     protected extractFromDictionary(data: { [key: string]: any }, key: string, convertor: (value: any) => any) {
@@ -73,8 +73,8 @@ export class AVDecoder implements IAVDecoder {
     private isValidType(value: any): boolean {
         return value == null ||
             value instanceof String ||
-            value instanceof RxAVObject ||
-            value instanceof RxAVACL ||
+            value instanceof RxParseObject ||
+            value instanceof RxParseACL ||
             value instanceof Date;
     }
 

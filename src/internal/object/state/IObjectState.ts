@@ -1,4 +1,4 @@
-import { RxAVApp } from '../../../public/RxAVClient';
+import { ParseApp } from '../../../public/RxAVClient';
 import { IAVFieldOperation } from '../../operation/IAVFieldOperation';
 
 export interface IObjectState {
@@ -7,9 +7,8 @@ export interface IObjectState {
     objectId: string;
     updatedAt: Date;
     createdAt: Date;
-    app: RxAVApp;
-    serverData: { [key: string]: any };
-    currentOperations: { [key: string]: IAVFieldOperation };
+    app: ParseApp;
+    serverData: Map<string, object>;
     containsKey(key: string): boolean;
     mutatedClone(func: (source: IObjectState) => void): IObjectState;
 }

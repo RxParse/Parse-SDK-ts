@@ -7,6 +7,6 @@ export /**
     constructor(base: HttpResponse) {
         super();
         this.body = base.body;
-        this.satusCode = base.satusCode;
+        this.statusCode = base.statusCode;
     }
 }

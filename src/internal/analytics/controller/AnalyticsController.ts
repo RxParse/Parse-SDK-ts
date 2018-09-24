@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { IDeviceInfo } from '../IDeviceInfo';
 import { RxAVAnalytics } from '../../../public/RxAVAnalytics';
-import { RxAVClient, RxAVApp } from '../../../public/RxAVClient';
+import { RxParseClient, ParseApp } from '../../../public/RxAVClient';
 import { IAnalyticsController } from './IAnalyticsController';
 import { SDKPlugins } from '../../SDKPlugins';
 import { AVCommand } from '../../command/AVCommand';
@@ -22,13 +22,13 @@ export class AnalyticsController implements IAnalyticsController {
             data: analyticsData.encodeForSendServer()
         });
         return this._commandRunner.runRxCommand(collectCMD).map(res => {
-            return res.satusCode == 200;
+            return res.statusCode == 200;
         });
     }
-    getPolicy(app?: RxAVApp): Observable<RxAVAnalytics> {
+    getPolicy(app?: ParseApp): Observable<RxAVAnalytics> {
         var policyCMD = new AVCommand({
             app: app,
-            relativeUrl: `/statistics/apps/${RxAVClient.instance.currentApp.appId}/sendPolicy`,
+            relativeUrl: `/statistics/apps/${RxParseClient.instance.currentApp.appId}/sendPolicy`,
             method: 'GET',
         });
         return this._commandRunner.runRxCommand(policyCMD).map(res => {

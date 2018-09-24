@@ -1,9 +1,9 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { Observable } from 'rxjs';
 import { ILeanEngineController } from '../internal/LeanEngine/controller/ILeanEngineController';
-import { RxAVUser, RxAVApp } from '../RxLeanCloud';
+import { RxParseUser, ParseApp } from 'RxParse';
 
-export class RxLeanEngine {
+export class RxParseCloud {
 
     protected static get LeanEngineController() {
         return SDKPlugins.instance.LeanEngineControllerInstance;
@@ -19,9 +19,9 @@ export class RxLeanEngine {
      * 
      * @memberOf RxLeanEngine
      */
-    static callFunction(name: string, parameters?: { [key: string]: any }, app?: RxAVApp) {
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxLeanEngine.LeanEngineController.callFunction(name, parameters, sessionToken);
+    static run(name: string, parameters?: { [key: string]: any }, app?: ParseApp) {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseCloud.LeanEngineController.callFunction(name, parameters, sessionToken);
         });
     }
 }

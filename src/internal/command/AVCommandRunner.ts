@@ -4,6 +4,7 @@ import { AVCommandResponse } from './AVCommandResponse';
 import { HttpResponse } from '../httpClient/HttpResponse';
 import { IAVCommandRunner } from './IAVCommandRunner';
 import { IRxHttpClient } from '../httpClient/IRxHttpClient';
+import { RxParseClient } from '../../public/RxAVClient';
 
 export class AVCommandRunner implements IAVCommandRunner {
 
@@ -15,6 +16,7 @@ export class AVCommandRunner implements IAVCommandRunner {
 
     runRxCommand(command: AVCommand): Observable<AVCommandResponse> {
         return this._IRxHttpClient.execute(command).map(res => {
+            RxParseClient.printHttpLog(command, res);
             return new AVCommandResponse(res);
         }).catch((errorRes) => {
             return Observable.throw(errorRes);

@@ -1,8 +1,9 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
 import { Observable, Subject } from 'rxjs';
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVApp } from '../../src/RxLeanCloud';
-let app = new RxAVApp({
+import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
+
+let app = new ParseApp({
     appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
     appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
     server: {
@@ -15,13 +16,13 @@ describe('RxObject', function () {
     });
 
     it('Client#saveToMultipleApps', done => {
-        let todo1: RxAVObject = new RxAVObject('RxTodo');
+        let todo1: RxParseObject = new RxParseObject('RxTodo');
         todo1.set('app', 'app1');
 
-        let todo2: RxAVObject = new RxAVObject('RxTodo', { appName: 'dev' });
+        let todo2: RxParseObject = new RxParseObject('RxTodo', { appName: 'dev' });
         todo2.set('app', 'app2');
 
-        let todo3: RxAVObject = new RxAVObject('RxTodo', { appName: 'default' });
+        let todo3: RxParseObject = new RxParseObject('RxTodo', { appName: 'default' });
         todo2.set('app', 'app1');
 
         Observable.merge(todo1.save(), todo2.save(), todo3.save()).subscribe(s => {
@@ -31,7 +32,7 @@ describe('RxObject', function () {
         });
     });
     it('Client#initWithoutConfig', done => {
-        RxAVClient.init().add(app);
+        RxParseClient.init().add(app);
         done();
     });
 });

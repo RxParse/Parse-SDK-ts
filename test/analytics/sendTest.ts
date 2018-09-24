@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import * as random from "../utils/random";
-import { RxAVClient, RxAVAnalytics, IDeviceInfo, RxAVAnalyticDevice } from '../../src/RxLeanCloud';
+import { RxParseClient, RxAVAnalytics, IDeviceInfo, RxAVAnalyticDevice } from 'RxParse';
 import * as init from "../utils/init";
 const os = require('os');
 

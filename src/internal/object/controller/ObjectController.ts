@@ -4,6 +4,7 @@ import { AVCommand } from '../../command/AVCommand';
 import { IAVCommandRunner } from '../../command/IAVCommandRunner';
 import { SDKPlugins } from '../../SDKPlugins';
 import { Observable } from 'rxjs';
+import { IAVFieldOperation } from 'internal/operation/IAVFieldOperation';
 
 export class ObjectController implements IObjectController {
     private readonly _commandRunner: IAVCommandRunner;
@@ -34,7 +35,7 @@ export class ObjectController implements IObjectController {
             sessionToken: sessionToken
         });
         return this._commandRunner.runRxCommand(cmd).map(res => {
-            return res.satusCode == 200;
+            return res.statusCode == 200;
         });
     }
     batchDelete(states: Array<IObjectState>, sessionToken: string) {
@@ -97,31 +98,12 @@ export class ObjectController implements IObjectController {
         }
     }
 
-    mergeOperations(state: IObjectState, dictionary: { [key: string]: any }) {
-        for (let key in state.currentOperations) {
-            dictionary[key] = state.currentOperations[key];
-        }
-    }
 
-    copyToMutable(dictionary: { [key: string]: any }) {
-        let newDictionary: { [key: string]: any } = {};
-        for (let key in dictionary) {
-            newDictionary[key] = dictionary[key];
-        }
-        return newDictionary;
-    }
-
-    packForSave(state: IObjectState, dictionary: { [key: string]: any }) {
-        let mutableDictionary = this.copyToMutable(dictionary);
-        this.clearReadonlyFields(state, mutableDictionary);
-        this.clearRelationFields(state, mutableDictionary);
-        this.mergeOperations(state, mutableDictionary);
-        return mutableDictionary;
-    }
-
-    save(state: IObjectState, dictionary: { [key: string]: any }, sessionToken: string): Observable<IObjectState> {
-        let mutableDictionary = this.packForSave(state, dictionary);
-        let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
+    save(state: IObjectState, operations: Map<string, IAVFieldOperation>, sessionToken: string): Observable<IObjectState> {
+        let encoded = {};
+        operations.forEach((v, k, m) => {
+            encoded[k] = SDKPlugins.instance.Encoder.encode(v);
+        });
         let cmd = new AVCommand({
             app: state.app,
             relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
@@ -133,7 +115,7 @@ export class ObjectController implements IObjectController {
         return this._commandRunner.runRxCommand(cmd).map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
             state = state.mutatedClone(s => {
-                s.isNew = res.satusCode == 201;
+                s.isNew = res.statusCode == 201;
                 if (serverState.updatedAt) {
                     s.updatedAt = serverState.updatedAt;
                 }
@@ -148,13 +130,15 @@ export class ObjectController implements IObjectController {
         });
     }
 
-    batchSave(states: Array<IObjectState>, dictionaries: Array<{ [key: string]: any }>, sessionToken: string): Observable<Array<IObjectState>> {
+    batchSave(states: Array<IObjectState>, operationses: Array<Map<string, IAVFieldOperation>>, sessionToken: string): Observable<Array<IObjectState>> {
 
         let cmdArray: Array<AVCommand> = [];
 
         states.map((state, i, a) => {
-            let mutableDictionary = this.packForSave(states[i], dictionaries[i]);
-            let encoded = SDKPlugins.instance.Encoder.encode(mutableDictionary);
+            let encoded = {};
+            operationses[i].forEach((v, k, m) => {
+                encoded[k] = SDKPlugins.instance.Encoder.encode(v);
+            });
             let cmd = new AVCommand({
                 app: state.app,
                 relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,

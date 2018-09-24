@@ -1,6 +1,6 @@
 import { HttpResponse } from '../../httpClient/HttpResponse';
 import { AVCommand } from '../../command/AVCommand';
-import { RxAVClient } from '../../../public/RxAVClient';
+import { RxParseClient } from '../../../public/RxAVClient';
 import { Observable } from 'rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 import { IUserController } from './IUserController';
@@ -60,7 +60,7 @@ export /**
         return this._commandRunner.runRxCommand(cmd).map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
             serverState = serverState.mutatedClone((s: IObjectState) => {
-                s.isNew = res.satusCode == 201;
+                s.isNew = res.statusCode == 201;
             });
             return serverState;
         });

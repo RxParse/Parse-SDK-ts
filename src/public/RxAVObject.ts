@@ -2,24 +2,26 @@ import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IAVFieldOperation } from '../internal/operation/IAVFieldOperation';
 import { AVAddOperation, AVAddUniqueOperation } from '../internal/operation/AVAddOperation';
-import { AVDeleteOperation } from '../internal/operation/AVDeleteOperation';
+import { AVDeleteOperation, AVDeleteToken } from '../internal/operation/AVDeleteOperation';
 import { AVRemoveOperation } from '../internal/operation/AVRemoveOperation';
 import { IObjectController } from '../internal/object/controller/IObjectController';
 import { IStorageController } from '../internal/storage/controller/IStorageController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { RxAVUser, RxAVACL, RxAVClient, RxAVQuery, RxAVApp } from '../RxLeanCloud';
+import { RxParseUser, RxParseACL, RxParseClient, RxParseQuery, ParseApp } from 'RxParse';
 import { Observable } from 'rxjs';
+import { AVSetOperation } from '../internal/operation/AVSetOperation';
 
-export class RxAVStorageObject {
-    estimatedData: { [key: string]: any };
+export class StorageObject {
+    estimatedData: Map<string, object>;
+    currentOperations = new Map<string, IAVFieldOperation>();
     state: MutableObjectState;
 
     protected _isDirty: boolean;
-    get isDirty() {
+    public get isDirty() {
         return this._isDirty;
     }
 
-    set isDirty(v: boolean) {
+    public set isDirty(v: boolean) {
         this._isDirty = v;
     }
 
@@ -29,7 +31,7 @@ export class RxAVStorageObject {
      * 
      * @memberOf RxAVObject
      */
-    get className() {
+    public get className() {
         return this.state.className;
     }
 
@@ -39,16 +41,16 @@ export class RxAVStorageObject {
      * 
      * @memberOf RxAVObject
      */
-    set className(className: string) {
+    public set className(className: string) {
         this.state.className = className;
     }
 
     constructor(className: string, options?: any) {
         this.state = new MutableObjectState({ className: className });
-        this.state.serverData = {};
-        this.state.app = RxAVClient.instance.take(options);
+        this.state.serverData = new Map<string, object>();
+        this.state.app = RxParseClient.instance.take(options);
 
-        this.estimatedData = {};
+        this.estimatedData = new Map<string, object>();
         this.isDirty = true;
     }
 
@@ -58,7 +60,7 @@ export class RxAVStorageObject {
      * 
      * @memberOf RxAVObject
      */
-    get objectId() {
+    public get objectId() {
         return this.state.objectId;
     }
 
@@ -68,25 +70,31 @@ export class RxAVStorageObject {
      * 
      * @memberOf RxAVObject
      */
-    set objectId(id: string) {
+    public set objectId(id: string) {
         this.isDirty = true;
         this.state.objectId = id;
     }
 
-    set(key: string, value: any) {
-        this.isDirty = true;
-        this.estimatedData[key] = value;
+    public set(key: string, value: any) {
+        if (value == null || value == undefined) {
+            this.remove(key);
+        } else {
+            let valid = SDKPlugins.instance.Encoder.isValidType(value);
+            if (valid) {
+                this.performOperation(key, new AVSetOperation(value));
+            }
+        }
     }
 
-    get(key: string) {
+    public get(key: string) {
         return this.estimatedData[key];
     }
 
-    get createdAt() {
+    public get createdAt() {
         return this.state.createdAt;
     }
 
-    get updatedAt() {
+    public get updatedAt() {
         return this.state.updatedAt;
     }
 
@@ -97,6 +105,17 @@ export class RxAVStorageObject {
         else {
             throw new Error(`can not reset property '${propertyName}'`);
         }
+    }
+
+    /**
+     * 删除指定属性上的值
+     * 
+     * @param {string} key 
+     * 
+     * @memberOf RxAVObject
+     */
+    public remove(key: string) {
+        this.performOperation(key, AVDeleteOperation.sharedInstance);
     }
 
     protected setProperty(propertyName: string, value: any) {
@@ -112,6 +131,24 @@ export class RxAVStorageObject {
         }
         return null;
     }
+
+    protected performOperation(key: string, operation: IAVFieldOperation) {
+        let oldValue = this.estimatedData.get(key);
+        let newValue = operation.apply(oldValue, key);
+
+        if (newValue instanceof AVDeleteToken) {
+            this.estimatedData.delete(key);
+        } else {
+            this.estimatedData.set(key, newValue);
+        }
+
+        let oldOperation = this.currentOperations.get(key);
+        let newOperation = operation.mergeWithPrevious(oldOperation);
+        this.currentOperations.set(key, newOperation);
+        if (this.currentOperations.size > 0) {
+            this.isDirty = true;
+        }
+    }
 }
 
 /**
@@ -120,12 +157,10 @@ export class RxAVStorageObject {
  * @export
  * @class RxAVObject
  */
-export class RxAVObject extends RxAVStorageObject implements ICanSaved {
-
-    currentOperations: { [key: string]: Array<IAVFieldOperation> };
+export class RxParseObject extends StorageObject implements ICanSaved {
 
     private _isNew: boolean;
-    private _acl: RxAVACL;
+    private _acl: RxParseACL;
 
     /**
      * RxAVObject 类，代表一个结构化存储的对象.
@@ -136,7 +171,6 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
 
         super(className, options);
 
-        this.currentOperations = {};
         this.className = className;
     }
 
@@ -147,34 +181,31 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
     get ACL() {
         return this._acl;
     }
-    set ACL(acl: RxAVACL) {
+    set ACL(acl: RxParseACL) {
         this._acl = acl;
         this.set('ACL', this._acl);
     }
 
-    addUnique(key: string, value: any) {
-        this.performOperation(key, 'addUnique', value);
-    }
+    // addUnique(key: string, value: any) {
+    //     this.performOperation(key, 'addUnique', value);
+    // }
 
-    add(key: string, value: any) {
-        this.addRange(key, [value]);
-    }
+    // add(key: string, value: any) {
+    //     this.addRange(key, [value]);
+    // }
 
-    addRange(key: string, value: Array<any>) {
-        if (this.currentOperations[key] == undefined) {
-            this.currentOperations[key] = new Array<AVAddOperation>();
-        }
-        this.currentOperations[key].push(new AVAddOperation(value));
-        this.performOperation(key, 'addRange', value);
-    }
+    // addRange(key: string, value: Array<any>) {
+    //     this
+    //     this.performOperation(key, 'addRange', value);
+    // }
 
-    removeRange(key: string, value: Array<any>) {
-        if (this.currentOperations[key] == undefined) {
-            this.currentOperations[key] = new Array<AVRemoveOperation>();
-        }
-        this.currentOperations[key].push(new AVRemoveOperation(value));
-        this.performOperation(key, 'removeRange ', value);
-    }
+    // removeRange(key: string, value: Array<any>) {
+    //     if (this.currentOperations[key] == undefined) {
+    //         this.currentOperations[key] = new Array<AVRemoveOperation>();
+    //     }
+    //     this.currentOperations[key].push(new AVRemoveOperation(value));
+    //     this.performOperation(key, 'removeRange ', value);
+    // }
 
     /**
      * 将当前对象保存到云端.
@@ -186,15 +217,15 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
     public save() {
         let rtn: Observable<boolean> = Observable.from([true]);
         if (!this.isDirty) return rtn;
-        RxAVObject.recursionCollectDirtyChildren(this, [], [], []);
+        RxParseObject.recursionCollectDirtyChildren(this, [], [], []);
 
         let dirtyChildren = this.collectAllLeafNodes();
 
         if (dirtyChildren.length > 0) {
-            rtn = RxAVObject.batchSave(dirtyChildren).flatMap<boolean, boolean>(sal => this.save());
+            rtn = RxParseObject.batchSave(dirtyChildren).flatMap<boolean, boolean>(sal => this.save());
         } else {
-            return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-                return rtn = RxAVObject._objectController.save(this.state, this.estimatedData, sessionToken).map(serverState => {
+            return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+                return rtn = RxParseObject._objectController.save(this.state, this.currentOperations, sessionToken).map(serverState => {
                     this.handlerSave(serverState);
                     return true;
                 });
@@ -206,14 +237,14 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
     /**
      * 从服务端获取数据覆盖本地的数据
      * 
-     * @returns {Observable<RxAVObject>}
+     * @returns {Observable<RxParseObject>}
      * 
      * @memberOf RxAVObject
      */
-    public fetch(): Observable<RxAVObject> {
+    public fetch(): Observable<RxParseObject> {
         if (this.objectId == null) throw new Error(`Cannot refresh an object that hasn't been saved to the server.`);
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVObject._objectController.fetch(this.state, sessionToken).map(serverState => {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseObject._objectController.fetch(this.state, sessionToken).map(serverState => {
                 this.handleFetchResult(serverState);
                 return this;
             });
@@ -222,12 +253,12 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
 
     public delete(): Observable<boolean> {
         if (this.objectId == null) throw new Error(`Cannot delete an object that hasn't been saved to the server.`);
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVObject._objectController.delete(this.state, sessionToken);
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseObject._objectController.delete(this.state, sessionToken);
         });
     }
 
-    public static deleteAll(objects: Array<RxAVObject>): Observable<boolean> {
+    public static deleteAll(objects: Array<RxParseObject>): Observable<boolean> {
         let r: Observable<boolean>;
         objects.forEach(obj => {
             let d = obj.delete();
@@ -248,7 +279,7 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
      * @memberOf RxAVObject
      */
     public remove(key: string) {
-        this.performOperation(key, 'remove');
+        this.performOperation(key, AVDeleteOperation.sharedInstance);
     }
 
     /**
@@ -257,12 +288,12 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
      * @static
      * @param {string} classnName 表名称
      * @param {string} objectId objectId
-     * @returns {RxAVObject}
+     * @returns {RxParseObject}
      * 
      * @memberOf RxAVObject
      */
     public static createWithoutData(classnName: string, objectId: string) {
-        let rtn = new RxAVObject(classnName);
+        let rtn = new RxParseObject(classnName);
         rtn.objectId = objectId;
         rtn.isDirty = false;
         return rtn;
@@ -279,7 +310,7 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
      * 
      * @memberOf RxAVObject
      */
-    public static createSubclass<T extends RxAVObject>(
+    public static createSubclass<T extends RxParseObject>(
         ctor: { new(): T; }, objectId: string): T {
         let rtn = new ctor();
         rtn.objectId = objectId;
@@ -289,11 +320,11 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
 
     public static instantiateSubclass(className: string, serverState: IObjectState) {
         if (className == '_User') {
-            let user = RxAVObject.createSubclass(RxAVUser, serverState.objectId);
+            let user = RxParseObject.createSubclass(RxParseUser, serverState.objectId);
             user.handleFetchResult(serverState);
             return user;
         }
-        let rxObject = new RxAVObject(className);
+        let rxObject = new RxParseObject(className);
         rxObject.handleFetchResult(serverState);
         return rxObject;
     }
@@ -302,11 +333,11 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
      * 批量保存 RxAVObject
      * 
      * @static
-     * @param {Array<RxAVObject>} objects 需要批量保存的 RxAVObject 数组
+     * @param {Array<RxParseObject>} objects 需要批量保存的 RxAVObject 数组
      * 
      * @memberOf RxAVObject
      */
-    public static saveAll(objects: Array<RxAVObject>) {
+    public static saveAll(objects: Array<RxParseObject>) {
         // let r: Observable<boolean>;
         // objects.forEach(obj => {
         //     let y = obj.save();
@@ -320,11 +351,11 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
         return this.batchSave(objects);
     }
 
-    protected static batchSave(objArray: Array<RxAVObject>) {
+    protected static batchSave(objArray: Array<RxParseObject>) {
         let states = objArray.map(c => c.state);
-        let ds = objArray.map(c => c.estimatedData);
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVObject._objectController.batchSave(states, ds, sessionToken).map(serverStateArray => {
+        let ds = objArray.map(c => c.currentOperations);
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseObject._objectController.batchSave(states, ds, sessionToken).map(serverStateArray => {
                 objArray.forEach((dc, i, a) => {
                     dc.handlerSave(serverStateArray[i]);
                 });
@@ -334,35 +365,35 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
 
     }
 
-    protected static deepSave(obj: RxAVObject) {
-        let dirtyChildren: Array<RxAVObject> = [];
+    protected static deepSave(obj: RxParseObject) {
+        let dirtyChildren: Array<RxParseObject> = [];
         for (let key in obj.estimatedData) {
             let value = obj.estimatedData[key];
-            if (value instanceof RxAVObject) {
+            if (value instanceof RxParseObject) {
                 if (value.isDirty) {
                     dirtyChildren.push(value);
                 }
             }
         }
         if (dirtyChildren.length == 0) return Observable.from([true]);
-        return RxAVObject.saveAll(dirtyChildren);
+        return RxParseObject.saveAll(dirtyChildren);
     }
 
     protected collectDirtyChildren() {
-        let dirtyChildren: Array<RxAVObject> = [];
-        for (let key in this.estimatedData) {
-            let value = this.estimatedData[key];
-            if (value instanceof RxAVObject) {
-                if (value.isDirty) {
-                    dirtyChildren.push(value);
+        let dirtyChildren: Array<RxParseObject> = [];
+
+        this.estimatedData.forEach((v, k, m) => {
+            if (v instanceof RxParseObject) {
+                if (v.isDirty) {
+                    dirtyChildren.push(v);
                 }
             }
-        }
+        });
         return dirtyChildren;
     }
 
     collectAllLeafNodes() {
-        let leafNodes: Array<RxAVObject> = [];
+        let leafNodes: Array<RxParseObject> = [];
         let dirtyChildren = this.collectDirtyChildren();
 
         dirtyChildren.map(child => {
@@ -379,11 +410,11 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
         return leafNodes;
     }
 
-    static recursionCollectDirtyChildren(root: RxAVObject, warehouse: Array<RxAVObject>, seen: Array<RxAVObject>, seenNew: Array<RxAVObject>) {
+    static recursionCollectDirtyChildren(root: RxParseObject, warehouse: Array<RxParseObject>, seen: Array<RxParseObject>, seenNew: Array<RxParseObject>) {
 
         let dirtyChildren = root.collectDirtyChildren();
         dirtyChildren.map(child => {
-            let scopedSeenNew: Array<RxAVObject> = [];
+            let scopedSeenNew: Array<RxParseObject> = [];
             if (seenNew.indexOf(child) > -1) {
                 throw new Error('Found a circular dependency while saving');
             }
@@ -394,7 +425,7 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
                 return;
             }
             seen.push(child);
-            RxAVObject.recursionCollectDirtyChildren(child, warehouse, seen, scopedSeenNew);
+            RxParseObject.recursionCollectDirtyChildren(child, warehouse, seen, scopedSeenNew);
             warehouse.push(child);
         });
     }
@@ -403,8 +434,6 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
 
         this.state.merge(serverState);
         this.isDirty = false;
-        this.state.currentOperations = {};
-        this.currentOperations = {};
         //this.rebuildEstimatedData();
     }
 
@@ -422,64 +451,15 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
     }
 
     protected rebuildEstimatedData() {
-        this.estimatedData = {};
+        this.estimatedData = new Map<string, object>();
         this.estimatedData = this.state.serverData;
     }
 
-    performOperation(key: string, operation: string, value?: any) {
-        if (operation == 'remove') {
-            this.state.currentOperations[key] = new AVDeleteOperation();
-            delete this.estimatedData[key];
-        } else {
-            if (operation == 'add' || operation == 'addUnique' || operation == 'addRange' || operation == 'removeRange') {
-                let arrayValue = [];
-
-                if (operation == 'addRange' || operation == 'removeRange') {
-                    this.currentOperations[key].forEach((op, i, a) => {
-                        if (op instanceof AVAddOperation) {
-                            // if (i == 0) arrayValue = op.objects;
-                            // else {
-                            //     op.objects.forEach(o => {
-                            //         arrayValue.push(o);
-                            //     });
-                            // }
-
-                            arrayValue = arrayValue.concat(op.objects);
-                        }
-                    });
-                    if (operation == 'addRange')
-                        this.state.currentOperations[key] = new AVAddOperation(arrayValue);
-                    else if (operation == 'removeRange') {
-                        this.state.currentOperations[key] = new AVRemoveOperation(arrayValue);
-                    }
-                } else if (operation == 'addUnique') {
-                    this.state.currentOperations[key] = new AVAddUniqueOperation(arrayValue);
-                }
-
-                let oldValue = this.get(key);
-                if (oldValue != undefined) {
-                    if (oldValue instanceof Array) {
-                        if (operation == 'add') {
-                            oldValue = oldValue.concat(value);
-                        } else if (operation == 'addUnique') {
-                            oldValue = oldValue.concat(arrayValue);
-                        } else if (operation == 'addRange') {
-                            oldValue = oldValue.concat(arrayValue);
-                        }
-                    }
-                } else {
-                    oldValue = arrayValue;
-                }
-                this.set(key, oldValue);
-            }
-        }
-    }
-
-    protected buildRelation(op: string, opEntities: Array<RxAVObject>) {
+    protected buildRelation(op: string, opEntities: Array<RxParseObject>) {
         if (opEntities) {
             let action = op == 'add' ? 'AddRelation' : 'RemoveRelation';
             let body: { [key: string]: any } = {};
-            let encodedEntities = SDKPlugins.instance.Encoder.encodeItem(opEntities);
+            let encodedEntities = SDKPlugins.instance.Encoder.encode(opEntities);
             body = {
                 __op: action,
                 'objects': encodedEntities
@@ -493,12 +473,12 @@ export class RxAVObject extends RxAVStorageObject implements ICanSaved {
      * 
      * @param {string} key
      * @param {any} targetClassName
-     * @returns {Observable<RxAVObject[]>}
+     * @returns {Observable<RxParseObject[]>}
      * 
      * @memberOf RxAVObject
      */
-    public fetchRelation(key: string, targetClassName): Observable<RxAVObject[]> {
-        let query = new RxAVQuery(targetClassName);
+    public fetchRelation(key: string, targetClassName): Observable<RxParseObject[]> {
+        let query = new RxParseQuery(targetClassName);
         query.relatedTo(this, key);
         return query.find();
     }

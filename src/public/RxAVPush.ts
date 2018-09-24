@@ -1,17 +1,18 @@
 import { Observable, Subject } from 'rxjs';
-import { RxAVClient, RxAVObject, RxAVQuery, RxAVUser, RxAVApp, RxAVRealtime, RxAVInstallation } from '../RxLeanCloud';
+import { RxParseClient, RxParseObject, RxParseQuery, RxParseUser, ParseApp, RxAVRealtime, RxAVInstallation } from 'RxParse';
 import { AVCommand } from '../internal/command/AVCommand';
 import { SDKPlugins } from '../internal/SDKPlugins';
 
-/**
- * 一条推送消息
- * 
- * @export
- * @class RxAVPush
- */
-export class RxAVPush {
 
-    query: RxAVQuery;
+/**
+ *
+ *
+ * @export
+ * @class RxParsePush
+ */
+export class RxParsePush {
+
+    query: RxParseQuery;
     channels: Array<string>;
     expiration: Date;
     pushTime: Date;
@@ -21,7 +22,7 @@ export class RxAVPush {
     prod: string;
 
     constructor() {
-        this.query = new RxAVQuery('_Installation');
+        this.query = new RxParseQuery('_Installation');
     }
 
     /**
@@ -40,10 +41,10 @@ export class RxAVPush {
      */
     public static sendContent(data: string | { [key: string]: any }, filter: {
         channels?: Array<string>,
-        query?: RxAVQuery,
+        query?: RxParseQuery,
         prod?: string
     }) {
-        let push = new RxAVPush();
+        let push = new RxParsePush();
         if (typeof data === 'string') {
             push.alert = data;
         } else {
@@ -63,25 +64,25 @@ export class RxAVPush {
      * 向 RxAVUser 发送推送消息
      * 
      * @static
-     * @param {RxAVUser} user
+     * @param {RxParseUser} user
      * @param {any} data:{(string | { [key: string]: any })}
      * @param {string} prod
      * @returns {Observable<boolean>} 返回是否成功刚发送
      * 
      * @memberOf RxAVPush
      */
-    public static sendTo(user: RxAVUser | string, data: string | { [key: string]: any }, prod?: string) {
-        let u: RxAVUser;
+    public static sendTo(user: RxParseUser | string, data: string | { [key: string]: any }, prod?: string) {
+        let u: RxParseUser;
         if (user != undefined) {
             if (typeof user == 'string') {
-                u = RxAVUser.createWithoutData(user);
-            } else if (user instanceof RxAVUser) {
+                u = RxParseUser.createWithoutData(user);
+            } else if (user instanceof RxParseUser) {
                 u = user;
             }
         }
-        let query = new RxAVQuery('_Installation');
-        query.relatedTo(u, RxAVUser.installationKey);
-        return RxAVPush.sendContent(data, {
+        let query = new RxParseQuery('_Installation');
+        query.relatedTo(u, RxParseUser.installationKey);
+        return RxParsePush.sendContent(data, {
             query: query,
             prod: prod
         });
@@ -97,8 +98,8 @@ export class RxAVPush {
      */
     public send(): Observable<boolean> {
         let data = this.encode();
-        return RxAVUser.currentSessionToken().flatMap(sessionToken => {
-            return RxAVClient.runCommand('/push', 'POST', data, sessionToken, this.query.app).map(body => {
+        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+            return RxParseClient.runCommand('/push', 'POST', data, sessionToken, this.query.app).map(body => {
                 return true;
             });
         });
@@ -146,18 +147,18 @@ export class RxAVPush {
     public static realtime: RxAVRealtime;
     public static open(options?: any) {
         let deviceType = options && options.deviceType ? options.deviceType : 'web';
-        RxAVPush.realtime = new RxAVRealtime();
-        return RxAVPush.getInstallation(deviceType).flatMap(installation => {
-            return RxAVPush.realtime.open().flatMap(opened => {
+        RxParsePush.realtime = new RxAVRealtime();
+        return RxParsePush.getInstallation(deviceType).flatMap(installation => {
+            return RxParsePush.realtime.open().flatMap(opened => {
                 if (opened) {
                     let sessionOpenCmd = new AVCommand();
                     sessionOpenCmd.data = {
                         cmd: 'login',
-                        appId: RxAVPush.realtime.app.appId,
+                        appId: RxParsePush.realtime.app.appId,
                         installationId: installation.installationId,
                         i: 9999999
                     };
-                    return RxAVPush.realtime.RxWebSocketController.execute(sessionOpenCmd).map(response => {
+                    return RxParsePush.realtime.RxWebSocketController.execute(sessionOpenCmd).map(response => {
 
                         return installation;
                     });
@@ -170,8 +171,8 @@ export class RxAVPush {
     protected static _notification: Observable<any>;
 
     public static notification(): Observable<any> {
-        if (RxAVPush._notification == undefined) {
-            RxAVPush._notification = RxAVPush.realtime.RxWebSocketController.onMessage.filter(pushData => {
+        if (RxParsePush._notification == undefined) {
+            RxParsePush._notification = RxParsePush.realtime.RxWebSocketController.onMessage.filter(pushData => {
                 let push = JSON.parse(pushData);
                 if (Object.prototype.hasOwnProperty.call(push, 'cmd')) {
                     if (push.cmd == 'data') {
@@ -181,6 +182,6 @@ export class RxAVPush {
                 return false;
             });
         }
-        return RxAVPush._notification;
+        return RxParsePush._notification;
     }
 }

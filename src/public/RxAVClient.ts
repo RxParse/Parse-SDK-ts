@@ -10,20 +10,10 @@ import { IWebSocketClient } from '../internal/websocket/IWebSocketClient';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
 import { HttpRequest } from '../internal/httpClient/HttpRequest';
-var pjson = require('../package.json');
+import { HttpResponse } from '../internal/httpClient/HttpResponse';
+var sdkInfo = require('../package.json');
 
-// var providers: {
-//     storage?: IStorage,
-//     device?: IDeviceInfo
-// } = {};
-
-/**
- * SDK 核心类，包含了基础的功能模块
- * 
- * @export
- * @class RxAVClient
- */
-export class RxAVClient {
+export class RxParseClient {
     /**
      * 初始化 SDK
      * 
@@ -55,16 +45,16 @@ export class RxAVClient {
             device?: IDeviceInfo,
             websocket?: IWebSocketClient
         }
-    }): RxAVClient {
-        return RxAVClient.instance.initialize(config);
+    }): RxParseClient {
+        return RxParseClient.instance.initialize(config);
     }
 
     /*
     *  
     */
-    currentApp: RxAVApp;
-    remotes: Array<RxAVApp> = [];
-    add(app: RxAVApp, replace?: boolean) {
+    currentApp: ParseApp;
+    remotes: Array<ParseApp> = [];
+    add(app: ParseApp, replace?: boolean) {
         if (this.remotes.length == 0 || (typeof replace != 'undefined' && replace)) {
             if (app.shortname == null) {
                 app.shortname = 'default';
@@ -73,16 +63,16 @@ export class RxAVClient {
         }
         this.remotes.push(app);
         this.printWelcome(app);
-        return this as RxAVClient;
+        return this as RxParseClient;
     }
 
     take(options?: any) {
-        let app: RxAVApp = null;
+        let app: ParseApp = null;
         if (!options) {
-            return RxAVClient.instance.currentApp;
+            return RxParseClient.instance.currentApp;
         } else {
             if (options.app) {
-                if (options.app instanceof RxAVApp) {
+                if (options.app instanceof ParseApp) {
                     app = options.app;
                 }
             } else if (options.appName) {
@@ -95,7 +85,7 @@ export class RxAVClient {
                     }
                 }
             } else {
-                app = RxAVClient.instance.currentApp;
+                app = RxParseClient.instance.currentApp;
             }
         }
         return app;
@@ -108,12 +98,12 @@ export class RxAVClient {
         if (tempApp) {
             this.currentApp = tempApp;
         }
-        return this as RxAVClient;
+        return this as RxParseClient;
     }
 
 
     public get SDKVersion(): string {
-        return pjson.version;
+        return sdkInfo.version;
     }
 
     public isNode() {
@@ -124,25 +114,40 @@ export class RxAVClient {
         return false;
     }
 
-    protected printWelcome(app: RxAVApp) {
-        RxAVClient.printLog('=== LeanCloud-Typescript-Rx-SDK ===');
-        RxAVClient.printLog(`pluginVersion:${this.currentConfiguration.pluginVersion}`);
-        RxAVClient.printLog(`environment:node?${this.currentConfiguration.isNode}`);
-        RxAVClient.printLog(`appId:${app.appId}`);
-        RxAVClient.printLog(`appKey:${app.appKey}`);
-        RxAVClient.printLog(`region:${app.region}`);
-        RxAVClient.printLog('=== Rx is great, Typescript is wonderful! ===');
+    protected printWelcome(app: ParseApp) {
+        RxParseClient.printLog('=== LeanCloud-Typescript-Rx-SDK ===');
+        RxParseClient.printLog(`pluginVersion:${this.currentConfiguration.pluginVersion}`);
+        RxParseClient.printLog(`environment:node?${this.currentConfiguration.isNode}`);
+        RxParseClient.printLog(`appId:${app.appId}`);
+        RxParseClient.printLog(`appKey:${app.appKey}`);
+        RxParseClient.printLog(`region:${app.region}`);
+        RxParseClient.printLog('=== Rx is great, Typescript is wonderful! ===');
+    }
+
+    public static printHttpLog(request: HttpRequest, response: HttpResponse) {
+        RxParseClient.printLog("===HTTP-START===");
+        RxParseClient.printLog("===Request-START===");
+        RxParseClient.printLog("Url: ", request.url);
+        RxParseClient.printLog("Method: ", request.method);
+        RxParseClient.printLog("Headers: ", request.headers);
+        RxParseClient.printLog("RequestBody(UTF8String): " + request.data);
+        RxParseClient.printLog("===Request-END===");
+        RxParseClient.printLog("===Response-START===");
+        RxParseClient.printLog("StatusCode: ", response.statusCode);
+        RxParseClient.printLog("ResponseBody: ", response.body);
+        RxParseClient.printLog("===Response-END===");
+        RxParseClient.printLog("===HTTP-END===");
     }
 
     public static printLog(message?: any, ...optionalParams: any[]) {
-        if (RxAVClient.instance.currentConfiguration.log) {
+        if (RxParseClient.instance.currentConfiguration.log) {
             if (optionalParams.length > 0)
                 console.log(message, optionalParams);
             else console.log(message);
         }
     }
 
-    protected static generateAVCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: RxAVApp): AVCommand {
+    protected static generateAVCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: ParseApp): AVCommand {
         let cmd = new AVCommand({
             app: app,
             relativeUrl: relativeUrl,
@@ -153,19 +158,34 @@ export class RxAVClient {
         return cmd;
     }
 
-    public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: RxAVApp): Observable<{ [key: string]: any }> {
-        let cmd = RxAVClient.generateAVCommand(relativeUrl, method, data, sessionToken, app);
+    public rxRunCommandSuccess(relativeUrl: string, method: string, data?: { [key: string]: any }) {
+        let cmd = RxParseClient.generateAVCommand(relativeUrl, method, data);
+        return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
+            return res.statusCode == 200;
+        });
+    }
+
+    public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: ParseApp): Observable<{ [key: string]: any }> {
+        let cmd = RxParseClient.generateAVCommand(relativeUrl, method, data, sessionToken, app);
         return SDKPlugins.instance.CommandRunner.runRxCommand(cmd).map(res => {
             return res.body;
         });
     }
 
-    private static _avClientInstance: RxAVClient;
+    private static _avClientInstance: RxParseClient;
 
-    static get instance(): RxAVClient {
-        if (RxAVClient._avClientInstance == null)
-            RxAVClient._avClientInstance = new RxAVClient();
-        return RxAVClient._avClientInstance;
+    /**
+     * 
+     * 
+     * @readonly
+     * @static
+     * @type {RxParseClient}
+     * @memberof RxAVClient
+     */
+    static get instance(): RxParseClient {
+        if (RxParseClient._avClientInstance == null)
+            RxParseClient._avClientInstance = new RxParseClient();
+        return RxParseClient._avClientInstance;
     }
 
     currentConfiguration: {
@@ -176,7 +196,24 @@ export class RxAVClient {
         runtime?: string
     } = {};
 
-
+    /**
+     * 
+     * 
+     * @param {{
+     *         appId?: string,
+     *         appKey?: string,
+     *         region?: string,
+     *         log?: boolean,
+     *         pluginVersion?: number,
+     *         plugins?: {
+     *             storage?: IStorage,
+     *             device?: IDeviceInfo,
+     *             websocket?: IWebSocketClient
+     *         }
+     *     }} config 
+     * @returns 
+     * @memberof RxAVClient
+     */
     public initialize(config: {
         appId?: string,
         appKey?: string,
@@ -189,7 +226,7 @@ export class RxAVClient {
             websocket?: IWebSocketClient
         }
     }) {
-        // 注册全局未捕获异常处理器
+        
         process.on('uncaughtException', function (err) {
             console.error("Caught exception:", err.stack);
         });
@@ -204,7 +241,7 @@ export class RxAVClient {
             this.currentConfiguration.log = config.log;
 
             if (config.appId && config.appKey) {
-                let app = new RxAVApp({
+                let app = new ParseApp({
                     appId: config.appId,
                     appKey: config.appKey,
                 });
@@ -228,9 +265,19 @@ export class RxAVClient {
             }
         }
 
-        return this as RxAVClient;
+        return this as RxParseClient;
     }
 
+    /**
+     * 
+     * 
+     * @param {string} url 
+     * @param {string} [method] 
+     * @param {{ [key: string]: any }} [headers] 
+     * @param {{ [key: string]: any }} [data] 
+     * @returns {Observable<{ [key: string]: any }>} 
+     * @memberof RxAVClient
+     */
     public request(url: string, method?: string, headers?: { [key: string]: any }, data?: { [key: string]: any }): Observable<{ [key: string]: any }> {
         let httpRequest = new HttpRequest();
         httpRequest.url = url;
@@ -282,7 +329,13 @@ export class AppRouterState {
     public FetchedAt: Date;
 }
 
-export class RxAVApp {
+/**
+ * 
+ * 
+ * @export
+ * @class RxAVApp
+ */
+export class ParseApp {
 
     constructor(options: {
         appId: string,
@@ -366,8 +419,8 @@ export class RxAVApp {
             'X-LC-Key': this.appKey,
             'Content-Type': 'application/json;charset=utf-8'
         };
-        if (RxAVClient.instance.isNode()) {
-            headers['User-Agent'] = 'ts-sdk/' + pjson.version;
+        if (RxParseClient.instance.isNode()) {
+            headers['User-Agent'] = 'ts-sdk/' + sdkInfo.version;
         }
         if (this.additionalHeaders) {
             for (let key in this.additionalHeaders) {

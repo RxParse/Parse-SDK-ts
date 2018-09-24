@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import { RxAVUser } from './RxAVUser';
-import { RxAVClient, RxAVObject, RxAVApp } from '../RxLeanCloud';
+import { RxParseUser } from './RxAVUser';
+import { RxParseClient, RxParseObject, ParseApp } from 'RxParse';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IAnalyticsController } from '../internal/analytics/controller/IAnalyticsController';
 import { IToolController } from '../internal/tool/controller/IToolController';
@@ -22,7 +22,7 @@ export class RxAVAnalytics {
             this.device = mutableData.device;
             this.events = mutableData.events;
         }
-        this._app = RxAVClient.instance.take(options);
+        this._app = RxParseClient.instance.take(options);
     }
 
     static readonly analyticsCacheKey = 'LastAnalyticsData';
@@ -37,7 +37,7 @@ export class RxAVAnalytics {
     static get _toolController() {
         return SDKPlugins.instance.ToolControllerInstance;
     }
-    protected _app: RxAVApp;
+    protected _app: ParseApp;
     get app() {
         return this._app;
     }
@@ -62,7 +62,7 @@ export class RxAVAnalytics {
      * 
      * @memberOf RxAVAnalytics
      */
-    public static init(app?: RxAVApp): Observable<boolean> {
+    public static init(app?: ParseApp): Observable<boolean> {
         return RxAVAnalytics._analyticsController.getPolicy(app).flatMap(instance => {
             RxAVAnalytics.setCurrentAnalytics(instance);
             return instance.startSesstion();

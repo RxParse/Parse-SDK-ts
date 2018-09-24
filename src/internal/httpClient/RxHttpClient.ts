@@ -4,7 +4,7 @@ import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
 import * as superagent from 'superagent';
-import { RxAVClient } from '../../public/RxAVClient';
+import { RxParseClient } from '../../public/RxAVClient';
 
 export class RxHttpClient implements IRxHttpClient {
     version: number;
@@ -20,42 +20,42 @@ export class RxHttpClient implements IRxHttpClient {
         };
         
         let response = new HttpResponse(tuple);
-        RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxAVClient.instance.currentConfiguration.isNode && this.version == 1) {
-            RxAVClient.printLog('http client:axios');
+        RxParseClient.printLog('Request:', JSON.stringify(httpRequest));
+        if (RxParseClient.instance.currentConfiguration.isNode && this.version == 1) {
+            RxParseClient.printLog('http client:axios');
             return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
 
                 tuple[0] = res.status;
                 tuple[1] = res.data;
                 let response = new HttpResponse(tuple);
-                RxAVClient.printLog('Response:', JSON.stringify(response));
+                RxParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch((err: any) => {
-                RxAVClient.printLog('Meta Error:', err);
+                RxParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.response.status;
                     errMsg.error = err.response.data;
                 }
-                RxAVClient.printLog('Error:', JSON.stringify(errMsg));
+                RxParseClient.printLog('Error:', JSON.stringify(errMsg));
                 return Observable.throw(errMsg);
             });
         }
 
         else {
-            RxAVClient.printLog('http client:superagent');
+            RxParseClient.printLog('http client:superagent');
             return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
                 tuple[0] = res.status;
                 tuple[1] = res.body;
                 let response = new HttpResponse(tuple);
-                RxAVClient.printLog('Response:', JSON.stringify(response));
+                RxParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch((err: any) => {
-                RxAVClient.printLog('Meta Error:', err);
+                RxParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.status;
                     errMsg.error = JSON.parse(err.response.text);
                 }
-                RxAVClient.printLog('Error:', errMsg);
+                RxParseClient.printLog('Error:', errMsg);
                 return Observable.throw(errMsg);
             });
         }
