@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { RxParseClient, RxParseObject, RxParseQuery } from 'RxParse';
+import { ParseClient, RxParseObject, RxParseQuery } from 'RxParse';
 import * as init from "../utils/init";
 
 describe('RxAVQuery', () => {
@@ -21,7 +21,7 @@ describe('RxAVQuery', () => {
     it('RxAVQuery#WithoutResult', done => {
         let query = new RxParseQuery('RxTodo');
 
-        query.equalTo('title', 'fatherxxx');
+        query.equalTo('title', 'fatherXXX');
 
         query.find().subscribe(list => {
             console.log(list);
@@ -43,10 +43,10 @@ describe('RxAVQuery', () => {
                 id: obj.objectId,
                 title: obj.get('title')
             }
-        }).subscribe(tupple => {
-            uiList.push(tupple);
-            console.log('tupple', tupple);
-            chai.assert.isTrue(tupple != null);
+        }).subscribe(tuple => {
+            uiList.push(tuple);
+            console.log('tuple', tuple);
+            chai.assert.isTrue(tuple != null);
         }, error => { }, () => {
             done();
         });

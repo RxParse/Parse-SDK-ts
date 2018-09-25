@@ -2,7 +2,7 @@ import { Observable, Observer, Subject, ConnectableObservable } from 'rxjs';
 import { HttpRequest } from '../../httpClient/HttpRequest';
 import { HttpResponse } from '../../httpClient/HttpResponse';
 import { IRxHttpClient } from '../../httpClient/IRxHttpClient';
-import { RxParseClient } from '../../../public/RxAVClient';
+import { ParseClient } from 'public/RxParseClient';
 import { IRxWebSocketClient } from '../IRxWebSocketClient';
 import { IRxWebSocketController } from './IRxWebSocketController';
 import { IWebSocketClient } from '../IWebSocketClient';

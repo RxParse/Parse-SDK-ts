@@ -1,24 +1,24 @@
 import { HttpResponse } from '../../httpClient/HttpResponse';
-import { AVCommand } from '../../command/AVCommand';
-import { RxParseClient } from '../../../public/RxAVClient';
+import { ParseCommand } from '../../command/ParseCommand';
+import { ParseClient } from 'public/RxParseClient';
 import { Observable } from 'rxjs';
 import { IObjectState } from '../../object/state/IObjectState';
 import { IUserController } from './IUserController';
 import { SDKPlugins } from '../../SDKPlugins';
-import { IAVCommandRunner } from '../../command/IAVCommandRunner';
+import { IParseCommandRunner } from '../../command/IParseCommandRunner';
 
 export /**
  * UserController
  */
     class UserController implements IUserController {
 
-    private readonly _commandRunner: IAVCommandRunner;
-    constructor(commandRunner: IAVCommandRunner) {
+    private readonly _commandRunner: IParseCommandRunner;
+    constructor(commandRunner: IParseCommandRunner) {
         this._commandRunner = commandRunner;
     }
     signUp(state: IObjectState, dictionary: { [key: string]: any }): Observable<IObjectState> {
         let encoded = SDKPlugins.instance.Encoder.encode(dictionary);
-        let cmd = new AVCommand({
+        let cmd = new ParseCommand({
             app: state.app,
             relativeUrl: "/users",
             method: 'POST',
@@ -37,7 +37,7 @@ export /**
             "username": username,
             "password": password
         };
-        let cmd = new AVCommand({
+        let cmd = new ParseCommand({
             relativeUrl: "/login",
             method: 'POST',
             data: data
@@ -48,10 +48,10 @@ export /**
             return serverState;
         });
     }
-    logInWithParamters(relativeUrl: string, data: { [key: string]: any }): Observable<IObjectState> {
+    logInWithParameters(relativeUrl: string, data: { [key: string]: any }): Observable<IObjectState> {
         let encoded = SDKPlugins.instance.Encoder.encode(data);
 
-        let cmd = new AVCommand({
+        let cmd = new ParseCommand({
             relativeUrl: relativeUrl,
             method: 'POST',
             data: data

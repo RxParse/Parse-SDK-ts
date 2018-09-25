@@ -1,5 +1,5 @@
 import { IObjectState } from '../../object/state/IObjectState';
-import { RxParseQuery } from '../../../public/RxAVQuery';
+import { RxParseQuery } from 'public/RxParseQuery';
 import { Observable } from 'rxjs';
 
 export /**
@@ -8,7 +8,7 @@ export /**
     interface IQueryController {
     find(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>>;
     count(query: RxParseQuery, sessionToken: string): Observable<number>;
-    fitst(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>>;
+    first(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>>;
 
     //find<T>(): Observable<Array<IObjectState>>;
 

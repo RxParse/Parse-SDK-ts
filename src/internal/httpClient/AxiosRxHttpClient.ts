@@ -3,7 +3,7 @@ import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
-import { RxParseClient } from '../../public/RxAVClient';
+import { ParseClient } from '../../public/RxParseClient';
 
 export class AxiosRxHttpClient implements IRxHttpClient {
 
@@ -16,7 +16,7 @@ export class AxiosRxHttpClient implements IRxHttpClient {
             let response = new HttpResponse(tuple);
             return response;
         }).catch((err: any) => {
-            RxParseClient.printLog('Meta Error:', err);
+            ParseClient.printLog('Meta Error:', err);
             return Observable.throw(err);
         });
     }
@@ -27,14 +27,14 @@ export class AxiosRxHttpClient implements IRxHttpClient {
         if (method == 'PUT' || 'POST') {
             useData = true;
         }
-        return new Promise<AxiosResponse>((resovle, reject) => {
+        return new Promise<AxiosResponse>((resolve, reject) => {
             axios({
                 method: method,
                 url: httpRequest.url,
                 data: useData ? httpRequest.data : null,
                 headers: httpRequest.headers
             }).then(response => {
-                resovle(response);
+                resolve(response);
             }).catch(error => {
                 reject(error);
             });

@@ -31,14 +31,14 @@
     "ws": "^6.0.0"
   },
   "dependencies": {
-    "axios": "^0.15.3",
+    "axios": "^0.18.0",
     "jstz": "^1.0.8",
     "rxjs": "^5.5.2",
     "superagent": "^3.8.3"
   },
-  "main": "./dist/RxLeanCloud.js",
-  "typings": "./dist/RxLeanCloud.d.ts",
-  "types": "./dist/RxLeanCloud.d.ts",
+  "main": "./dist/RxParse.js",
+  "typings": "./dist/RxParse.d.ts",
+  "types": "./dist/RxParse.d.ts",
   "engines": {
     "node": "6.x"
   }

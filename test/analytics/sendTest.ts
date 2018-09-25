@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import * as random from "../utils/random";
-import { RxParseClient, RxAVAnalytics, IDeviceInfo, RxAVAnalyticDevice } from 'RxParse';
+import { ParseClient, RxParseAnalytics, IDeviceInfo, RxParseAnalyticDevice } from '../../src/RxParse';
 import * as init from "../utils/init";
 const os = require('os');
 
@@ -11,9 +11,9 @@ describe('RxAVAnalytics', function () {
 
     });
     it('RxAVAnalytics#send', done => {
-        RxAVAnalytics.init().flatMap(enable => {
+        RxParseAnalytics.init().flatMap(enable => {
             if (enable) {
-                var analytics = RxAVAnalytics.currentAnalytics;
+                var analytics = RxParseAnalytics.currentAnalytics;
                 analytics.trackAppOpenedWithPush({
                     alert: 'Hello,LeanCloud!',
                     data: {
@@ -23,14 +23,14 @@ describe('RxAVAnalytics', function () {
                 });
                 let pageId = analytics.beginPage('xPage');
                 analytics.trackEvent('xClicked');
-                let inputEventId = analytics.beginEevent('xPut', 'username', {
+                let inputEventId = analytics.beginEvent('xPut', 'username', {
                     max: 777
                 });
                 analytics.endEvent(inputEventId, {
                     min: 111
                 });
                 analytics.endPage(pageId);
-                analytics.closeSesstion();
+                analytics.closeSession();
                 return analytics.send();
             }
         }).subscribe(sent => {

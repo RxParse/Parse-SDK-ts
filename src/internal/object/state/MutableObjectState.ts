@@ -1,8 +1,8 @@
 import { IObjectState } from './IObjectState';
-import { ParseApp } from '../../../public/RxAVClient';
-import { IAVFieldOperation } from '../../operation/IAVFieldOperation';
-import { AVAddOperation } from '../../operation/AVAddOperation';
-import { AVDeleteOperation } from '../../operation/AVDeleteOperation';
+import { ParseApp } from 'public/RxParseClient';
+import { IParseFieldOperation } from '../../operation/IParseFieldOperation';
+import { ParseAddOperation } from '../../operation/ParseAddOperation';
+import { ParseDeleteOperation } from '../../operation/ParseDeleteOperation';
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 export const has = function (obj: any, prop: any) {
     return _hasOwnProperty.call(obj, prop);

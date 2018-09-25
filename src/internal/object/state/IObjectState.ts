@@ -1,5 +1,4 @@
-import { ParseApp } from '../../../public/RxAVClient';
-import { IAVFieldOperation } from '../../operation/IAVFieldOperation';
+import { ParseApp } from '../../../RxParse';
 
 export interface IObjectState {
     isNew: boolean;

@@ -1,5 +1,5 @@
-import { RxAVAnalyticDevice } from '../../public/RxAVAnalytics';
+import { RxParseAnalyticDevice } from 'public/RxParseAnalytics';
 
 export interface IDeviceInfo {
-    getDevice(): Promise<RxAVAnalyticDevice>;
+    getDevice(): Promise<RxParseAnalyticDevice>;
 }

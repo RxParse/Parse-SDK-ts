@@ -1,11 +1,10 @@
 import * as chai from 'chai';
-import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
-import * as init from "../utils/init";
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
+import { init } from "../utils/init";
 
-init.init();
 describe('RxObject', function () {
     before(() => {
-
+        init();
     });
     it('RxAVObject#saveBase', function (done) {
         let todo: RxParseObject = new RxParseObject('RxTodo');
@@ -14,9 +13,10 @@ describe('RxObject', function () {
         todo.set('time', '2016-12-03');
         todo.set('reminder', new Date());
         todo.set('open', false);
-
+        console.log('todo', JSON.stringify(todo));
         todo.save().subscribe(() => {
             console.log('todo.title', todo.get('title'));
+            console.log('todo', JSON.stringify(todo));
             done();
         }, error => {
             /** error 的格式如下：
@@ -216,7 +216,7 @@ describe('RxObject', function () {
     it('RxAVObject#fetch', done => {
         let todo = RxParseObject.createWithoutData("RxTodo", "59fc0fd52f301e0069c76a67");
         todo.fetch().subscribe(obj => {
-            console.log('todo.title',todo.get('title'))
+            console.log('todo.title', todo.get('title'))
         });
     });
 

@@ -2,9 +2,9 @@ import { Observable } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
-import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as superagent from 'superagent';
-import { RxParseClient } from '../../public/RxAVClient';
+import { ParseClient } from 'public/RxParseClient';
 
 export class RxHttpClient implements IRxHttpClient {
     version: number;
@@ -18,53 +18,48 @@ export class RxHttpClient implements IRxHttpClient {
             statusCode: -1,
             error: { code: 0, error: 'Server error' }
         };
-        
+
         let response = new HttpResponse(tuple);
-        RxParseClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxParseClient.instance.currentConfiguration.isNode && this.version == 1) {
-            RxParseClient.printLog('http client:axios');
+        ParseClient.printLog('Request:', JSON.stringify(httpRequest));
+        if (ParseClient.instance.currentConfiguration.isNode && this.version == 1) {
+            ParseClient.printLog('http client:axios');
             return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
 
                 tuple[0] = res.status;
                 tuple[1] = res.data;
-                let response = new HttpResponse(tuple);
-                RxParseClient.printLog('Response:', JSON.stringify(response));
+                response = new HttpResponse(tuple);
+                ParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch((err: any) => {
-                RxParseClient.printLog('Meta Error:', err);
+                ParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.response.status;
                     errMsg.error = err.response.data;
                 }
-                RxParseClient.printLog('Error:', JSON.stringify(errMsg));
+                ParseClient.printLog('Error:', JSON.stringify(errMsg));
                 return Observable.throw(errMsg);
             });
         }
 
         else {
-            RxParseClient.printLog('http client:superagent');
+            ParseClient.printLog('http client:superagent');
             return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
                 tuple[0] = res.status;
                 tuple[1] = res.body;
                 let response = new HttpResponse(tuple);
-                RxParseClient.printLog('Response:', JSON.stringify(response));
+                ParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
             }).catch((err: any) => {
-                RxParseClient.printLog('Meta Error:', err);
+                ParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.status;
                     errMsg.error = JSON.parse(err.response.text);
                 }
-                RxParseClient.printLog('Error:', errMsg);
+                ParseClient.printLog('Error:', errMsg);
                 return Observable.throw(errMsg);
             });
         }
     }
-
-    batchExecute() {
-
-    }
-
 
     RxExecuteAxios(httpRequest: HttpRequest): Promise<AxiosResponse> {
         let method = httpRequest.method.toUpperCase();
@@ -72,20 +67,20 @@ export class RxHttpClient implements IRxHttpClient {
         if (method == 'PUT' || 'POST') {
             useData = true;
         }
-        return new Promise<AxiosResponse>((resovle, reject) => {
+        return new Promise<AxiosResponse>((resolve, reject) => {
             axios({
                 method: method,
                 url: httpRequest.url,
                 data: useData ? httpRequest.data : null,
                 headers: httpRequest.headers
             }).then(response => {
-                resovle(response);
+                resolve(response);
             }).catch(error => {
                 reject(error);
             });
         });
-
     }
+
     RxExecuteSuperagent(httpRequest: HttpRequest): Promise<superagent.Response> {
         let method = httpRequest.method.toUpperCase();
         if (method == 'POST')

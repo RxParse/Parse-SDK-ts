@@ -1,8 +1,8 @@
 import { IObjectState } from '../../object/state/IObjectState';
 import { IQueryController } from './IQueryController';
-import { AVCommand } from '../../command/AVCommand';
-import { IAVCommandRunner } from '../../command/IAVCommandRunner';
-import { RxParseQuery } from '../../../public/RxAVQuery';
+import { ParseCommand } from '../../command/ParseCommand';
+import { IParseCommandRunner } from '../../command/IParseCommandRunner';
+import { RxParseQuery } from 'public/RxParseQuery';
 import { SDKPlugins } from '../../SDKPlugins';
 import { Observable } from 'rxjs';
 
@@ -10,15 +10,15 @@ export /**
  * QueryController
  */
     class QueryController implements IQueryController {
-    private readonly _commandRunner: IAVCommandRunner;
+    private readonly _commandRunner: IParseCommandRunner;
 
-    constructor(commandRunner: IAVCommandRunner) {
+    constructor(commandRunner: IParseCommandRunner) {
         this._commandRunner = commandRunner;
     }
 
     find(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>> {
         let qu = this.buildQueryString(query);
-        let cmd = new AVCommand({
+        let cmd = new ParseCommand({
             app: query.app,
             relativeUrl: qu,
             method: 'GET',
@@ -38,7 +38,7 @@ export /**
         return Observable.from([0]);
     }
 
-    fitst(query: RxParseQuery, sesstionToken: string): Observable<Array<IObjectState>> {
+    first(query: RxParseQuery, sesstionToken: string): Observable<Array<IObjectState>> {
         return null;
     }
 

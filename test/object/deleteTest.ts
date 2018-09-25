@@ -1,12 +1,10 @@
 import * as chai from 'chai';
-import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
-import * as init from "../utils/init";
-
-init.init();
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
+import { init } from "../utils/init";
 
 describe('RxObject', () => {
     before(() => {
-
+        init();
     });
     it('RxAVObject#deleteOne', done => {
         let todo1: RxParseObject = new RxParseObject('RxTodo');

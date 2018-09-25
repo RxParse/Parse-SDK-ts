@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
-import { RxParseUser, RxParseClient } from 'RxParse';
+import { RxParseUser, ParseClient } from 'RxParse';
 init.init();
 describe('RxAVUser', function () {
     before(() => {
@@ -9,15 +9,15 @@ describe('RxAVUser', function () {
         RxParseUser.logIn('junwu', 'leancloud').flatMap(user => {
             console.log(RxParseUser.usersMap);
             return RxParseUser.currentSessionToken();
-        }).subscribe(sesstionToken => {
-            console.log('sesstionToken', sesstionToken);
+        }).subscribe(sessionToken => {
+            console.log('sessionToken', sessionToken);
             done();
         });
     });
-    it('RxAVUser#logInyyy', function (done) {
+    it('RxAVUser#logIn', function (done) {
         RxParseUser.logIn('junwu', 'leancloud').subscribe(user => {
             console.log(user.username);
-            console.log(user.sesstionToken);
+            console.log(user.sessionToken);
             console.log(user.state);
             chai.assert.isNotNull(user.username);
             user.isAuthenticated().subscribe(s => {
@@ -55,8 +55,8 @@ describe('RxAVUser', function () {
         });
     });
 
-    it('RxAVUser#logInWithMobilephone', done => {
-        RxParseUser.logInWithMobilephone('18612438929', 'leancloud').subscribe(user => {
+    it('RxAVUser#logInWithMobilePhone', done => {
+        RxParseUser.logInWithMobilePhone('18612438929', 'leancloud').subscribe(user => {
             chai.assert.isNotNull(user);
             done();
         }, error => {

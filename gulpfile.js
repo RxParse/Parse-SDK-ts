@@ -21,13 +21,20 @@ gulp.task('devCopy', function () {
         .pipe(gulp.dest('out/src'));
 });
 
-gulp.task('doc', ['source'], function (cb) {
-    gulp.src(['README.md', './dist/**/*.js'], { read: false })
-        .pipe(jsdoc(cb));
-});
+gulp.task('doc', gulp.series('source', function (done) {
+    gulp.src(['README.md', './dist/**/*.js'], {
+            read: false
+    }).pipe(jsdoc(done));    
+}));
 
-gulp.task('default', ['source', 'releaseCopy']);
+gulp.task('default', gulp.series(gulp.parallel('source', 'releaseCopy'), function (done) {
+    done();
+}));
 
-gulp.task('dev', ['source', 'devCopy']);
+gulp.task('dev', gulp.series(gulp.parallel('source', 'devCopy'), function (done) {
+    done();
+}));
 
-gulp.task('docs', ['source', 'doc']);
+gulp.task('docs', gulp.series(gulp.parallel('source', 'doc'), function (done) {
+    done();
+}));

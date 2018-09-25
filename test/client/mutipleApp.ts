@@ -1,15 +1,16 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
 import { Observable, Subject } from 'rxjs';
-import { RxParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
 
 let app = new ParseApp({
-    appId: `uay57kigwe0b6f5n0e1d4z4xhydsml3dor24bzwvzr57wdap`,
-    appKey: `kfgz7jjfsk55r5a8a3y4ttd3je1ko11bkibcikonk32oozww`,
-    server: {
-        rtm: `wss://rtm51.leancloud.cn`,
+    appId: `parse`,
+    serverURL: 'https://chigua.live/api',
+    additionalHeaders: {
+        'X-Parse-Application-Id': `parse`
     }
 });
+
 describe('RxObject', function () {
     before(() => {
 
@@ -32,7 +33,7 @@ describe('RxObject', function () {
         });
     });
     it('Client#initWithoutConfig', done => {
-        RxParseClient.init().add(app);
+        ParseClient.init().add(app);
         done();
     });
 });

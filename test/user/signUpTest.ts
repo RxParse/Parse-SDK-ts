@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import * as random from "../utils/random";
-import { RxParseClient } from 'RxParse';
+import { ParseClient } from 'RxParse';
 import { RxParseUser, RxParseACL, RxParseRole } from 'RxParse';
 import * as init from "../utils/init";
 
@@ -17,8 +17,8 @@ describe('RxAVUser', function () {
         user.set('title', 'CEO');
 
         user.signUp().subscribe(() => {
-            console.log('sesstionToken', user.sesstionToken);
-            chai.assert.isNotNull(user.sesstionToken);
+            console.log('sesstionToken', user.sessionToken);
+            chai.assert.isNotNull(user.sessionToken);
             done();
         }, error => {
             /** error 的格式如下：
@@ -35,21 +35,6 @@ describe('RxAVUser', function () {
         });
     });
 
-    it('RxAVUser#requestShortcode', done => {
-        if (RxParseClient.instance.currentApp.region.toLowerCase() == 'us' || 'cn') {
-            done();
-            return;
-        }
-
-        RxParseUser.sendSignUpShortcode('18612438929').subscribe(success => {
-            done();
-        }, error => {
-            console.log(error);
-            //statusCode: 400, error: { code: 127, error: '无效的手机号码。' }
-            //{ statusCode: 400, error: { code: 601, error: '发送短信过快，请稍后重试。' } }
-            chai.assert.isNull(error);
-        });
-    });
 
     it('RxAVUser#create', done => {
         let user: RxParseUser = new RxParseUser();

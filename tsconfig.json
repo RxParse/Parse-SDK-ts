@@ -13,7 +13,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2017",
-    "baseUrl": "src/"
+    "baseUrl": "src/",
+    "sourceMap": true
   },
   "include": [
     "src/**/*",

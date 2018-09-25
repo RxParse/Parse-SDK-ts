@@ -2,149 +2,149 @@ import { HttpRequest } from './httpClient/HttpRequest';
 import { AxiosRxHttpClient } from './httpClient/AxiosRxHttpClient';
 import { IRxHttpClient } from './httpClient/IRxHttpClient';
 import { RxHttpClient } from './httpClient/RxHttpClient';
-import { AVCommand } from './command/AVCommand';
-import { IAVCommandRunner } from './command/IAVCommandRunner';
-import { AVCommandRunner } from './command/AVCommandRunner';
-import { IObjectController } from './object/controller/IObjectController';
-import { ObjectController } from './object/controller/ObjectController';
+import { ParseCommand } from './command/ParseCommand';
+import { IParseCommandRunner } from './command/IParseCommandRunner';
+import { ParseCommandRunner } from './command/ParseCommandRunner';
+import { IObjectController } from './object/controller/IParseObjectController';
+import { ObjectController } from './object/controller/ParseObjectController';
 import { IUserController } from './user/controller/IUserController';
 import { UserController } from './user/controller/UserController';
 import { IQueryController } from './query/controller/IQueryController';
 import { QueryController } from './query/controller/QueryController';
-import { ILeanEngineController } from './LeanEngine/controller/ILeanEngineController';
-import { LeanEngineController } from './LeanEngine/controller/LeanEngineController';
+import { IParseCloudController } from './cloud/controller/IParseCloudController';
+import { ParseCloudController } from './cloud/controller/ParseCloudController';
 
 import { IToolController } from './tool/controller/IToolController';
 import { ToolController } from './tool/controller/ToolController';
 
-import { IAVEncoder } from './encoding/IAVEncoder';
-import { AVEncoder } from './encoding/AVEncoder';
-import { IAVDecoder } from './encoding/IAVDecoder';
-import { AVDecoder } from './encoding/AVDecoder';
-import { IAVObjectDecoder } from './encoding/IAVObjectDecoder';
-import { AVObjectDecoder } from './encoding/AVObjectDecoder';
-import { ILeanEngineDecoder } from './LeanEngine/encoding/ILeanEngineDecoder';
-import { LeanEngineDecoder } from './LeanEngine/encoding/LeanEngineDecoder';
+import { IParseEncoder } from './encoding/IParseEncoder';
+import { ParseEncoder } from './encoding/ParseEncoder';
+import { IParseDecoder } from './encoding/IParseDecoder';
+import { ParseDecoder } from './encoding/ParseDecoder';
+import { IParseObjectDecoder } from './encoding/IParseObjectDecoder';
+import { ParseObjectDecoder } from './encoding/ParseObjectDecoder';
+import { IParseCloudDecoder } from './cloud/encoding/IParseCloudDecoder';
+import { ParseCloudDecoder } from './cloud/encoding/ParseCloudDecoder';
 
 import { IStorage } from './storage/IStorage';
 import { IStorageController } from './storage/controller/IStorageController';
 import { StorageController } from './storage/controller/StorageController';
 
 import { IDeviceInfo } from './analytics/IDeviceInfo';
-import { IAnalyticsController } from './analytics/controller/IAnalyticsController';
-import { AnalyticsController } from './analytics/controller/AnalyticsController';
+import { IParseAnalyticsController } from './analytics/controller/IParseAnalyticsController';
+import { ParseAnalyticsController } from './analytics/controller/ParseAnalyticsController';
 
 import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
 import { IWebSocketClient } from './websocket/IWebSocketClient';
 import { RxWebSocketController } from './websocket/controller/RxWebSocketController';
 import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
 
-import { RxParseClient } from '../public/RxAVClient';
+import { ParseClient } from 'public/RxParseClient';
 
 export /**
  * SDKPlugins
  */
     class SDKPlugins {
     private _version = 1;
-    private _HttpClient: IRxHttpClient;
-    private _CommandRunner: IAVCommandRunner;
-    private _ObjectController: IObjectController;
-    private _QueryController: IQueryController;
-    private _UserController: IUserController;
-    private _LeanEngineController: ILeanEngineController;
-    private _encoder: IAVEncoder;
-    private _decoder: IAVDecoder;
-    private _objectdecoder: IAVObjectDecoder;
-    private _LeanEngineDecoder: ILeanEngineDecoder;
-    private _ToolController: IToolController;
-    private _StorageController: IStorageController;
-    private _StorageProvider: IStorage;
-    private _AnalyticsController: IAnalyticsController;
-    private _DevicePorvider: IDeviceInfo;
-    private _WebSocketProvider: IWebSocketClient;
-    private _RxWebSocketController: IRxWebSocketController;
+    private _httpClient: IRxHttpClient;
+    private _commandRunner: IParseCommandRunner;
+    private _objectController: IObjectController;
+    private _queryController: IQueryController;
+    private _userController: IUserController;
+    private _cloudController: IParseCloudController;
+    private _encoder: IParseEncoder;
+    private _decoder: IParseDecoder;
+    private _objectDecoder: IParseObjectDecoder;
+    private _cloudDecoder: IParseCloudDecoder;
+    private _toolController: IToolController;
+    private _storageController: IStorageController;
+    private _storageProvider: IStorage;
+    private _analyticsController: IParseAnalyticsController;
+    private _deviceProvider: IDeviceInfo;
+    private _webSocketProvider: IWebSocketClient;
+    private _rxWebSocketController: IRxWebSocketController;
     private static _sdkPluginsInstance: SDKPlugins;
 
     constructor(version?: number) {
         this._version = version;
     }
 
-    get HttpClient() {
-        if (this._HttpClient == null) {
-            this._HttpClient = new AxiosRxHttpClient();
+    get httpClient() {
+        if (this._httpClient == null) {
+            this._httpClient = new AxiosRxHttpClient();
         }
-        return this._HttpClient;
+        return this._httpClient;
     }
 
-    get CommandRunner() {
-        if (this._CommandRunner == null) {
-            this._CommandRunner = new AVCommandRunner(this.HttpClient);
+    get commandRunner() {
+        if (this._commandRunner == null) {
+            this._commandRunner = new ParseCommandRunner(this.httpClient);
         }
-        return this._CommandRunner;
+        return this._commandRunner;
     }
 
-    get ObjectControllerInstance() {
-        if (this._ObjectController == null) {
-            this._ObjectController = new ObjectController(this.CommandRunner);
+    get objectController() {
+        if (this._objectController == null) {
+            this._objectController = new ObjectController(this.commandRunner);
         }
-        return this._ObjectController;
+        return this._objectController;
     }
 
-    get UserControllerInstance() {
-        if (this._UserController == null) {
-            this._UserController = new UserController(this.CommandRunner);
+    get userController() {
+        if (this._userController == null) {
+            this._userController = new UserController(this.commandRunner);
         }
-        return this._UserController;
+        return this._userController;
     }
 
-    get QueryControllerInstance() {
-        if (this._QueryController == null) {
-            this._QueryController = new QueryController(this.CommandRunner);
+    get queryController() {
+        if (this._queryController == null) {
+            this._queryController = new QueryController(this.commandRunner);
         }
-        return this._QueryController;
+        return this._queryController;
     }
 
-    get LeanEngineControllerInstance() {
-        if (this._LeanEngineController == null) {
-            this._LeanEngineController = new LeanEngineController(this.LeanEngineDecoder);
+    get cloudController() {
+        if (this._cloudController == null) {
+            this._cloudController = new ParseCloudController(this.CloudDecoder);
         }
-        return this._LeanEngineController;
+        return this._cloudController;
     }
 
     get ToolControllerInstance() {
-        if (this._ToolController == null) {
-            this._ToolController = new ToolController();
+        if (this._toolController == null) {
+            this._toolController = new ToolController();
         }
-        return this._ToolController;
+        return this._toolController;
     }
 
     get LocalStorageControllerInstance() {
-        if (this._StorageController == null) {
+        if (this._storageController == null) {
             if (this.StorageProvider != null)
-                this._StorageController = new StorageController(this.StorageProvider);
+                this._storageController = new StorageController(this.StorageProvider);
         }
-        return this._StorageController;
+        return this._storageController;
     }
 
     get hasStorage() {
         return this.StorageProvider != null;
     }
     get StorageProvider() {
-        return this._StorageProvider;
+        return this._storageProvider;
     }
 
     set StorageProvider(provider: IStorage) {
-        this._StorageProvider = provider;
+        this._storageProvider = provider;
     }
 
     set LocalStorageControllerInstance(controller: IStorageController) {
-        this._StorageController = controller;
+        this._storageController = controller;
     }
 
     get AnalyticsControllerInstance() {
-        if (this._AnalyticsController == null) {
-            if (this._DevicePorvider == null) {
-                throw new Error(`you musy set the device provider when invoke RxAVClient.init{
+        if (this._analyticsController == null) {
+            if (this._deviceProvider == null) {
+                throw new Error(`you must set the device provider when invoke RxParseClient.init{
                     ...
                     plugins?: {
                         ...
@@ -154,36 +154,36 @@ export /**
                     ...
                     }`);
             }
-            this._AnalyticsController = new AnalyticsController(this.CommandRunner, this._DevicePorvider);
+            this._analyticsController = new ParseAnalyticsController(this.commandRunner, this._deviceProvider);
 
         }
-        return this._AnalyticsController;
+        return this._analyticsController;
     }
 
-    set AnalyticsControllerInstance(controller: IAnalyticsController) {
-        this._AnalyticsController = controller;
+    set AnalyticsControllerInstance(controller: IParseAnalyticsController) {
+        this._analyticsController = controller;
     }
 
     get DeviceProvider() {
-        return this._DevicePorvider;
+        return this._deviceProvider;
     }
     set DeviceProvider(provider: IDeviceInfo) {
-        this._DevicePorvider = provider;
+        this._deviceProvider = provider;
     }
 
     get WebSocketProvider() {
-        return this._WebSocketProvider;
+        return this._webSocketProvider;
     }
     set WebSocketProvider(provider: IWebSocketClient) {
-        this._WebSocketProvider = provider;
+        this._webSocketProvider = provider;
     }
 
     get WebSocketController() {
-        if (this._RxWebSocketController == null) {
-            if (this._WebSocketProvider != null) {
-                this._RxWebSocketController = new RxWebSocketController(this._WebSocketProvider);
+        if (this._rxWebSocketController == null) {
+            if (this._webSocketProvider != null) {
+                this._rxWebSocketController = new RxWebSocketController(this._webSocketProvider);
             } else {
-                throw new Error(`you musy set the websocket when invoke RxAVClient.init{
+                throw new Error(`you must set the websocket when invoke RxParseClient.init{
                     ...
                     plugins?: {
                         ...
@@ -194,39 +194,39 @@ export /**
                     }`);
             }
         }
-        return this._RxWebSocketController;
+        return this._rxWebSocketController;
     }
 
     set WebSocketController(provider: IRxWebSocketController) {
-        this._RxWebSocketController = provider;
+        this._rxWebSocketController = provider;
     }
 
     get Encoder() {
         if (this._encoder == null) {
-            this._encoder = new AVEncoder();
+            this._encoder = new ParseEncoder();
         }
         return this._encoder;
     }
 
     get Decoder() {
         if (this._decoder == null) {
-            this._decoder = new AVDecoder();
+            this._decoder = new ParseDecoder();
         }
         return this._decoder;
     }
 
     get ObjectDecoder() {
-        if (this._objectdecoder == null) {
-            this._objectdecoder = new AVObjectDecoder();
+        if (this._objectDecoder == null) {
+            this._objectDecoder = new ParseObjectDecoder();
         }
-        return this._objectdecoder;
+        return this._objectDecoder;
     }
 
-    get LeanEngineDecoder() {
-        if (this._LeanEngineDecoder == null) {
-            this._LeanEngineDecoder = new LeanEngineDecoder(this.Decoder, this.ObjectDecoder);
+    get CloudDecoder() {
+        if (this._cloudDecoder == null) {
+            this._cloudDecoder = new ParseCloudDecoder(this.Decoder, this.ObjectDecoder);
         }
-        return this._LeanEngineDecoder;
+        return this._cloudDecoder;
     }
 
     static get instance(): SDKPlugins {
