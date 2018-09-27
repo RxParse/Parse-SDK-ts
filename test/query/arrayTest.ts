@@ -1,6 +1,7 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVUser, RxAVACL, RxAVRole, RxAVQuery, RxAVApp } from '../../src/RxLeanCloud';
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 import * as init from "../utils/init";
+import { map, flatMap } from 'rxjs/operators';
 
 init.init();
 describe('RxObject', function () {
@@ -9,15 +10,15 @@ describe('RxObject', function () {
     });
 
     it('RxAVQuery#decodeArray', done => {
-        let todo = new RxAVObject('Todo');
-        todo.add('testDates', new Date());
-        todo.add('testDates', new Date());
+        let todo = new RxParseObject('Todo');
+        // todo.add('testDates', new Date());
+        // todo.add('testDates', new Date());
 
-        todo.save().flatMap(saved => {
-            let query = new RxAVQuery('Todo');
+        todo.save().pipe(flatMap(saved => {
+            let query = new RxParseQuery('Todo');
             query.equalTo('objectId', todo.objectId);
             return query.find();
-        }).subscribe(list => {
+        })).subscribe(list => {
             chai.assert.isArray(list);
             let queriedTodo = list[0];
             let testDates = queriedTodo.get('testDates') as Array<Date>;
@@ -29,15 +30,15 @@ describe('RxObject', function () {
     });
 
     it('RxAVQuery#addRange_number', done => {
-        let todo = new RxAVObject('Todo');
-        todo.add('testNumbers', 1);
-        todo.add('testNumbers', 1);
+        let todo = new RxParseObject('Todo');
+        // todo.add('testNumbers', 1);
+        // todo.add('testNumbers', 1);
 
-        todo.save().flatMap(saved => {
-            let query = new RxAVQuery('Todo');
+        todo.save().pipe(flatMap(saved => {
+            let query = new RxParseQuery('Todo');
             query.equalTo('objectId', todo.objectId);
             return query.find();
-        }).subscribe(list => {
+        })).subscribe(list => {
             chai.assert.isArray(list);
             let queriedTodo = list[0];
             let testNumbers = queriedTodo.get('testNumbers') as Array<number>;

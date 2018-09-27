@@ -1,9 +1,8 @@
-import { Observable, Observer, Subject, ConnectableObservable } from 'rxjs';
+import { Observable, Observer, Subject, ConnectableObservable, from } from 'rxjs';
 import { HttpRequest } from '../../httpClient/HttpRequest';
 import { HttpResponse } from '../../httpClient/HttpResponse';
 import { IRxHttpClient } from '../../httpClient/IRxHttpClient';
-import { RxAVClient } from '../../../public/RxAVClient';
-import { IRxWebSocketClient } from '../IRxWebSocketClient';
+import { map, catchError, filter } from 'rxjs/operators';
 import { IRxWebSocketController } from './IRxWebSocketController';
 import { IWebSocketClient } from '../IWebSocketClient';
 
@@ -43,7 +42,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     //             }
     //         },
     //     };
-    //     // 使用Rx.Subject.create创建Subject对象
+    //     // 使用Rx.Subject.create 创建 Subject 对象
     //     return Subject.create(observer, observable);
     // } // 获取subject对象接口
     // getSubject() {
@@ -60,7 +59,7 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     //     return this.publish;
     // }
     open(url: string, protocols?: string | string[]): Observable<boolean> {
-        if (this.websocketClient.readyState == 1) return Observable.from([true]);
+        if (this.websocketClient.readyState == 1) return from([true]);
         console.log(url, 'connecting...');
         this.url = url;
         this.protocols = protocols;
@@ -128,11 +127,11 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
             // this.onMessage = Subject.create(observer, observable);
         }
 
-        return this.onState.filter(readyState => {
+        return this.onState.pipe(filter(readyState => {
             return readyState == 1;
-        }).map(readyState => {
+        }), map(readyState => {
             return true;
-        });;
+        }));
     }
     send(data: string | ArrayBuffer | Blob): void {
         this.websocketClient.send(data);
@@ -141,18 +140,18 @@ export class RxWebSocketController implements IRxHttpClient, IRxWebSocketControl
     execute(httpRequest: HttpRequest): Observable<HttpResponse> {
         let rawReq = JSON.stringify(httpRequest.data);
         this.send(rawReq);
-        return this.onMessage.filter(message => {
+        return this.onMessage.pipe(filter(message => {
             let messageJSON = JSON.parse(message);
             if (Object.prototype.hasOwnProperty.call(messageJSON, 'i') && Object.prototype.hasOwnProperty.call(httpRequest.data, 'i')) {
                 return httpRequest.data.i == messageJSON.i;
             }
             return false;
-        }).map(message => {
+        }), map(message => {
             let messageJSON = JSON.parse(message);
             let resp = new HttpResponse();
             resp.body = messageJSON;
-            resp.satusCode = 200;
+            resp.statusCode = 200;
             return resp;
-        });
+        }));
     }
 }

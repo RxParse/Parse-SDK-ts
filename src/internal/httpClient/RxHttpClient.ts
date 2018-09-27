@@ -1,10 +1,11 @@
-import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
-import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as superagent from 'superagent';
-import { RxAVClient } from '../../public/RxAVClient';
+import { ParseClient } from 'public/RxParseClient';
 
 export class RxHttpClient implements IRxHttpClient {
     version: number;
@@ -18,53 +19,48 @@ export class RxHttpClient implements IRxHttpClient {
             statusCode: -1,
             error: { code: 0, error: 'Server error' }
         };
-        
+
         let response = new HttpResponse(tuple);
-        RxAVClient.printLog('Request:', JSON.stringify(httpRequest));
-        if (RxAVClient.instance.currentConfiguration.isNode && this.version == 1) {
-            RxAVClient.printLog('http client:axios');
-            return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
+        ParseClient.printLog('Request:', JSON.stringify(httpRequest));
+        if (ParseClient.instance.currentConfiguration.isNode && this.version == 1) {
+            ParseClient.printLog('http client:axios');
+            return from(this.RxExecuteAxios(httpRequest)).pipe(map(res => {
 
                 tuple[0] = res.status;
                 tuple[1] = res.data;
-                let response = new HttpResponse(tuple);
-                RxAVClient.printLog('Response:', JSON.stringify(response));
+                response = new HttpResponse(tuple);
+                ParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
-            }).catch((err: any) => {
-                RxAVClient.printLog('Meta Error:', err);
+            }), catchError((err: any) => {
+                ParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.response.status;
                     errMsg.error = err.response.data;
                 }
-                RxAVClient.printLog('Error:', JSON.stringify(errMsg));
+                ParseClient.printLog('Error:', JSON.stringify(errMsg));
                 return Observable.throw(errMsg);
-            });
+            }));
         }
 
         else {
-            RxAVClient.printLog('http client:superagent');
-            return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
+            ParseClient.printLog('http client:superagent');
+            return from(this.RxExecuteSuperagent(httpRequest)).pipe(map(res => {
                 tuple[0] = res.status;
                 tuple[1] = res.body;
                 let response = new HttpResponse(tuple);
-                RxAVClient.printLog('Response:', JSON.stringify(response));
+                ParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
-            }).catch((err: any) => {
-                RxAVClient.printLog('Meta Error:', err);
+            }), catchError((err: any) => {
+                ParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.status;
                     errMsg.error = JSON.parse(err.response.text);
                 }
-                RxAVClient.printLog('Error:', errMsg);
+                ParseClient.printLog('Error:', errMsg);
                 return Observable.throw(errMsg);
-            });
+            }));
         }
     }
-
-    batchExecute() {
-
-    }
-
 
     RxExecuteAxios(httpRequest: HttpRequest): Promise<AxiosResponse> {
         let method = httpRequest.method.toUpperCase();
@@ -72,20 +68,20 @@ export class RxHttpClient implements IRxHttpClient {
         if (method == 'PUT' || 'POST') {
             useData = true;
         }
-        return new Promise<AxiosResponse>((resovle, reject) => {
+        return new Promise<AxiosResponse>((resolve, reject) => {
             axios({
                 method: method,
                 url: httpRequest.url,
                 data: useData ? httpRequest.data : null,
                 headers: httpRequest.headers
             }).then(response => {
-                resovle(response);
+                resolve(response);
             }).catch(error => {
                 reject(error);
             });
         });
-
     }
+
     RxExecuteSuperagent(httpRequest: HttpRequest): Promise<superagent.Response> {
         let method = httpRequest.method.toUpperCase();
         if (method == 'POST')

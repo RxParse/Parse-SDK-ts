@@ -1,14 +1,3 @@
-// var gulp = require('gulp');
-// var ts = require('gulp-typescript');
-
-// gulp.task('default', function () {
-//     return gulp.src('src/**/*.ts')
-//         .pipe(ts({
-//             declaration: true,
-//             target: "es5"
-//         }))
-//         .pipe(gulp.dest('dist'));
-// });
 "use strict";
 
 var gulp = require("gulp");
@@ -29,16 +18,23 @@ gulp.task('releaseCopy', function () {
 
 gulp.task('devCopy', function () {
     return gulp.src('package.json')
-        .pipe(gulp.dest('out/src'));
+        .pipe(gulp.dest('.bin/src'));
 });
 
-gulp.task('doc', ['source'], function (cb) {
-    gulp.src(['README.md', './dist/**/*.js'], { read: false })
-        .pipe(jsdoc(cb));
-});
+gulp.task('doc', gulp.series('source', function (done) {
+    gulp.src(['README.md', './dist/**/*.js'], {
+            read: false
+    }).pipe(jsdoc(done));    
+}));
 
-gulp.task('default', ['source', 'releaseCopy']);
+gulp.task('default', gulp.series(gulp.parallel('source', 'releaseCopy'), function (done) {
+    done();
+}));
 
-gulp.task('dev', ['source', 'devCopy']);
+gulp.task('dev', gulp.series(gulp.parallel('source', 'devCopy'), function (done) {
+    done();
+}));
 
-gulp.task('docs', ['source', 'doc']);
+gulp.task('docs', gulp.series(gulp.parallel('source', 'doc'), function (done) {
+    done();
+}));

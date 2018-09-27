@@ -1,12 +1,13 @@
 import * as chai from 'chai';
-import { RxAVClient, RxAVObject, RxAVQuery } from '../../src/RxLeanCloud';
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 import * as init from "../utils/init";
+import { map, flatMap } from 'rxjs/operators';
 
 describe('RxAVQuery', () => {
     before(() => {
     });
     it('RxAVQuery#where', done => {
-        let query = new RxAVQuery('RxTodo');
+        let query = new RxParseQuery('RxTodo');
 
         query.equalTo('title', '开会');
         query.notEqualTo('time', '1');
@@ -19,9 +20,9 @@ describe('RxAVQuery', () => {
         }, () => { });
     });
     it('RxAVQuery#WithoutResult', done => {
-        let query = new RxAVQuery('RxTodo');
+        let query = new RxParseQuery('RxTodo');
 
-        query.equalTo('title', 'fatherxxx');
+        query.equalTo('title', 'fatherXXX');
 
         query.find().subscribe(list => {
             console.log(list);
@@ -34,19 +35,19 @@ describe('RxAVQuery', () => {
     });
     it('RxAVQuery#seek', done => {
         let uiList: Array<{ id: string, title: string }> = [];
-        let query = new RxAVQuery('RxTodo');
+        let query = new RxParseQuery('RxTodo');
 
         query.equalTo('title', '开会');
 
-        query.seek().map(obj => {
+        query.seek().pipe(map(obj => {
             return {
                 id: obj.objectId,
                 title: obj.get('title')
             }
-        }).subscribe(tupple => {
-            uiList.push(tupple);
-            console.log('tupple', tupple);
-            chai.assert.isTrue(tupple != null);
+        })).subscribe(tuple => {
+            uiList.push(tuple);
+            console.log('tuple', tuple);
+            chai.assert.isTrue(tuple != null);
         }, error => { }, () => {
             done();
         });

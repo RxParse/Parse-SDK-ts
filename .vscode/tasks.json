@@ -1,13 +1,50 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version": "0.1.0",
-    "command": "tsc",
-    "isShellCommand": true,
-    "args": [
-        "-p",
-        "."
-    ],
-    "showOutput": "silent",
-    "problemMatcher": "$tsc"
+    "version": "2.0.0",
+    "label": "typescript",
+    "tasks": [
+        {
+            "label": "typescript",
+            "type": "shell",
+            "command": "tsc",
+            "problemMatcher": "$tsc",
+            "args": [
+                "-p",
+                "\"${workspaceFolder}/tsconfig.json\""
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build dev",
+            "type": "shell",
+            "command":"tsc"
+        },
+        {
+            "label": "gulp dev",
+            "type": "shell",
+            "command":"gulp devCopy"
+        },
+        {
+            "label": "pretest",
+            "dependsOn": ["build dev", "gulp dev"]
+        },
+        {
+            "label": "test init",
+            "type": "shell",
+            "command":"node out/test/utils/init.js"
+        },
+        {
+            "label": "mocha run",
+            "type": "shell",
+            "command":"mocha --timeout 30000 $(find out/test -name '*.js')"
+        },
+        {
+            "label": "test",
+            "dependsOn": ["test init", "mocha run"]
+        }
+    ]
 }

@@ -1,6 +1,6 @@
 //import WebSocket from 'ws';
 var WebSocket = require('ws');
-import { IWebSocketClient } from '../../src/RxLeanCloud';
+import { IWebSocketClient } from '../../src/RxParse';
 
 export class NodeJSWebSocketClient implements IWebSocketClient {
     newInstance(): IWebSocketClient {

@@ -8,11 +8,13 @@
       "dom",
       "es2015"
     ],
-    "outDir": "out",
+    "outDir": ".bin",
+    // "declarationDir": "out/typings",
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2017",
-    "baseUrl": "src/"
+    "baseUrl": "src/",
+    "sourceMap": true
   },
   "include": [
     "src/**/*",

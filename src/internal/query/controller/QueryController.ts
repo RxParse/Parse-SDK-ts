@@ -1,48 +1,46 @@
 import { IObjectState } from '../../object/state/IObjectState';
 import { IQueryController } from './IQueryController';
-import { AVCommand } from '../../command/AVCommand';
-import { IAVCommandRunner } from '../../command/IAVCommandRunner';
-import { RxAVQuery } from '../../../public/RxAVQuery';
+import { ParseCommand } from '../../command/ParseCommand';
+import { IParseCommandRunner } from '../../command/IParseCommandRunner';
+import { RxParseQuery } from 'public/RxParseQuery';
 import { SDKPlugins } from '../../SDKPlugins';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
-export /**
- * QueryController
- */
-    class QueryController implements IQueryController {
-    private readonly _commandRunner: IAVCommandRunner;
+export class QueryController implements IQueryController {
+    private readonly _commandRunner: IParseCommandRunner;
 
-    constructor(commandRunner: IAVCommandRunner) {
+    constructor(commandRunner: IParseCommandRunner) {
         this._commandRunner = commandRunner;
     }
 
-    find(query: RxAVQuery, sessionToken: string): Observable<Array<IObjectState>> {
+    find(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>> {
         let qu = this.buildQueryString(query);
-        let cmd = new AVCommand({
+        let cmd = new ParseCommand({
             app: query.app,
             relativeUrl: qu,
             method: 'GET',
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(cmd).map(res => {
+        return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
             let items = res.body["results"] as Array<Object>;
             let x = items.map((item, i, a) => {
                 let y = SDKPlugins.instance.ObjectDecoder.decode(item, SDKPlugins.instance.Decoder);
                 return y;
             });
             return x;
-        });
+        }));
     }
 
-    count(query: RxAVQuery, sesstionToken: string): Observable<number> {
-        return Observable.from([0]);
+    count(query: RxParseQuery, sessionToken: string): Observable<number> {
+        return from([0]);
     }
 
-    fitst(query: RxAVQuery, sesstionToken: string): Observable<Array<IObjectState>> {
+    first(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>> {
         return null;
     }
 
-    buildQueryString(query: RxAVQuery) {
+    buildQueryString(query: RxParseQuery) {
         let queryJson = query.buildParameters();
         let queryArray = [];
         let queryUrl = '';

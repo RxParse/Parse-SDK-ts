@@ -1,23 +1,25 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
-import { RxAVUser, RxAVClient } from '../../src/RxLeanCloud';
-init.init();
+import { RxParseUser } from '../../src/RxParse';
+import { Observable } from 'rxjs';
+import { flatMap } from 'rxjs/operators';
+
 describe('RxAVUser', function () {
     before(() => {
     });
     it('RxAVUser#currentSession', function (done) {
-        RxAVUser.logIn('junwu', 'leancloud').flatMap(user => {
-            console.log(RxAVUser.usersMap);
-            return RxAVUser.currentSessionToken();
-        }).subscribe(sesstionToken => {
-            console.log('sesstionToken', sesstionToken);
+        RxParseUser.logIn('junwu', 'leancloud').pipe(flatMap(user => {
+            console.log(RxParseUser.usersMap);
+            return RxParseUser.currentSessionToken();
+        })).subscribe(sessionToken => {
+            console.log('sessionToken', sessionToken);
             done();
         });
     });
-    it('RxAVUser#logInyyy', function (done) {
-        RxAVUser.logIn('junwu', 'leancloud').subscribe(user => {
+    it('RxAVUser#logIn', function (done) {
+        RxParseUser.logIn('junwu', 'leancloud').subscribe(user => {
             console.log(user.username);
-            console.log(user.sesstionToken);
+            console.log(user.sessionToken);
             console.log(user.state);
             chai.assert.isNotNull(user.username);
             user.isAuthenticated().subscribe(s => {
@@ -42,25 +44,15 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#logIn->currentUser', function (done) {
-        RxAVUser.logIn('junwu', 'leancloud').flatMap(user => {
+        RxParseUser.logIn('junwu', 'leancloud').pipe(flatMap(user => {
             console.log(user.username);
             console.log(user.state);
             chai.assert.isNotNull(user.username);
-            return user.isAuthenticated().flatMap(s => {
+            return user.isAuthenticated().pipe(flatMap(s => {
                 user.set('title', 'xman');
                 return user.save();
-            });
-        }).subscribe(s1 => {
-            done();
-        });
-    });
-
-    it('RxAVUser#logInWithMobilephone', done => {
-        RxAVUser.logInWithMobilephone('18612438929', 'leancloud').subscribe(user => {
-            chai.assert.isNotNull(user);
-            done();
-        }, error => {
-            chai.assert.isNull(error);
+            }));
+        })).subscribe(s1 => {
             done();
         });
     });

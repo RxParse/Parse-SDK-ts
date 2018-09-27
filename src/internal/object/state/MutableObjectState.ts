@@ -1,8 +1,8 @@
 import { IObjectState } from './IObjectState';
-import { RxAVApp } from '../../../public/RxAVClient';
-import { IAVFieldOperation } from '../../operation/IAVFieldOperation';
-import { AVAddOperation } from '../../operation/AVAddOperation';
-import { AVDeleteOperation } from '../../operation/AVDeleteOperation';
+import { ParseApp } from 'public/RxParseClient';
+import { IParseFieldOperation } from '../../operation/IParseFieldOperation';
+import { ParseAddOperation } from '../../operation/ParseAddOperation';
+import { ParseDeleteOperation } from '../../operation/ParseDeleteOperation';
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 export const has = function (obj: any, prop: any) {
     return _hasOwnProperty.call(obj, prop);
@@ -16,9 +16,8 @@ export /**
     objectId: string;
     updatedAt: Date;
     createdAt: Date;
-    app: RxAVApp;
-    serverData: { [key: string]: any };
-    currentOperations: { [key: string]: IAVFieldOperation };
+    app: ParseApp;
+    serverData: Map<string, object>;
     containsKey(key: string): boolean {
         if (this.serverData == null) return false;
         return has(this.serverData, key);
@@ -73,6 +72,5 @@ export /**
                 this.app = options.app;
             }
         }
-        this.currentOperations = {};
     }
 }

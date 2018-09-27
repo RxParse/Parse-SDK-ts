@@ -9,3 +9,4 @@ test/*.js
 dist/
 out/
 **/.leancloud
+.bin/
