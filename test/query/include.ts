@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import { ParseClient, RxParseObject, RxParseQuery } from 'RxParse';
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 
 // describe('RxAVQuery', () => {
 //     before(() => {

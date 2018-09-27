@@ -1,8 +1,9 @@
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { RxParseObject } from '../RxParse';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import * as jstz from 'jstz';
+import { flatMap, map } from 'rxjs/operators';
 
 export class RxParseInstallation extends RxParseObject {
     static readonly installationCacheKey = 'CurrentInstallation';
@@ -49,16 +50,16 @@ export class RxParseInstallation extends RxParseObject {
     }
 
     save(): Observable<boolean> {
-        return super.save().flatMap(s1 => {
+        return super.save().pipe(flatMap(s1 => {
             if (s1)
                 return RxParseInstallation.saveCurrentInstallation(this);
-            else return Observable.from([false]);
-        });
+            else return from([false]);
+        }));
     }
 
     public static current(): Observable<RxParseInstallation> {
         if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxParseInstallation.installationCacheKey).map(installationCache => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxParseInstallation.installationCacheKey).pipe(map(installationCache => {
                 if (installationCache) {
                     let installationState = SDKPlugins.instance.ObjectDecoder.decode(installationCache, SDKPlugins.instance.Decoder);
                     installationState = installationState.mutatedClone((s: IObjectState) => { });
@@ -67,9 +68,9 @@ export class RxParseInstallation extends RxParseObject {
                     RxParseInstallation._currentInstallation = installation;
                 }
                 return RxParseInstallation._currentInstallation;
-            });
+            }));
         }
-        return Observable.from([RxParseInstallation._currentInstallation]);
+        return from([RxParseInstallation._currentInstallation]);
     }
 
     public static get currentInstallation() {

@@ -1,7 +1,8 @@
 import * as chai from 'chai';
-import { ParseClient, RxParseObject, RxParseQuery, RxParseRole, RxParseUser, RxParseACL } from 'RxParse';
+import { ParseClient, RxParseObject, RxParseQuery, RxParseRole, RxParseUser, RxParseACL } from '../../src/RxParse';
 import * as random from "../utils/random";
 import * as init from "../utils/init";
+import { map, flatMap } from 'rxjs/operators';
 
 describe('RxAVRole', () => {
     before(() => {
@@ -42,11 +43,11 @@ describe('RxAVRole', () => {
         // let casher = new RxAVRole(`${teamName}_casher`);
     });
     it('RxAVRole#createWithPublicACL', done => {
-        RxParseUser.logIn('junwu', 'leancloud').flatMap(user => {
+        RxParseUser.logIn('junwu', 'leancloud').pipe(flatMap(user => {
             let randomRoleName = random.randomHexString(8);
             let testRole = new RxParseRole(randomRoleName, new RxParseACL(user));
             return testRole.save();
-        }).subscribe(s => {
+        })).subscribe(s => {
             chai.assert.isTrue(s);
             done();
         });

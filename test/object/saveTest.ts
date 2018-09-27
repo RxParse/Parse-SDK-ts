@@ -1,3 +1,4 @@
+import { map, flatMap } from 'rxjs/operators';
 import * as chai from 'chai';
 import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 import { init } from "../utils/init";
@@ -157,11 +158,11 @@ describe('RxObject', function () {
     it('RxAVObject#saveDate', done => {
         let testTodo = new RxParseObject('Todo');
         testTodo.set('rDate', new Date());
-        testTodo.save().flatMap(s => {
+        testTodo.save().pipe(flatMap(s => {
             let query = new RxParseQuery('Todo');
             query.equalTo('objectId', testTodo.objectId);
             return query.find();
-        }).map(todos => {
+        }), map(todos => {
             let updatedAt = todos[0].updatedAt;
             let testDate = todos[0].get('rDate');
             console.log('testDate', testDate);
@@ -171,9 +172,9 @@ describe('RxObject', function () {
             //chai.assert.isTrue(updatedAt instanceof Date);
             //chai.assert.isTrue(testTodo.updatedAt instanceof Date);
             return todos[0];
-        }).flatMap(s1 => {
+        }), flatMap(s1 => {
             return s1.save();
-        }).subscribe(s2 => {
+        })).subscribe(s2 => {
             chai.assert.isTrue(s2);
             done();
         });

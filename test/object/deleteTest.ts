@@ -1,4 +1,5 @@
 import * as chai from 'chai';
+import { map, flatMap } from 'rxjs/operators';
 import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 import { init } from "../utils/init";
 
@@ -12,9 +13,9 @@ describe('RxObject', () => {
         todo1.set('time', '2016-12-03');
         todo1.set('reminder', new Date());
 
-        todo1.save().flatMap(success => {
+        todo1.save().pipe(flatMap(success => {
             return todo1.delete();
-        }).subscribe(deleted => {
+        })).subscribe(deleted => {
             console.log(deleted);
             done();
         });
@@ -43,9 +44,9 @@ describe('RxObject', () => {
 
         let obja = [todo1, todo2, todo3, todo4];
 
-        RxParseObject.saveAll(obja).flatMap(success => {
+        RxParseObject.saveAll(obja).pipe(flatMap(success => {
             return RxParseObject.deleteAll(obja);
-        }).subscribe(deleted => {
+        })).subscribe(deleted => {
             console.log(deleted);
         }, error => { }, () => {
             done();

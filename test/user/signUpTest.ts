@@ -1,13 +1,14 @@
 import * as chai from 'chai';
 import * as random from "../utils/random";
 import { ParseClient } from 'RxParse';
-import { RxParseUser, RxParseACL, RxParseRole } from 'RxParse';
-import * as init from "../utils/init";
+import { RxParseUser, RxParseACL, RxParseRole } from '../../src/RxParse';
+import { init } from "../utils/init";
 
 let randomUsername = '';
 
 describe('RxAVUser', function () {
     before(() => {
+        init();
         randomUsername = random.randomString(8);
     });
     it('RxAVUser#signUp-1', function (done) {
@@ -17,7 +18,7 @@ describe('RxAVUser', function () {
         user.set('title', 'CEO');
 
         user.signUp().subscribe(() => {
-            console.log('sesstionToken', user.sessionToken);
+            console.log('sessionToken', user.sessionToken);
             chai.assert.isNotNull(user.sessionToken);
             done();
         }, error => {

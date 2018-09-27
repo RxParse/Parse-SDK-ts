@@ -15,10 +15,10 @@ export class ParseEncoder implements IParseEncoder {
 
     encode(value: any): any {
         if (value instanceof Map) {
-            let encodedDictionary = new Map<string, object>();
+            let encodedDictionary = {};
             value.forEach((v, k, m) => {
                 let encodedV = this.encode(v);
-                encodedDictionary.set(k, encodedV);
+                encodedDictionary[k] = encodedV;
             });
             return encodedDictionary;
         } else if (Array.isArray(value)) {

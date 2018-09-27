@@ -5,6 +5,7 @@ import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
 import { IWebSocketClient } from '../internal/websocket/IWebSocketClient';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
+import { map, flatMap } from 'rxjs/operators';
 import { HttpRequest } from '../internal/httpClient/HttpRequest';
 import { HttpResponse } from '../internal/httpClient/HttpResponse';
 
@@ -149,16 +150,16 @@ export class ParseClient {
 
     public rxRunCommandSuccess(relativeUrl: string, method: string, data?: { [key: string]: any }) {
         let cmd = ParseClient.generateParseCommand(relativeUrl, method, data);
-        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).map(res => {
+        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
             return res.statusCode == 200;
-        });
+        }));
     }
 
     public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: ParseApp): Observable<{ [key: string]: any }> {
         let cmd = ParseClient.generateParseCommand(relativeUrl, method, data, sessionToken, app);
-        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).map(res => {
+        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
             return res.body;
-        });
+        }));
     }
 
     private static _avClientInstance: ParseClient;
@@ -268,8 +269,12 @@ export class ParseApp {
     masterKey: string;
     additionalHeaders?: { [key: string]: any };
 
-    get pureServerURL() {
+    get pureServerURL(): string {
         return this.clearTailSlashes(this.serverURL);
+    }
+
+    get mountPath(): string {
+        return this.pureServerURL.replace(/^(?:\/\/|[^\/]+)*\//, "")
     }
 
     clearTailSlashes(url: string): string {

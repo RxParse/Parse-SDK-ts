@@ -1,3 +1,4 @@
+import { map } from 'rxjs/operators';
 import { IParseCloudController } from './IParseCloudController'
 import { Observable } from 'rxjs';
 import { ParseCommand } from '../../command/ParseCommand';
@@ -22,9 +23,9 @@ export class ParseCloudController implements IParseCloudController {
             sessionToken: sessionToken
         });
 
-        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).map(res => {
+        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
             let result = this._LeanEngineDecoder.decodeDictionary(res.body.result);
             return result;
-        });
+        }));
     }
 }

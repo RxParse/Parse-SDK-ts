@@ -1,6 +1,8 @@
 import { IStorageController } from './IStorageController';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { map, catchError, flatMap } from 'rxjs/operators';
 import { IStorage } from '../IStorage';
+
 
 export class StorageController implements IStorageController {
     private storageFileName: string = 'RxApplicationSettings';
@@ -17,10 +19,10 @@ export class StorageController implements IStorageController {
     load(): Observable<IStorage> {
         if (!this.provider) {
             console.warn('can not find a Storage Provider.');
-            return Observable.from([null]);
+            return from([null]);
         }
-        let obs = Observable.fromPromise(this.provider.get(this.storageFileName));
-        return obs.map(data => {
+        let obs = from(this.provider.get(this.storageFileName));
+        return obs.pipe(map(data => {
             if (data) {
                 let firstJson = JSON.parse(data);
                 if (typeof firstJson == 'string') {
@@ -32,51 +34,51 @@ export class StorageController implements IStorageController {
             else this.dictionary = {};
             this.isDirty = false;
             return this.provider;
-        });
+        }));
     }
 
     save(contents: { [key: string]: any }): Observable<IStorage> {
         this.dictionary = contents;
         if (!this.provider) {
             console.warn('can not find a Storage Provider.');
-            return Observable.from([null]);
+            return from([null]);
         }
         if (this.dictionary && this.dictionary != null) {
             let jsonString = JSON.stringify(this.dictionary);
             let save = this.provider.add(this.storageFileName, jsonString);
-            return Observable.fromPromise(save).map(success => {
+            return from(save).pipe(map(success => {
                 return this.provider;
-            });
+            }));
         } else {
-            return Observable.fromPromise(this.provider.remove(this.storageFileName)).map(removed => {
+            return from(this.provider.remove(this.storageFileName)).pipe(map(removed => {
                 console.log('empty cache with key ' + this.storageFileName);
                 return this.provider;
-            });
+            }));
         }
     }
 
     get(key: string): Observable<any> {
         if (this.dictionary != null)
-            return Observable.from([this.dictionary[key]]);
+            return from([this.dictionary[key]]);
         else {
-            return this.load().map(provider => {
+            return this.load().pipe(map(provider => {
                 if (this.dictionary != null)
                     return this.dictionary[key];
                 else return null;
-            });
+            }));
         }
     }
 
     set(key: string, value: any): Observable<IStorage> {
-        let loaded = Observable.from([this.provider]);
+        let loaded = from([this.provider]);
         if (!this.hasLoaded) {
             loaded = this.load();
         }
-        return loaded.flatMap(provider => {
+        return loaded.pipe(flatMap(provider => {
             this.isDirty = true;
             this.dictionary[key] = value;
             return this.save(this.dictionary);
-        });
+        }));
     }
     remove(key: string): Observable<IStorage> {
         if (this.dictionary[key]) {

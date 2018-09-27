@@ -9,8 +9,8 @@ import { IObjectController } from '../internal/object/controller/IParseObjectCon
 import { IStorageController } from '../internal/storage/controller/IStorageController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
 import { RxParseUser, RxParseACL, ParseClient, RxParseQuery } from '../RxParse';
-import { Observable } from 'rxjs';
-
+import { Observable, from } from 'rxjs';
+import { flatMap, map, concat } from 'rxjs/operators';
 
 export class StorageObject {
     estimatedData: Map<string, object>;
@@ -141,7 +141,7 @@ export class RxParseObject extends StorageObject implements ICanSaved {
         this.className = className;
     }
 
-    protected static get _objectController() {
+    protected static get _objectController(): IObjectController {
         return SDKPlugins.instance.objectController;
     }
 
@@ -185,41 +185,41 @@ export class RxParseObject extends StorageObject implements ICanSaved {
      * @returns
      * @memberof RxParseObject
      */
-    public save() {
-        let rtn: Observable<boolean> = Observable.from([true]);
+    public save(): Observable<boolean> {
+        let rtn: Observable<boolean> = from([true]);
         if (!this.isDirty) return rtn;
         RxParseObject.recursionCollectDirtyChildren(this, [], [], []);
 
         let dirtyChildren = this.collectAllLeafNodes();
 
         if (dirtyChildren.length > 0) {
-            rtn = RxParseObject.batchSave(dirtyChildren).flatMap<boolean, boolean>(sal => this.save());
+            rtn = RxParseObject.batchSave(dirtyChildren).pipe(flatMap(sal => this.save()));
         } else {
-            return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-                return rtn = RxParseObject._objectController.save(this.state, this.currentOperations, sessionToken).map(serverState => {
+            return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+                return rtn = RxParseObject._objectController.save(this.state, this.currentOperations, sessionToken).pipe(map(serverState => {
                     this.handlerSave(serverState);
                     return true;
-                });
-            });
+                }));
+            }));
         }
         return rtn;
     }
 
     public fetch(): Observable<RxParseObject> {
         if (this.objectId == null) throw new Error(`Cannot refresh an object that hasn't been saved to the server.`);
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-            return RxParseObject._objectController.fetch(this.state, sessionToken).map(serverState => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+            return RxParseObject._objectController.fetch(this.state, sessionToken).pipe(map(serverState => {
                 this.handleFetchResult(serverState);
                 return this;
-            });
-        });
+            }));
+        }));
     }
 
     public delete(): Observable<boolean> {
         if (this.objectId == null) throw new Error(`Cannot delete an object that hasn't been saved to the server.`);
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
             return RxParseObject._objectController.delete(this.state, sessionToken);
-        });
+        }));
     }
 
     public static deleteAll(objects: Array<RxParseObject>): Observable<boolean> {
@@ -229,7 +229,7 @@ export class RxParseObject extends StorageObject implements ICanSaved {
             if (r == null || typeof r == 'undefined') {
                 r = d;
             } else {
-                r = d.concat(r);
+                r = d.pipe(concat(r));
             }
         });
         return r;
@@ -268,14 +268,14 @@ export class RxParseObject extends StorageObject implements ICanSaved {
     protected static batchSave(objArray: Array<RxParseObject>) {
         let states = objArray.map(c => c.state);
         let ds = objArray.map(c => c.currentOperations);
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-            return RxParseObject._objectController.batchSave(states, ds, sessionToken).map(serverStateArray => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+            return RxParseObject._objectController.batchSave(states, ds, sessionToken).pipe(map(serverStateArray => {
                 objArray.forEach((dc, i, a) => {
                     dc.handlerSave(serverStateArray[i]);
                 });
                 return true;
-            });
-        });
+            }));
+        }));
 
     }
 
@@ -289,7 +289,7 @@ export class RxParseObject extends StorageObject implements ICanSaved {
                 }
             }
         }
-        if (dirtyChildren.length == 0) return Observable.from([true]);
+        if (dirtyChildren.length == 0) return from([true]);
         return RxParseObject.saveAll(dirtyChildren);
     }
 
@@ -389,16 +389,16 @@ export class RxParseObject extends StorageObject implements ICanSaved {
     static saveToLocalStorage(entity: ICanSaved, key: string) {
         if (SDKPlugins.instance.hasStorage) {
             if (entity == null) {
-                return SDKPlugins.instance.LocalStorageControllerInstance.remove(key).map(provider => {
+                return SDKPlugins.instance.LocalStorageControllerInstance.remove(key).pipe(map(provider => {
                     return provider != null;
-                });
+                }));
             } else {
-                return SDKPlugins.instance.LocalStorageControllerInstance.set(key, entity.toJSONObjectForSaving()).map(provider => {
+                return SDKPlugins.instance.LocalStorageControllerInstance.set(key, entity.toJSONObjectForSaving()).pipe(map(provider => {
                     return provider != null;
-                });
+                }));
             }
         } else {
-            return Observable.from([true]);
+            return from([true]);
         }
     }
 

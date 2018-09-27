@@ -1,6 +1,6 @@
 import { ParseClient, RxParseObject, RxParseACL, RxParseUser, RxParseQuery } from '../RxParse';
-import { Observable } from 'rxjs';
-
+import { flatMap, map, filter } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 
 export class RxParseRole extends RxParseObject {
 
@@ -68,11 +68,11 @@ export class RxParseRole extends RxParseObject {
             }
         });
         this._buildRoleRelation(op, users, roles, body);
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-            return RxParseUser._objectController.save(this.state, this.currentOperations, sessionToken).map(serverState => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+            return RxParseUser._objectController.save(this.state, this.currentOperations, sessionToken).pipe(map(serverState => {
                 return serverState != null;
-            });
-        });
+            }));
+        }));
     }
 
     public save() {
@@ -118,7 +118,7 @@ export class RxParseRole extends RxParseObject {
     public static getByName(roleName: string) {
         let query = new RxParseQuery('_Role');
         query.equalTo('name', roleName);
-        return query.find().map(roleList => {
+        return query.find().pipe(map(roleList => {
             if (roleList.length > 0) {
                 let obj = roleList[0];
                 let roleId = obj.objectId;
@@ -127,7 +127,7 @@ export class RxParseRole extends RxParseObject {
                 return role;
             }
             return undefined;
-        });
+        }));
     }
 
 }

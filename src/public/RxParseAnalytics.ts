@@ -1,9 +1,9 @@
-import { Observable } from 'rxjs';
 import { ParseClient, ParseApp } from '../RxParse';
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { IParseAnalyticsController } from '../internal/analytics/controller/IParseAnalyticsController';
 import { IToolController } from '../internal/tool/controller/IToolController';
-
+import { Observable, from } from 'rxjs';
+import { map, flatMap } from 'rxjs/operators';
 /**
  *
  *
@@ -26,7 +26,7 @@ export class RxParseAnalytics {
     static readonly analyticsCacheKey = 'LastAnalyticsData';
 
     protected static get _analyticsController(): IParseAnalyticsController {
-        return SDKPlugins.instance.AnalyticsControllerInstance;
+        return SDKPlugins.instance.analyticsControllerInstance;
     }
 
     private static _CurrentAnalytics: RxParseAnalytics;
@@ -48,12 +48,12 @@ export class RxParseAnalytics {
     }
 
     public static init(app?: ParseApp): Observable<boolean> {
-        return RxParseAnalytics._analyticsController.getPolicy(app).flatMap(instance => {
+        return RxParseAnalytics._analyticsController.getPolicy(app).pipe(flatMap(instance => {
             RxParseAnalytics.setCurrentAnalytics(instance);
             return instance.startSession();
-        }).map(started => {
+        }), map(started => {
             return started && RxParseAnalytics.currentAnalytics.enable;
-        });
+        }));
     }
 
     public trackAppOpened(): void {
@@ -131,17 +131,17 @@ export class RxParseAnalytics {
     public save(): Observable<boolean> {
         this.closeSession();
         if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.set(RxParseAnalytics.analyticsCacheKey, this).map(iStorage => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.set(RxParseAnalytics.analyticsCacheKey, this).pipe(map(iStorage => {
                 return iStorage != null;
-            });
+            }));
         }
-        else return Observable.from([false]);
+        else return from([false]);
     }
 
 
     public send(): Observable<boolean> {
         if (!this.enable) {
-            return Observable.from([false]);
+            return from([false]);
         }
         return RxParseAnalytics._analyticsController.send(this, null);
     }
@@ -151,11 +151,11 @@ export class RxParseAnalytics {
     }
 
     protected startSession() {
-        return Observable.fromPromise(RxParseAnalytics._analyticsController.deviceProvider.getDevice()).map(deviceInfo => {
+        return from(RxParseAnalytics._analyticsController.deviceProvider.getDevice()).pipe(map(deviceInfo => {
             this.device = deviceInfo;
             this.resetData();
             return true;
-        });
+        }));
     }
 
     protected resetData() {
@@ -168,17 +168,17 @@ export class RxParseAnalytics {
     }
 
     public static report() {
-        return RxParseAnalytics.restore().flatMap(data => {
+        return RxParseAnalytics.restore().pipe(flatMap(data => {
             return data.send();
-        });
+        }));
     }
 
     protected static restore() {
         if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxParseAnalytics.analyticsCacheKey).map(cacheData => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxParseAnalytics.analyticsCacheKey).pipe(map(cacheData => {
                 var cacheModel = new RxParseAnalytics(cacheData);
                 return cacheModel;
-            });
+            }));
         }
     }
 

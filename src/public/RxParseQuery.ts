@@ -1,12 +1,11 @@
 import { ParseClient, RxParseObject, RxParseUser, ICanSaved, ParseApp } from '../RxParse';
 import { SDKPlugins } from '../internal/SDKPlugins';
-import { Observable } from 'rxjs';
 import { IParseEncoder } from '../internal/encoding/IParseEncoder';
 import { IQueryController } from '../internal/query/controller/IQueryController';
 import { ParseCommand } from '../internal/command/ParseCommand';
 import { IRxWebSocketController } from '../internal/websocket/controller/IRxWebSocketController';
-
-
+import { flatMap, map, filter } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 /**
  *
  *
@@ -225,8 +224,8 @@ export class RxParseQuery {
     }
 
     public find(): Observable<Array<RxParseObject>> {
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-            return RxParseQuery._queryController.find(this, sessionToken).map(serverStates => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+            return RxParseQuery._queryController.find(this, sessionToken).pipe(map(serverStates => {
                 let resultList = serverStates.map((serverState, i, a) => {
                     return RxParseObject.instantiateSubclass(this.className, serverState);
                 });
@@ -234,14 +233,14 @@ export class RxParseQuery {
                     resultList = [];
                 }
                 return resultList;
-            });
-        });
+            }));
+        }));
     }
 
 
     public seek(): Observable<RxParseObject> {
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-            return RxParseQuery._queryController.find(this, sessionToken).flatMap(serverStates => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+            return RxParseQuery._queryController.find(this, sessionToken).pipe(flatMap(serverStates => {
                 let resultList = serverStates.map((serverState, i, a) => {
                     let rxObject = new RxParseObject(this.className);
                     rxObject.handleFetchResult(serverState);
@@ -250,9 +249,9 @@ export class RxParseQuery {
                 if (resultList == undefined || resultList == null) {
                     resultList = [];
                 }
-                return Observable.from(resultList);
-            });
-        });
+                return from(resultList);
+            }));
+        }));
     }
 
     public static or(...queries: Array<RxParseQuery>): RxParseQuery {
@@ -329,7 +328,7 @@ export class RxParseQuery {
     }
     protected createSubscription(query: RxParseQuery, sessionToken: string): Observable<RxParseLiveQuery> {
         let rtn: RxParseLiveQuery = null;
-        return RxParseLiveQuery.getCurrent({ app: query.app }).flatMap(cacheLiveQuery => {
+        return RxParseLiveQuery.getCurrent({ app: query.app }).pipe(flatMap(cacheLiveQuery => {
             let subscriptionId = '';
             let queryId = '';
 
@@ -352,7 +351,7 @@ export class RxParseQuery {
                 },
                 sessionToken: sessionToken,
                 id: subscriptionId.length > 0 ? subscriptionId : null
-            }, sessionToken, this.app).map(res => {
+            }, sessionToken, this.app).pipe(map(res => {
                 queryId = res.query_id;
 
                 rtn = RxParseLiveQuery.getMemory({ app: query.app, queryId: queryId });
@@ -363,8 +362,8 @@ export class RxParseQuery {
                     rtn.saveCurrent();
                 }
                 return rtn;
-            });
-        });
+            }));
+        }));
     }
 }
 
@@ -419,14 +418,14 @@ export class RxParseLiveQuery implements ICanSaved {
         let rtn: RxParseLiveQuery = null;
         let app = ParseClient.instance.take(options);
         if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxParseLiveQuery.LiveQuerySubscriptionCacheKey}`).map(cache => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxParseLiveQuery.LiveQuerySubscriptionCacheKey}`).pipe(map(cache => {
                 if (cache) {
                     rtn = new RxParseLiveQuery(cache);
                 }
                 return rtn;
-            });
+            }));
         }
-        return Observable.from([rtn]);
+        return from([rtn]);
     }
     saveCurrent() {
         let app = this.query.app;
@@ -446,7 +445,7 @@ export class RxParseLiveQuery implements ICanSaved {
     }
 
     bind() {
-        this.on = this.rxWebSocketController.onMessage.filter(message => {
+        this.on = this.rxWebSocketController.onMessage.pipe(filter(message => {
             let data = JSON.parse(message);
             if (Object.prototype.hasOwnProperty.call(data, 'cmd')) {
                 let rtn = false;
@@ -462,7 +461,7 @@ export class RxParseLiveQuery implements ICanSaved {
                 }
                 return rtn;
             }
-        }).flatMap(message => {
+        }), flatMap(message => {
             let data = JSON.parse(message);
             console.log('liveQuery<=', data);
             let ids = data.ids;
@@ -484,8 +483,8 @@ export class RxParseLiveQuery implements ICanSaved {
                 rxObject.handleFetchResult(objectState);
                 obsArray.push({ scope: item.op, keys: item.updatedKeys, object: rxObject });
             });
-            return Observable.from(obsArray);
-        });
+            return from(obsArray);
+        }));
 
     }
 

@@ -1,3 +1,4 @@
+import { map, catchError } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { ParseCommand } from './ParseCommand';
 import { ParseCommandResponse } from './ParseCommandResponse';
@@ -15,11 +16,11 @@ export class ParseCommandRunner implements IParseCommandRunner {
 
     runRxCommand(command: ParseCommand): Observable<ParseCommandResponse> {
         ParseClient.printHttpLog(command);
-        return this._IRxHttpClient.execute(command).map(res => {
+        return this._IRxHttpClient.execute(command).pipe(map(res => {
             ParseClient.printHttpLog(null, res);
             return new ParseCommandResponse(res);
-        }).catch((errorRes) => {
+        })).pipe(catchError((errorRes) => {
             return Observable.throw(errorRes);
-        });
+        }));
     }
 }

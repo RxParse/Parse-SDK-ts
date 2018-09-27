@@ -1,8 +1,9 @@
 import { SDKPlugins } from '../internal/SDKPlugins';
 import { ParseClient, RxParseObject, RxParseRole, RxParseQuery, RxParseInstallation } from '../RxParse';
 import { IObjectState } from '../internal/object/state/IObjectState';
-import { Observable } from 'rxjs';
 import { IUserController } from '../internal/user/controller/IUserController';
+import { flatMap, map, filter } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 
 /**
  *
@@ -45,7 +46,7 @@ export class RxParseUser extends RxParseObject {
         if (RxParseUser.usersMap.has(app.appId)) {
             rtn = RxParseUser.usersMap.get(app.appId);
         } else if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxParseUser.currentUserCacheKey}`).map(userCache => {
+            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxParseUser.currentUserCacheKey}`).pipe(map(userCache => {
                 if (userCache) {
                     let userState = SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins.instance.Decoder);
                     userState = userState.mutatedClone((s: IObjectState) => { });
@@ -54,17 +55,17 @@ export class RxParseUser extends RxParseObject {
                     rtn = user;
                 }
                 return rtn;
-            });
+            }));
         }
-        return Observable.from([rtn]);
+        return from([rtn]);
     }
 
     static currentSessionToken(): Observable<string> {
-        return RxParseUser.current().map(user => {
+        return RxParseUser.current().pipe(map(user => {
             if (user != null)
                 return user.sessionToken as string;
             return null;
-        });
+        }));
     }
 
     protected static get UserController(): IUserController {
@@ -140,11 +141,11 @@ export class RxParseUser extends RxParseObject {
 
     public isAuthenticated(): Observable<boolean> {
         try {
-            return !!this.sessionToken && ParseClient.runCommand('/users/me', 'GET', null, this.sessionToken, this.state.app).map(body => {
+            return !!this.sessionToken && ParseClient.runCommand('/users/me', 'GET', null, this.sessionToken, this.state.app).pipe(map(body => {
                 return true;
-            });
+            }));
         } catch (error) {
-            return Observable.from([error.error.code == 211]);
+            return from([error.error.code == 211]);
         }
     }
 
@@ -157,13 +158,13 @@ export class RxParseUser extends RxParseObject {
             this.unset(RxParseUser.installationKey);
             ch = this.save();
         } else {
-            ch = Observable.from([true]);
+            ch = from([true]);
         }
-        return ch.flatMap(s1 => {
+        return ch.pipe(flatMap(s1 => {
             let opBody = this.buildRelation('add', [installation]);
             this.set(RxParseUser.installationKey, opBody);
             return this.save();
-        });
+        }));
     }
 
     public inactive(installation: RxParseInstallation): Observable<boolean> {
@@ -175,38 +176,38 @@ export class RxParseUser extends RxParseObject {
     public fetchRoles(): Observable<Array<RxParseRole>> {
         let query = new RxParseQuery('_Role');
         query.equalTo('users', this);
-        return query.find().map(roles => {
+        return query.find().pipe(map(roles => {
             let fetched = roles.map(currentItem => {
                 let role = RxParseRole.createWithName(currentItem.get('name'), currentItem.objectId);
                 return role;
             });
             this.roles = fetched;
             return fetched;
-        });
+        }));
     }
 
     public signUp(): Observable<boolean> {
-        return RxParseUser.UserController.signUp(this.state, this.estimatedData).flatMap(userState => {
+        return RxParseUser.UserController.signUp(this.state, this.estimatedData).pipe(flatMap(userState => {
             return this.handlerSignUp(userState);
-        });
+        }));
     }
 
     public static sendSignUpShortCode(mobilePhone: string): Observable<boolean> {
         let data = {
             mobilePhoneNumber: mobilePhone
         };
-        return ParseClient.runCommand('/requestSmsCode', 'POST', data).map(body => {
+        return ParseClient.runCommand('/requestSmsCode', 'POST', data).pipe(map(body => {
             return true;
-        });
+        }));
     }
 
     public static sendLogInShortCode(mobilePhone: string): Observable<boolean> {
         let data = {
             mobilePhoneNumber: mobilePhone
         };
-        return ParseClient.runCommand('/requestLoginSmsCode', 'POST', data).map(body => {
+        return ParseClient.runCommand('/requestLoginSmsCode', 'POST', data).pipe(map(body => {
             return true;
-        });
+        }));
     }
 
     public static signUpByMobilePhone(mobilePhone: string, shortCode: string, newUser: RxParseUser): Observable<RxParseUser> {
@@ -214,16 +215,16 @@ export class RxParseUser extends RxParseObject {
         encoded['mobilePhoneNumber'] = mobilePhone;
         encoded['smsCode'] = shortCode;
 
-        return RxParseUser.UserController.logInWithParameters('/usersByMobilePhone', encoded).flatMap(userState => {
+        return RxParseUser.UserController.logInWithParameters('/usersByMobilePhone', encoded).pipe(flatMap(userState => {
             let user = RxParseUser.createWithoutData();
             if (userState.isNew)
-                return user.handlerSignUp(userState).map(s => {
+                return user.handlerSignUp(userState).pipe(map(s => {
                     return user;
-                });
+                }));
             else {
                 return RxParseUser.processLogIn(userState);
             }
-        });
+        }));
     }
 
     public static logInByMobilePhone(mobilePhone: string, shortCode: string): Observable<RxParseUser> {
@@ -231,22 +232,22 @@ export class RxParseUser extends RxParseObject {
             "mobilePhoneNumber": mobilePhone,
             "smsCode": shortCode
         };
-        return RxParseUser.UserController.logInWithParameters('/usersByMobilePhone', data).flatMap(userState => {
+        return RxParseUser.UserController.logInWithParameters('/usersByMobilePhone', data).pipe(flatMap(userState => {
             let user = RxParseUser.createWithoutData();
             if (userState.isNew)
-                return user.handlerSignUp(userState).map(s => {
+                return user.handlerSignUp(userState).pipe(map(s => {
                     return user;
-                });
+                }));
             else {
                 return RxParseUser.processLogIn(userState);
             }
-        });
+        }));
     }
 
     public static logIn(username: string, password: string): Observable<RxParseUser> {
-        return RxParseUser.UserController.logIn(username, password).flatMap(userState => {
+        return RxParseUser.UserController.logIn(username, password).pipe(flatMap(userState => {
             return RxParseUser.processLogIn(userState);
-        });
+        }));
     }
 
     public logOut(): Observable<boolean> {
@@ -259,17 +260,17 @@ export class RxParseUser extends RxParseObject {
             "mobilePhoneNumber": mobilePhone,
             "password": password
         };
-        return RxParseUser.UserController.logInWithParameters('/login', data).flatMap(userState => {
+        return RxParseUser.UserController.logInWithParameters('/login', data).pipe(flatMap(userState => {
             return RxParseUser.processLogIn(userState);
-        });
+        }));
     }
 
     public create(): Observable<boolean> {
-        return RxParseUser.UserController.signUp(this.state, this.estimatedData).map(userState => {
+        return RxParseUser.UserController.signUp(this.state, this.estimatedData).pipe(map(userState => {
             super.handlerSave(userState);
             this.state.serverData = userState.serverData;
             return true;
-        });
+        }));
     }
 
     public static createWithoutData(objectId?: string) {
@@ -278,11 +279,11 @@ export class RxParseUser extends RxParseObject {
 
     protected static processLogIn(userState: IObjectState): Observable<RxParseUser> {
         let user = RxParseUser.createWithoutData();
-        return user.handlerLogIn(userState).map(s => {
+        return user.handlerLogIn(userState).pipe(map(s => {
             if (s)
                 return user;
-            else Observable.from([null]);
-        });
+            else from([null]);
+        }));
     }
 
     protected handlerLogIn(userState: IObjectState) {

@@ -1,10 +1,11 @@
 import { ParseClient } from '../../../RxParse';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { IObjectState } from '../state/IObjectState';
 import { IObjectController } from './IParseObjectController';
 import { ParseCommand } from '../../command/ParseCommand';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
 import { SDKPlugins } from '../../SDKPlugins';
-import { Observable } from 'rxjs';
 import { IParseFieldOperation } from '../../../internal/operation/IParseFieldOperation';
 
 export class ObjectController implements IObjectController {
@@ -22,10 +23,10 @@ export class ObjectController implements IObjectController {
             data: null,
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(cmd).map(res => {
+        return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
             return serverState;
-        });
+        }));
     }
     delete(state: IObjectState, sessionToken: string): Observable<boolean> {
         let cmd = new ParseCommand({
@@ -35,10 +36,11 @@ export class ObjectController implements IObjectController {
             data: null,
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(cmd).map(res => {
+        return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
             return res.statusCode == 200;
-        });
+        }));
     }
+
     batchDelete(states: Array<IObjectState>, sessionToken: string) {
         let cmdArray = states.map(state => {
             return new ParseCommand({
@@ -49,12 +51,13 @@ export class ObjectController implements IObjectController {
                 sessionToken: sessionToken
             })
         });
-        return this.executeBatchCommands(cmdArray, sessionToken).map(batchRes => {
+        return this.executeBatchCommands(cmdArray, sessionToken).pipe(map(batchRes => {
             return batchRes.map(res => {
-                return res.satusCode == 200;
+                return res.statusCode == 200;
             });
-        });
+        }));
     }
+
     clearReadonlyFields(state: IObjectState, dictionary: { [key: string]: any }) {
 
         if (Object.prototype.hasOwnProperty.call(dictionary, 'objectId')) {
@@ -113,7 +116,7 @@ export class ObjectController implements IObjectController {
             sessionToken: sessionToken
         });
 
-        return this._commandRunner.runRxCommand(cmd).map(res => {
+        return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
             let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
             state = state.mutatedClone(s => {
                 s.isNew = res.statusCode == 201;
@@ -128,7 +131,7 @@ export class ObjectController implements IObjectController {
                 }
             });
             return state;
-        });
+        }));
     }
 
     batchSave(states: Array<IObjectState>, operations: Array<Map<string, IParseFieldOperation>>, sessionToken: string): Observable<Array<IObjectState>> {
@@ -142,7 +145,7 @@ export class ObjectController implements IObjectController {
             });
             let cmd = new ParseCommand({
                 app: state.app,
-                relativeUrl: state.objectId == null ? `/1.1/classes/${state.className}` : `/1.1/classes/${state.className}/${state.objectId}`,
+                relativeUrl: state.objectId == null ? `/${state.app.mountPath}/classes/${state.className}` : `/${state.app.mountPath}/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
                 data: encoded,
                 sessionToken: sessionToken
@@ -151,19 +154,19 @@ export class ObjectController implements IObjectController {
             cmdArray.push(cmd);
         });
 
-        return this.executeBatchCommands(cmdArray, sessionToken).map(batchRes => {
+        return this.executeBatchCommands(cmdArray, sessionToken).pipe(map(batchRes => {
             return batchRes.map(res => {
                 let serverState = SDKPlugins.instance.ObjectDecoder.decode(res, SDKPlugins.instance.Decoder);
                 serverState = serverState.mutatedClone((s: IObjectState) => {
-                    s.isNew = res['satusCode'] == 201;
+                    s.isNew = res['status'] == 201;
                 });
                 return serverState;
             });
-        });
+        }));
 
     }
-    executeBatchCommands(requests: Array<ParseCommand>, sessionToken: string) {
-        let rtn: Array<{ [key: string]: any }> = [];
+
+    executeBatchCommands(requests: Array<ParseCommand>, sessionToken: string): Observable<Array<{ [key: string]: any }>> {
         let batchSize = requests.length;
         let encodedRequests = requests.map((cmd, i, a) => {
             let r: { [key: string]: any } = {
@@ -182,7 +185,8 @@ export class ObjectController implements IObjectController {
             data: { requests: encodedRequests },
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(batchRequest).map(res => {
+        return this._commandRunner.runRxCommand(batchRequest).pipe(map(res => {
+            let rtn: Array<{ [key: string]: any }> = [];
             let resultsArray = res.body;
             let resultLength = resultsArray.length;
             if (resultLength != batchSize) {
@@ -196,6 +200,6 @@ export class ObjectController implements IObjectController {
                 }
             }
             return rtn;
-        });
+        }));
     }
 }

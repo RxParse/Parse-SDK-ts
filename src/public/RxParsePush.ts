@@ -1,8 +1,8 @@
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, from } from 'rxjs';
 import { ParseClient, RxParseObject, RxParseQuery, RxParseUser, ParseApp, RxParseInstallation } from '../RxParse';
 import { ParseCommand } from '../internal/command/ParseCommand';
 import { SDKPlugins } from '../internal/SDKPlugins';
-
+import { flatMap, map } from 'rxjs/operators';
 
 /**
  *
@@ -88,11 +88,11 @@ export class RxParsePush {
 
     public send(): Observable<boolean> {
         let data = this.encode();
-        return RxParseUser.currentSessionToken().flatMap(sessionToken => {
-            return ParseClient.runCommand('/push', 'POST', data, sessionToken, this.query.app).map(body => {
+        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
+            return ParseClient.runCommand('/push', 'POST', data, sessionToken, this.query.app).pipe(map(body => {
                 return true;
-            });
-        });
+            }));
+        }));
     }
 
     protected encode() {
@@ -120,17 +120,17 @@ export class RxParsePush {
     }
 
     public static getInstallation(deviceType: string) {
-        return RxParseInstallation.current().flatMap(currentInstallation => {
+        return RxParseInstallation.current().pipe(flatMap(currentInstallation => {
             if (currentInstallation != undefined)
-                return Observable.from([currentInstallation]);
+                return from([currentInstallation]);
             else {
                 let installation = new RxParseInstallation();
                 installation.deviceType = deviceType;
                 installation.installationId = SDKPlugins.instance.ToolControllerInstance.newObjectId();
-                return installation.save().map(created => {
+                return installation.save().pipe(map(created => {
                     return installation;
-                });
+                }));
             }
-        });
+        }));
     }
 }

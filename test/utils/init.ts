@@ -1,5 +1,4 @@
 import { ParseClient, ParseAppConfig, ParseApp } from '../../src/RxParse';
-import { PCInfo } from '../analytics/PCInfo';
 import { NodeJSWebSocketClient } from '../realtime/NodeJSWebSocketClient';
 let app = new ParseApp({
     appId: `parse`,
@@ -17,8 +16,7 @@ export function init() {
         pluginVersion: 1,
         log: true,
         plugins: {
-            websocket: new NodeJSWebSocketClient(),
-            device: new PCInfo()
+            websocket: new NodeJSWebSocketClient()
         }
     }).add(app);
 }

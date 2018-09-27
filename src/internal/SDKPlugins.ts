@@ -141,7 +141,7 @@ export /**
         this._storageController = controller;
     }
 
-    get AnalyticsControllerInstance() {
+    get analyticsControllerInstance(): IParseAnalyticsController {
         if (this._analyticsController == null) {
             if (this._deviceProvider == null) {
                 throw new Error(`you must set the device provider when invoke RxParseClient.init{
@@ -160,7 +160,7 @@ export /**
         return this._analyticsController;
     }
 
-    set AnalyticsControllerInstance(controller: IParseAnalyticsController) {
+    set analyticsControllerInstance(controller: IParseAnalyticsController) {
         this._analyticsController = controller;
     }
 

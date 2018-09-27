@@ -1,6 +1,7 @@
 import * as chai from 'chai';
-import { ParseClient, RxParseObject, RxParseQuery } from 'RxParse';
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 import * as init from "../utils/init";
+import { map, flatMap } from 'rxjs/operators';
 
 describe('RxAVQuery', () => {
     before(() => {
@@ -38,12 +39,12 @@ describe('RxAVQuery', () => {
 
         query.equalTo('title', '开会');
 
-        query.seek().map(obj => {
+        query.seek().pipe(map(obj => {
             return {
                 id: obj.objectId,
                 title: obj.get('title')
             }
-        }).subscribe(tuple => {
+        })).subscribe(tuple => {
             uiList.push(tuple);
             console.log('tuple', tuple);
             chai.assert.isTrue(tuple != null);

@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
-import { Observable, Subject } from 'rxjs';
-import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from 'RxParse';
+import { Observable, merge } from 'rxjs';
+import { ParseClient, RxParseObject, RxParseUser, RxParseACL, RxParseRole, RxParseQuery, ParseApp } from '../../src/RxParse';
 
 let app = new ParseApp({
     appId: `parse`,
@@ -26,7 +26,7 @@ describe('RxObject', function () {
         let todo3: RxParseObject = new RxParseObject('RxTodo', { appName: 'default' });
         todo2.set('app', 'app1');
 
-        Observable.merge(todo1.save(), todo2.save(), todo3.save()).subscribe(s => {
+        merge(todo1.save(), todo2.save(), todo3.save()).subscribe(s => {
             console.log('Next: ' + s);
         }, error => { }, () => {
             done();

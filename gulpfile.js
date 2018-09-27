@@ -18,7 +18,7 @@ gulp.task('releaseCopy', function () {
 
 gulp.task('devCopy', function () {
     return gulp.src('package.json')
-        .pipe(gulp.dest('out/src'));
+        .pipe(gulp.dest('.bin/src'));
 });
 
 gulp.task('doc', gulp.series('source', function (done) {

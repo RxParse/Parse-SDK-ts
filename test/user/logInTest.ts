@@ -1,15 +1,17 @@
 import * as chai from 'chai';
 import * as init from "../utils/init";
-import { RxParseUser, ParseClient } from 'RxParse';
-init.init();
+import { RxParseUser } from '../../src/RxParse';
+import { Observable } from 'rxjs';
+import { flatMap } from 'rxjs/operators';
+
 describe('RxAVUser', function () {
     before(() => {
     });
     it('RxAVUser#currentSession', function (done) {
-        RxParseUser.logIn('junwu', 'leancloud').flatMap(user => {
+        RxParseUser.logIn('junwu', 'leancloud').pipe(flatMap(user => {
             console.log(RxParseUser.usersMap);
             return RxParseUser.currentSessionToken();
-        }).subscribe(sessionToken => {
+        })).subscribe(sessionToken => {
             console.log('sessionToken', sessionToken);
             done();
         });
@@ -42,25 +44,15 @@ describe('RxAVUser', function () {
     });
 
     it('RxAVUser#logIn->currentUser', function (done) {
-        RxParseUser.logIn('junwu', 'leancloud').flatMap(user => {
+        RxParseUser.logIn('junwu', 'leancloud').pipe(flatMap(user => {
             console.log(user.username);
             console.log(user.state);
             chai.assert.isNotNull(user.username);
-            return user.isAuthenticated().flatMap(s => {
+            return user.isAuthenticated().pipe(flatMap(s => {
                 user.set('title', 'xman');
                 return user.save();
-            });
-        }).subscribe(s1 => {
-            done();
-        });
-    });
-
-    it('RxAVUser#logInWithMobilePhone', done => {
-        RxParseUser.logInWithMobilePhone('18612438929', 'leancloud').subscribe(user => {
-            chai.assert.isNotNull(user);
-            done();
-        }, error => {
-            chai.assert.isNull(error);
+            }));
+        })).subscribe(s1 => {
             done();
         });
     });

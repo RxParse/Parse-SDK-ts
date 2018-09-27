@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
@@ -23,14 +24,14 @@ export class RxHttpClient implements IRxHttpClient {
         ParseClient.printLog('Request:', JSON.stringify(httpRequest));
         if (ParseClient.instance.currentConfiguration.isNode && this.version == 1) {
             ParseClient.printLog('http client:axios');
-            return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
+            return from(this.RxExecuteAxios(httpRequest)).pipe(map(res => {
 
                 tuple[0] = res.status;
                 tuple[1] = res.data;
                 response = new HttpResponse(tuple);
                 ParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
-            }).catch((err: any) => {
+            }), catchError((err: any) => {
                 ParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.response.status;
@@ -38,18 +39,18 @@ export class RxHttpClient implements IRxHttpClient {
                 }
                 ParseClient.printLog('Error:', JSON.stringify(errMsg));
                 return Observable.throw(errMsg);
-            });
+            }));
         }
 
         else {
             ParseClient.printLog('http client:superagent');
-            return Observable.fromPromise(this.RxExecuteSuperagent(httpRequest)).map(res => {
+            return from(this.RxExecuteSuperagent(httpRequest)).pipe(map(res => {
                 tuple[0] = res.status;
                 tuple[1] = res.body;
                 let response = new HttpResponse(tuple);
                 ParseClient.printLog('Response:', JSON.stringify(response));
                 return response;
-            }).catch((err: any) => {
+            }), catchError((err: any) => {
                 ParseClient.printLog('Meta Error:', err);
                 if (err) {
                     errMsg.statusCode = err.status;
@@ -57,7 +58,7 @@ export class RxHttpClient implements IRxHttpClient {
                 }
                 ParseClient.printLog('Error:', errMsg);
                 return Observable.throw(errMsg);
-            });
+            }));
         }
     }
 

@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
@@ -9,16 +10,17 @@ export class AxiosRxHttpClient implements IRxHttpClient {
 
     execute(httpRequest: HttpRequest): Observable<HttpResponse> {
         let tuple: [number, any] = [200, ''];
-        return Observable.fromPromise(this.RxExecuteAxios(httpRequest)).map(res => {
+
+        return from(this.RxExecuteAxios(httpRequest)).pipe(map(res => {
 
             tuple[0] = res.status;
             tuple[1] = res.data;
             let response = new HttpResponse(tuple);
             return response;
-        }).catch((err: any) => {
-            ParseClient.printLog('Meta Error:', err);
+        }), catchError((err: any) => {
+            ParseClient.printLog('Meta Error:', err.response.data.message);
             return Observable.throw(err);
-        });
+        }));
     }
 
     RxExecuteAxios(httpRequest: HttpRequest): Promise<AxiosResponse> {

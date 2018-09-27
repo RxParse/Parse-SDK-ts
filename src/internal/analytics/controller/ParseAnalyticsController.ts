@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { IDeviceInfo } from '../IDeviceInfo';
 import { RxParseAnalytics } from '../../../public/RxParseAnalytics';
 import { ParseClient, ParseApp } from '../../../public/RxParseClient';
@@ -21,9 +22,9 @@ export class ParseAnalyticsController implements IParseAnalyticsController {
             method: 'POST',
             data: analyticsData.encodeForSendServer()
         });
-        return this._commandRunner.runRxCommand(collectCMD).map(res => {
+        return this._commandRunner.runRxCommand(collectCMD).pipe(map(res => {
             return res.statusCode == 200;
-        });
+        }));
     }
     getPolicy(app?: ParseApp): Observable<RxParseAnalytics> {
         var policyCMD = new ParseCommand({
@@ -31,12 +32,12 @@ export class ParseAnalyticsController implements IParseAnalyticsController {
             relativeUrl: `/statistics/apps/${ParseClient.instance.currentApp.appId}/sendPolicy`,
             method: 'GET',
         });
-        return this._commandRunner.runRxCommand(policyCMD).map(res => {
+        return this._commandRunner.runRxCommand(policyCMD).pipe(map(res => {
             let rtn = new RxParseAnalytics(null, { app: app });
             rtn.enable = res.body.enable;
             rtn.policy = res.body.policy;
             rtn.parameters = res.body.parameters;
             return rtn;
-        });
+        }));
     }
 }

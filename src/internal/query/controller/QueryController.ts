@@ -4,12 +4,10 @@ import { ParseCommand } from '../../command/ParseCommand';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
 import { RxParseQuery } from 'public/RxParseQuery';
 import { SDKPlugins } from '../../SDKPlugins';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
-export /**
- * QueryController
- */
-    class QueryController implements IQueryController {
+export class QueryController implements IQueryController {
     private readonly _commandRunner: IParseCommandRunner;
 
     constructor(commandRunner: IParseCommandRunner) {
@@ -24,21 +22,21 @@ export /**
             method: 'GET',
             sessionToken: sessionToken
         });
-        return this._commandRunner.runRxCommand(cmd).map(res => {
+        return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
             let items = res.body["results"] as Array<Object>;
             let x = items.map((item, i, a) => {
                 let y = SDKPlugins.instance.ObjectDecoder.decode(item, SDKPlugins.instance.Decoder);
                 return y;
             });
             return x;
-        });
+        }));
     }
 
-    count(query: RxParseQuery, sesstionToken: string): Observable<number> {
-        return Observable.from([0]);
+    count(query: RxParseQuery, sessionToken: string): Observable<number> {
+        return from([0]);
     }
 
-    first(query: RxParseQuery, sesstionToken: string): Observable<Array<IObjectState>> {
+    first(query: RxParseQuery, sessionToken: string): Observable<Array<IObjectState>> {
         return null;
     }
 

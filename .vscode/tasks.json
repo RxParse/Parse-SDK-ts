@@ -17,6 +17,34 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "build dev",
+            "type": "shell",
+            "command":"tsc"
+        },
+        {
+            "label": "gulp dev",
+            "type": "shell",
+            "command":"gulp devCopy"
+        },
+        {
+            "label": "pretest",
+            "dependsOn": ["build dev", "gulp dev"]
+        },
+        {
+            "label": "test init",
+            "type": "shell",
+            "command":"node out/test/utils/init.js"
+        },
+        {
+            "label": "mocha run",
+            "type": "shell",
+            "command":"mocha --timeout 30000 $(find out/test -name '*.js')"
+        },
+        {
+            "label": "test",
+            "dependsOn": ["test init", "mocha run"]
         }
     ]
 }
