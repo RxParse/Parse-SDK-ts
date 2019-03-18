@@ -1,4 +1,4 @@
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { ParseClient, RxParseObject, RxParseRole, RxParseQuery, RxParseInstallation } from '../RxParse';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IUserController } from '../internal/user/controller/IUserController';

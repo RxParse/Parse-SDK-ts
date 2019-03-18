@@ -1,5 +1,4 @@
 export { IStorage } from './internal/storage/IStorage';
-export { IDeviceInfo } from './internal/analytics/IDeviceInfo';
 export { IWebSocketClient } from './internal/websocket/IWebSocketClient';
 export { RxParseObject, RxParseObject as Object, ICanSaved, StorageObject } from './public/RxParseObject';
 export { ParseClient, ParseClientConfig, ParseApp, ParseAppConfig } from './public/RxParseClient';
@@ -10,4 +9,3 @@ export { RxParseRole } from './public/RxParseRole';
 export { RxParseCloud } from './public/RxParseCloud';
 export { RxParseInstallation } from './public/RxParseInstallation';
 export { RxParsePush } from './public/RxParsePush';
-export { RxParseAnalytics, RxParseAnalyticDevice } from './public/RxParseAnalytics';

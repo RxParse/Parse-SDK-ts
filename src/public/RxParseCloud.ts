@@ -1,4 +1,4 @@
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { RxParseUser, ParseApp } from '../RxParse';
 import { IParseCloudController } from '../internal/cloud/controller/IParseCloudController';
 import { Observable } from 'rxjs';

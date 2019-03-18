@@ -3,8 +3,7 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "label": "typescript",
-    "tasks": [
-        {
+    "tasks": [{
             "label": "typescript",
             "type": "shell",
             "command": "tsc",
@@ -21,12 +20,12 @@
         {
             "label": "build dev",
             "type": "shell",
-            "command":"tsc"
+            "command": "tsc"
         },
         {
             "label": "gulp dev",
             "type": "shell",
-            "command":"gulp devCopy"
+            "command": "gulp devCopy"
         },
         {
             "label": "pretest",
@@ -35,12 +34,12 @@
         {
             "label": "test init",
             "type": "shell",
-            "command":"node out/test/utils/init.js"
+            "command": "node out/test/utils/init.js"
         },
         {
             "label": "mocha run",
             "type": "shell",
-            "command":"mocha --timeout 30000 $(find out/test -name '*.js')"
+            "command": "mocha --timeout 30000 $(find out/test -name '*.js')"
         },
         {
             "label": "test",

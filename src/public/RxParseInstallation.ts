@@ -1,6 +1,6 @@
 import { Observable, from } from 'rxjs';
 import { RxParseObject } from '../RxParse';
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import * as jstz from 'jstz';
 import { flatMap, map } from 'rxjs/operators';

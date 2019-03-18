@@ -3,7 +3,7 @@ import { IQueryController } from './IQueryController';
 import { ParseCommand } from '../../command/ParseCommand';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
 import { RxParseQuery } from 'public/RxParseQuery';
-import { SDKPlugins } from '../../SDKPlugins';
+import { SDKPlugins } from '../../ParseClientPlugins';
 import { Observable, from } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 

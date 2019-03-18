@@ -1,7 +1,7 @@
 import { Observable, Subject, from } from 'rxjs';
 import { ParseClient, RxParseObject, RxParseQuery, RxParseUser, ParseApp, RxParseInstallation } from '../RxParse';
 import { ParseCommand } from '../internal/command/ParseCommand';
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { flatMap, map } from 'rxjs/operators';
 
 /**

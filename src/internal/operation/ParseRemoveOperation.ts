@@ -1,5 +1,5 @@
 import { IParseFieldOperation } from './IParseFieldOperation';
-import { SDKPlugins } from '../SDKPlugins';
+import { SDKPlugins } from '../ParseClientPlugins';
 
 export class ParseRemoveOperation implements IParseFieldOperation {
     encode(): any {

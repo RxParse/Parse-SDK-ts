@@ -1,7 +1,6 @@
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { ParseCommand } from '../internal/command/ParseCommand';
 import { IStorage } from '../internal/storage/IStorage';
-import { IDeviceInfo } from '../internal/analytics/IDeviceInfo';
 import { IWebSocketClient } from '../internal/websocket/IWebSocketClient';
 import { StorageController } from '../internal/storage/controller/StorageController';
 import { Observable } from 'rxjs';
@@ -18,7 +17,6 @@ export class ParseClientConfig {
     isNode?: boolean;
     plugins?: {
         storage?: IStorage,
-        device?: IDeviceInfo,
         websocket?: IWebSocketClient
     }
 }
@@ -41,8 +39,8 @@ export class ParseClient {
     remotes: Array<ParseApp> = [];
     add(app: ParseApp, replace?: boolean) {
         if (this.remotes.length == 0 || (typeof replace != 'undefined' && replace)) {
-            if (app.shortname == null) {
-                app.shortname = 'default';
+            if (app.shortName == null) {
+                app.shortName = 'default';
             }
             this.currentApp = app;
         }
@@ -63,7 +61,7 @@ export class ParseClient {
             } else if (options.appName) {
                 if (typeof options.appName === "string") {
                     let tempApp = this.remotes.find(a => {
-                        return a.shortname == options.appName;
+                        return a.shortName == options.appName;
                     });
                     if (tempApp) {
                         app = tempApp;
@@ -78,7 +76,7 @@ export class ParseClient {
 
     private _switch(shortname: string) {
         let tempApp = this.remotes.find(app => {
-            return app.shortname == shortname;
+            return app.shortName == shortname;
         });
         if (tempApp) {
             this.currentApp = tempApp;
@@ -181,12 +179,12 @@ export class ParseClient {
     currentConfiguration: ParseClientConfig = {};
     public initialize(config: ParseClientConfig) {
 
-        process.on('uncaughtException', function (err) {
-            console.error("Caught exception:", err.stack);
-        });
-        process.on('unhandledRejection', function (reason, p) {
-            console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
-        });
+        // process.on('uncaughtException', function (err) {
+        //     console.error("Caught exception:", err.stack);
+        // });
+        // process.on('unhandledRejection', function (reason, p) {
+        //     console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason.stack);
+        // });
 
         if (typeof config != 'undefined') {
             this.currentConfiguration = config;
@@ -208,9 +206,6 @@ export class ParseClient {
                 if (config.plugins.storage) {
                     SDKPlugins.instance.StorageProvider = config.plugins.storage;
                     SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
-                }
-                if (config.plugins.device) {
-                    SDKPlugins.instance.DeviceProvider = config.plugins.device;
                 }
                 if (config.plugins.websocket) {
                     SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
@@ -242,7 +237,7 @@ export class ParseAppConfig {
     serverURL: string;
     appKey?: string;
     masterKey?: string;
-    shortname?: string;
+    shortName?: string;
     additionalHeaders?: { [key: string]: any };
 }
 
@@ -259,10 +254,10 @@ export class ParseApp {
         this.serverURL = options.serverURL;
         this.appKey = options.appKey;
         this.masterKey = options.masterKey;
-        this.shortname = options.shortname;
+        this.shortName = options.shortName;
         this.additionalHeaders = options.additionalHeaders;
     }
-    shortname: string;
+    shortName: string;
     appId: string;
     appKey: string;
     serverURL: string;
