@@ -1,5 +1,5 @@
 import { IParseFieldOperation } from './IParseFieldOperation';
-import { SDKPlugins } from '../SDKPlugins';
+import { SDKPlugins } from '../ParseClientPlugins';
 import { ParseDeleteOperation } from './ParseDeleteOperation';
 import { ParseSetOperation } from './ParseSetOperation';
 

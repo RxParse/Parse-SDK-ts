@@ -1,5 +1,5 @@
 import { ParseClient, RxParseObject, RxParseUser, ICanSaved, ParseApp } from '../RxParse';
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { IParseEncoder } from '../internal/encoding/IParseEncoder';
 import { IQueryController } from '../internal/query/controller/IQueryController';
 import { ParseCommand } from '../internal/command/ParseCommand';

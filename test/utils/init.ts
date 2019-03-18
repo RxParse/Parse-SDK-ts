@@ -1,5 +1,5 @@
 import { ParseClient, ParseAppConfig, ParseApp } from '../../src/RxParse';
-import { NodeJSWebSocketClient } from '../realtime/NodeJSWebSocketClient';
+import { NodeJSWebSocketClient } from '../WebSocket/NodeJSWebSocketClient';
 let app = new ParseApp({
     appId: `parse`,
     serverURL: 'https://chigua.live/api/'

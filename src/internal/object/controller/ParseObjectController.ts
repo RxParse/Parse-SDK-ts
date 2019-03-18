@@ -5,7 +5,7 @@ import { IObjectState } from '../state/IObjectState';
 import { IObjectController } from './IParseObjectController';
 import { ParseCommand } from '../../command/ParseCommand';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
-import { SDKPlugins } from '../../SDKPlugins';
+import { SDKPlugins } from '../../ParseClientPlugins';
 import { IParseFieldOperation } from '../../../internal/operation/IParseFieldOperation';
 
 export class ObjectController implements IObjectController {

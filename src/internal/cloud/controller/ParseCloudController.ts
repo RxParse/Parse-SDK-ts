@@ -2,7 +2,7 @@ import { map } from 'rxjs/operators';
 import { IParseCloudController } from './IParseCloudController'
 import { Observable } from 'rxjs';
 import { ParseCommand } from '../../command/ParseCommand';
-import { SDKPlugins } from '../../SDKPlugins';
+import { SDKPlugins } from '../../ParseClientPlugins';
 import { IParseCloudDecoder } from '../encoding/IParseCloudDecoder';
 
 export class ParseCloudController implements IParseCloudController {

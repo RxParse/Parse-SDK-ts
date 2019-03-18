@@ -30,10 +30,6 @@ import { IStorage } from './storage/IStorage';
 import { IStorageController } from './storage/controller/IStorageController';
 import { StorageController } from './storage/controller/StorageController';
 
-import { IDeviceInfo } from './analytics/IDeviceInfo';
-import { IParseAnalyticsController } from './analytics/controller/IParseAnalyticsController';
-import { ParseAnalyticsController } from './analytics/controller/ParseAnalyticsController';
-
 import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
 import { IWebSocketClient } from './websocket/IWebSocketClient';
 import { RxWebSocketController } from './websocket/controller/RxWebSocketController';
@@ -59,8 +55,6 @@ export /**
     private _toolController: IToolController;
     private _storageController: IStorageController;
     private _storageProvider: IStorage;
-    private _analyticsController: IParseAnalyticsController;
-    private _deviceProvider: IDeviceInfo;
     private _webSocketProvider: IWebSocketClient;
     private _rxWebSocketController: IRxWebSocketController;
     private static _sdkPluginsInstance: SDKPlugins;
@@ -140,37 +134,7 @@ export /**
     set LocalStorageControllerInstance(controller: IStorageController) {
         this._storageController = controller;
     }
-
-    get analyticsControllerInstance(): IParseAnalyticsController {
-        if (this._analyticsController == null) {
-            if (this._deviceProvider == null) {
-                throw new Error(`you must set the device provider when invoke RxParseClient.init{
-                    ...
-                    plugins?: {
-                        ...
-                        device?: IDevice
-                        ...
-                    }
-                    ...
-                    }`);
-            }
-            this._analyticsController = new ParseAnalyticsController(this.commandRunner, this._deviceProvider);
-
-        }
-        return this._analyticsController;
-    }
-
-    set analyticsControllerInstance(controller: IParseAnalyticsController) {
-        this._analyticsController = controller;
-    }
-
-    get DeviceProvider() {
-        return this._deviceProvider;
-    }
-    set DeviceProvider(provider: IDeviceInfo) {
-        this._deviceProvider = provider;
-    }
-
+    
     get WebSocketProvider() {
         return this._webSocketProvider;
     }

@@ -1,4 +1,4 @@
-import { SDKPlugins } from '../internal/SDKPlugins';
+import { SDKPlugins } from '../internal/ParseClientPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IParseFieldOperation } from '../internal/operation/IParseFieldOperation';
 import { ParseAddOperation, ParseAddUniqueOperation } from '../internal/operation/ParseAddOperation';

@@ -5,7 +5,7 @@ import { Observable, from } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { IObjectState } from '../../object/state/IObjectState';
 import { IUserController } from './IUserController';
-import { SDKPlugins } from '../../SDKPlugins';
+import { SDKPlugins } from '../../ParseClientPlugins';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
 
 export /**
