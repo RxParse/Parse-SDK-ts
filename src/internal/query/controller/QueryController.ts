@@ -3,11 +3,12 @@ import { IQueryController } from './IQueryController';
 import { ParseCommand } from '../../command/ParseCommand';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
 import { RxParseQuery } from 'public/RxParseQuery';
-import { SDKPlugins } from '../../ParseClientPlugins';
+import { ParseClientPlugins } from '../../ParseClientPlugins';
 import { Observable, from } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 export class QueryController implements IQueryController {
+    
     private readonly _commandRunner: IParseCommandRunner;
 
     constructor(commandRunner: IParseCommandRunner) {
@@ -25,7 +26,7 @@ export class QueryController implements IQueryController {
         return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
             let items = res.body["results"] as Array<Object>;
             let x = items.map((item, i, a) => {
-                let y = SDKPlugins.instance.ObjectDecoder.decode(item, SDKPlugins.instance.Decoder);
+                let y = ParseClientPlugins.instance.ObjectDecoder.decode(item, ParseClientPlugins.instance.Decoder);
                 return y;
             });
             return x;

@@ -1,8 +1,9 @@
 export { IStorage } from './internal/storage/IStorage';
 export { IWebSocketClient } from './internal/websocket/IWebSocketClient';
-export { RxParseObject, RxParseObject as Object, ICanSaved, StorageObject } from './public/RxParseObject';
-export { ParseClient, ParseClientConfig, ParseApp, ParseAppConfig } from './public/RxParseClient';
-export { RxParseQuery, RxParseQuery as Query, RxParseLiveQuery } from './public/RxParseQuery';
+export { RxParseObject, RxParseObject as ParseObject, ICanSaved, StorageObject } from './public/RxParseObject';
+export { ParseClient, ParseClientConfig } from './public/RxParseClient';
+export { ParseApp, ParseAppConfig } from './public/ParseApp';
+export { RxParseQuery, RxParseQuery as ParseQuery } from './public/RxParseQuery';
 export { RxParseUser, RxParseUser as User } from './public/RxParseUser';
 export { RxParseACL, RxParseACL as ACL } from './public/RxParseACL';
 export { RxParseRole } from './public/RxParseRole';

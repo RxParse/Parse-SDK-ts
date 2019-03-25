@@ -1,15 +1,18 @@
 import { ParseClient, ParseAppConfig, ParseApp } from '../../src/RxParse';
 import { NodeJSWebSocketClient } from '../WebSocket/NodeJSWebSocketClient';
-let app = new ParseApp({
-    appId: `parse`,
-    serverURL: 'https://chigua.live/api/'
-});
 
 import {
     APP_ID,
     APP_KEY,
-    REGION,
+    SERVER_URL,
 } from './config';
+
+let app = new ParseApp({
+    appId: APP_ID,
+    appKey: APP_KEY,
+    serverURL: SERVER_URL
+});
+
 
 export function init() {
     ParseClient.init({

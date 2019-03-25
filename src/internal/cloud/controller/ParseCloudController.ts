@@ -2,7 +2,7 @@ import { map } from 'rxjs/operators';
 import { IParseCloudController } from './IParseCloudController'
 import { Observable } from 'rxjs';
 import { ParseCommand } from '../../command/ParseCommand';
-import { SDKPlugins } from '../../ParseClientPlugins';
+import { ParseClientPlugins } from '../../ParseClientPlugins';
 import { IParseCloudDecoder } from '../encoding/IParseCloudDecoder';
 
 export class ParseCloudController implements IParseCloudController {
@@ -23,7 +23,7 @@ export class ParseCloudController implements IParseCloudController {
             sessionToken: sessionToken
         });
 
-        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
+        return ParseClientPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
             let result = this._LeanEngineDecoder.decodeDictionary(res.body.result);
             return result;
         }));

@@ -1,4 +1,4 @@
-import { SDKPlugins } from '../internal/ParseClientPlugins';
+import { ParseClientPlugins } from '../internal/ParseClientPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IParseFieldOperation } from '../internal/operation/IParseFieldOperation';
 import { ParseAddOperation, ParseAddUniqueOperation } from '../internal/operation/ParseAddOperation';
@@ -6,9 +6,9 @@ import { ParseSetOperation } from '../internal/operation/ParseSetOperation';
 import { ParseDeleteOperation, ParseDeleteToken } from '../internal/operation/ParseDeleteOperation';
 import { ParseRemoveOperation } from '../internal/operation/ParseRemoveOperation';
 import { IObjectController } from '../internal/object/controller/IParseObjectController';
-import { IStorageController } from '../internal/storage/controller/IStorageController';
 import { MutableObjectState } from '../internal/object/state/MutableObjectState';
-import { RxParseUser, RxParseACL, ParseClient, RxParseQuery } from '../RxParse';
+import { RxParseACL, } from './RxParseACL';
+import { RxParseQuery, } from './RxParseQuery';
 import { Observable, from } from 'rxjs';
 import { flatMap, map, concat } from 'rxjs/operators';
 
@@ -37,7 +37,6 @@ export class StorageObject {
     constructor(className: string, options?: any) {
         this.state = new MutableObjectState({ className: className });
         this.state.serverData = new Map<string, object>();
-        this.state.app = ParseClient.instance.take(options);
 
         this.estimatedData = new Map<string, object>();
         this.isDirty = true;
@@ -60,7 +59,7 @@ export class StorageObject {
         if (value == null || value == undefined) {
             this.unset(key);
         } else {
-            let valid = SDKPlugins.instance.Encoder.isValidType(value);
+            let valid = ParseClientPlugins.instance.Encoder.isValidType(value);
             if (valid) {
                 this.performOperation(key, new ParseSetOperation(value));
             }
@@ -135,14 +134,12 @@ export class RxParseObject extends StorageObject implements ICanSaved {
     private _acl: RxParseACL;
 
     constructor(className: string, options?: any) {
-
         super(className, options);
-
         this.className = className;
     }
 
     protected static get _objectController(): IObjectController {
-        return SDKPlugins.instance.objectController;
+        return ParseClientPlugins.instance.objectController;
     }
 
     get ACL() {
@@ -195,11 +192,9 @@ export class RxParseObject extends StorageObject implements ICanSaved {
         if (dirtyChildren.length > 0) {
             rtn = RxParseObject.batchSave(dirtyChildren).pipe(flatMap(sal => this.save()));
         } else {
-            return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
-                return rtn = RxParseObject._objectController.save(this.state, this.currentOperations, sessionToken).pipe(map(serverState => {
-                    this.handlerSave(serverState);
-                    return true;
-                }));
+            return rtn = RxParseObject._objectController.save(this.state, this.currentOperations, null).pipe(map(serverState => {
+                this.handlerSave(serverState);
+                return true;
             }));
         }
         return rtn;
@@ -207,19 +202,15 @@ export class RxParseObject extends StorageObject implements ICanSaved {
 
     public fetch(): Observable<RxParseObject> {
         if (this.objectId == null) throw new Error(`Cannot refresh an object that hasn't been saved to the server.`);
-        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
-            return RxParseObject._objectController.fetch(this.state, sessionToken).pipe(map(serverState => {
-                this.handleFetchResult(serverState);
-                return this;
-            }));
+        return RxParseObject._objectController.fetch(this.state, null).pipe(map(serverState => {
+            this.handleFetchResult(serverState);
+            return this;
         }));
     }
 
     public delete(): Observable<boolean> {
         if (this.objectId == null) throw new Error(`Cannot delete an object that hasn't been saved to the server.`);
-        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
-            return RxParseObject._objectController.delete(this.state, sessionToken);
-        }));
+        return RxParseObject._objectController.delete(this.state, null);
     }
 
     public static deleteAll(objects: Array<RxParseObject>): Observable<boolean> {
@@ -242,6 +233,24 @@ export class RxParseObject extends StorageObject implements ICanSaved {
         return rtn;
     }
 
+    public static classMap = new Map<string, any>();
+
+    public static registerSubclass<T extends RxParseObject>(className: string, ctor: { new(): T; }): void {
+        if (typeof className !== 'string') {
+            throw new TypeError('The first argument must be a valid class name.');
+        }
+        if (typeof ctor === 'undefined') {
+            throw new TypeError('You must supply a subclass constructor.');
+        }
+        if (typeof ctor !== 'function') {
+            throw new TypeError(
+                'You must register the subclass constructor. ' +
+                'Did you attempt to register an instance of the subclass?'
+            );
+        }
+        RxParseObject.classMap[className] = ctor;
+    }
+
     public static createSubclass<T extends RxParseObject>(
         ctor: { new(): T; }, objectId: string): T {
         let rtn = new ctor();
@@ -251,10 +260,16 @@ export class RxParseObject extends StorageObject implements ICanSaved {
     }
 
     public static instantiateSubclass(className: string, serverState: IObjectState) {
-        if (className == '_User') {
-            let user = RxParseObject.createSubclass(RxParseUser, serverState.objectId);
-            user.handleFetchResult(serverState);
-            return user;
+        // if (className == '_User') {
+        //     let user = RxParseObject.createSubclass(RxParseUser, serverState.objectId);
+        //     user.handleFetchResult(serverState);
+        //     return user;
+        // }
+        if (RxParseObject.classMap.has(className)) {
+            var ctor = RxParseObject.classMap[className];
+            let obj = RxParseObject.createSubclass(ctor, serverState.objectId);
+            obj.handleFetchResult(serverState);
+            return obj;
         }
         let rxObject = new RxParseObject(className);
         rxObject.handleFetchResult(serverState);
@@ -268,15 +283,12 @@ export class RxParseObject extends StorageObject implements ICanSaved {
     protected static batchSave(objArray: Array<RxParseObject>) {
         let states = objArray.map(c => c.state);
         let ds = objArray.map(c => c.currentOperations);
-        return RxParseUser.currentSessionToken().pipe(flatMap(sessionToken => {
-            return RxParseObject._objectController.batchSave(states, ds, sessionToken).pipe(map(serverStateArray => {
-                objArray.forEach((dc, i, a) => {
-                    dc.handlerSave(serverStateArray[i]);
-                });
-                return true;
-            }));
+        return RxParseObject._objectController.batchSave(states, ds, null).pipe(map(serverStateArray => {
+            objArray.forEach((dc, i, a) => {
+                dc.handlerSave(serverStateArray[i]);
+            });
+            return true;
         }));
-
     }
 
     protected static deepSave(obj: RxParseObject) {
@@ -371,7 +383,7 @@ export class RxParseObject extends StorageObject implements ICanSaved {
         if (opEntities) {
             let action = op == 'add' ? 'AddRelation' : 'RemoveRelation';
             let body: { [key: string]: any } = {};
-            let encodedEntities = SDKPlugins.instance.Encoder.encode(opEntities);
+            let encodedEntities = ParseClientPlugins.instance.Encoder.encode(opEntities);
             body = {
                 __op: action,
                 'objects': encodedEntities
@@ -387,13 +399,13 @@ export class RxParseObject extends StorageObject implements ICanSaved {
     }
 
     static saveToLocalStorage(entity: ICanSaved, key: string) {
-        if (SDKPlugins.instance.hasStorage) {
+        if (ParseClientPlugins.instance.hasStorage) {
             if (entity == null) {
-                return SDKPlugins.instance.LocalStorageControllerInstance.remove(key).pipe(map(provider => {
+                return ParseClientPlugins.instance.LocalStorageControllerInstance.remove(key).pipe(map(provider => {
                     return provider != null;
                 }));
             } else {
-                return SDKPlugins.instance.LocalStorageControllerInstance.set(key, entity.toJSONObjectForSaving()).pipe(map(provider => {
+                return ParseClientPlugins.instance.LocalStorageControllerInstance.set(key, entity.toJSONObjectForSaving()).pipe(map(provider => {
                     return provider != null;
                 }));
             }
@@ -407,7 +419,7 @@ export class RxParseObject extends StorageObject implements ICanSaved {
         data['objectId'] = this.objectId;
         data['createdAt'] = this.createdAt;
         data['updatedAt'] = this.updatedAt;
-        let encoded = SDKPlugins.instance.Encoder.encode(data);
+        let encoded = ParseClientPlugins.instance.Encoder.encode(data);
         return encoded;
     }
 }

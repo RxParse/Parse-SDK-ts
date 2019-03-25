@@ -1,5 +1,5 @@
 import { IParseFieldOperation } from './IParseFieldOperation';
-import { SDKPlugins } from '../ParseClientPlugins';
+import { ParseClientPlugins } from '../ParseClientPlugins';
 import { ParseDeleteOperation } from './ParseDeleteOperation';
 import { ParseSetOperation } from './ParseSetOperation';
 
@@ -7,7 +7,7 @@ export class ParseAddOperation implements IParseFieldOperation {
     encode(): any {
         return {
             __op: 'Add',
-            objects: SDKPlugins.instance.Encoder.encode(this.objects)
+            objects: ParseClientPlugins.instance.Encoder.encode(this.objects)
         };
     }
     mergeWithPrevious(previous: IParseFieldOperation): IParseFieldOperation {
@@ -26,7 +26,7 @@ export class ParseAddUniqueOperation implements IParseFieldOperation {
     encode(): any {
         return {
             __op: 'AddUnique',
-            objects: SDKPlugins.instance.Encoder.encode(this.objects)
+            objects: ParseClientPlugins.instance.Encoder.encode(this.objects)
         };
     }
     mergeWithPrevious(previous: any): IParseFieldOperation {

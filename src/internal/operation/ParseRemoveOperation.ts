@@ -1,11 +1,11 @@
 import { IParseFieldOperation } from './IParseFieldOperation';
-import { SDKPlugins } from '../ParseClientPlugins';
+import { ParseClientPlugins } from '../ParseClientPlugins';
 
 export class ParseRemoveOperation implements IParseFieldOperation {
     encode(): any {
         return {
             __op: 'Remove',
-            objects: SDKPlugins.instance.Encoder.encode(this.objects)
+            objects: ParseClientPlugins.instance.Encoder.encode(this.objects)
         };
     }
     mergeWithPrevious(previous: IParseFieldOperation): IParseFieldOperation {

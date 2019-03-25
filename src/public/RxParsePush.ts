@@ -1,7 +1,7 @@
 import { Observable, Subject, from } from 'rxjs';
 import { ParseClient, RxParseObject, RxParseQuery, RxParseUser, ParseApp, RxParseInstallation } from '../RxParse';
 import { ParseCommand } from '../internal/command/ParseCommand';
-import { SDKPlugins } from '../internal/ParseClientPlugins';
+import { ParseClientPlugins } from '../internal/ParseClientPlugins';
 import { flatMap, map } from 'rxjs/operators';
 
 /**
@@ -126,7 +126,7 @@ export class RxParsePush {
             else {
                 let installation = new RxParseInstallation();
                 installation.deviceType = deviceType;
-                installation.installationId = SDKPlugins.instance.ToolControllerInstance.newObjectId();
+                installation.installationId = ParseClientPlugins.instance.ToolControllerInstance.newObjectId();
                 return installation.save().pipe(map(created => {
                     return installation;
                 }));

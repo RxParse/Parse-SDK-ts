@@ -1,5 +1,5 @@
 import { IObjectState } from './IObjectState';
-import { ParseApp } from 'public/RxParseClient';
+import { ParseApp } from '../../../public/ParseApp';
 import { IParseFieldOperation } from '../../operation/IParseFieldOperation';
 import { ParseAddOperation } from '../../operation/ParseAddOperation';
 import { ParseDeleteOperation } from '../../operation/ParseDeleteOperation';

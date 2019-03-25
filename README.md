@@ -1,1 +1,1 @@
-# TypeScript SDK for Parse Server wrapped by RxJS
+# TypeScript SDK for Parse Server with RxJS

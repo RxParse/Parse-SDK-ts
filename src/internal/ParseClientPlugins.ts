@@ -1,8 +1,5 @@
-import { HttpRequest } from './httpClient/HttpRequest';
 import { AxiosRxHttpClient } from './httpClient/AxiosRxHttpClient';
 import { IRxHttpClient } from './httpClient/IRxHttpClient';
-import { RxHttpClient } from './httpClient/RxHttpClient';
-import { ParseCommand } from './command/ParseCommand';
 import { IParseCommandRunner } from './command/IParseCommandRunner';
 import { ParseCommandRunner } from './command/ParseCommandRunner';
 import { IObjectController } from './object/controller/IParseObjectController';
@@ -16,6 +13,8 @@ import { ParseCloudController } from './cloud/controller/ParseCloudController';
 
 import { IToolController } from './tool/controller/IToolController';
 import { ToolController } from './tool/controller/ToolController';
+import { ILogController } from './tool/controller/ILogController';
+import { LogController } from './tool/controller/LogController';
 
 import { IParseEncoder } from './encoding/IParseEncoder';
 import { ParseEncoder } from './encoding/ParseEncoder';
@@ -30,17 +29,16 @@ import { IStorage } from './storage/IStorage';
 import { IStorageController } from './storage/controller/IStorageController';
 import { StorageController } from './storage/controller/StorageController';
 
-import { IRxWebSocketClient } from './websocket/IRxWebSocketClient';
 import { IWebSocketClient } from './websocket/IWebSocketClient';
 import { RxWebSocketController } from './websocket/controller/RxWebSocketController';
 import { IRxWebSocketController } from './websocket/controller/IRxWebSocketController';
-
-import { ParseClient } from 'public/RxParseClient';
+import { HttpRequest } from './httpClient/HttpRequest';
+import { Observable } from 'rxjs';
 
 export /**
  * SDKPlugins
  */
-    class SDKPlugins {
+    class ParseClientPlugins {
     private _version = 1;
     private _httpClient: IRxHttpClient;
     private _commandRunner: IParseCommandRunner;
@@ -53,14 +51,53 @@ export /**
     private _objectDecoder: IParseObjectDecoder;
     private _cloudDecoder: IParseCloudDecoder;
     private _toolController: IToolController;
+    private _logger: ILogController;
     private _storageController: IStorageController;
     private _storageProvider: IStorage;
     private _webSocketProvider: IWebSocketClient;
     private _rxWebSocketController: IRxWebSocketController;
-    private static _sdkPluginsInstance: SDKPlugins;
+    private static _sdkPluginsInstance: ParseClientPlugins;
 
     constructor(version?: number) {
         this._version = version;
+    }
+
+    get ToolControllerInstance() {
+        if (this._toolController == null) {
+            this._toolController = new ToolController();
+        }
+        return this._toolController;
+    }
+
+    get logger(): ILogController {
+        if (this._logger == null) {
+            this._logger = new LogController();
+        }
+        return this._logger;
+    }
+
+    get LocalStorageControllerInstance() {
+        if (this._storageController == null) {
+            if (this.StorageProvider != null)
+                this._storageController = new StorageController(this.StorageProvider);
+        }
+        return this._storageController;
+    }
+
+    get hasStorage() {
+        return this.StorageProvider != null;
+    }
+
+    get StorageProvider() {
+        return this._storageProvider;
+    }
+
+    set StorageProvider(provider: IStorage) {
+        this._storageProvider = provider;
+    }
+
+    set LocalStorageControllerInstance(controller: IStorageController) {
+        this._storageController = controller;
     }
 
     get httpClient() {
@@ -72,7 +109,7 @@ export /**
 
     get commandRunner() {
         if (this._commandRunner == null) {
-            this._commandRunner = new ParseCommandRunner(this.httpClient);
+            this._commandRunner = new ParseCommandRunner(this.httpClient, this.logger);
         }
         return this._commandRunner;
     }
@@ -82,13 +119,6 @@ export /**
             this._objectController = new ObjectController(this.commandRunner);
         }
         return this._objectController;
-    }
-
-    get userController() {
-        if (this._userController == null) {
-            this._userController = new UserController(this.commandRunner);
-        }
-        return this._userController;
     }
 
     get queryController() {
@@ -105,39 +135,10 @@ export /**
         return this._cloudController;
     }
 
-    get ToolControllerInstance() {
-        if (this._toolController == null) {
-            this._toolController = new ToolController();
-        }
-        return this._toolController;
-    }
-
-    get LocalStorageControllerInstance() {
-        if (this._storageController == null) {
-            if (this.StorageProvider != null)
-                this._storageController = new StorageController(this.StorageProvider);
-        }
-        return this._storageController;
-    }
-
-    get hasStorage() {
-        return this.StorageProvider != null;
-    }
-    get StorageProvider() {
-        return this._storageProvider;
-    }
-
-    set StorageProvider(provider: IStorage) {
-        this._storageProvider = provider;
-    }
-
-    set LocalStorageControllerInstance(controller: IStorageController) {
-        this._storageController = controller;
-    }
-    
     get WebSocketProvider() {
         return this._webSocketProvider;
     }
+
     set WebSocketProvider(provider: IWebSocketClient) {
         this._webSocketProvider = provider;
     }
@@ -193,13 +194,36 @@ export /**
         return this._cloudDecoder;
     }
 
-    static get instance(): SDKPlugins {
-        if (SDKPlugins._sdkPluginsInstance == null)
-            SDKPlugins._sdkPluginsInstance = new SDKPlugins(1);
-        return SDKPlugins._sdkPluginsInstance;
+    get userController() {
+        if (this._userController == null) {
+            this._userController = new UserController(this.commandRunner, this.LocalStorageControllerInstance);
+        }
+        return this._userController;
+    }
+
+
+    public request(url: string, method?: string, headers?: { [key: string]: any }, data?: { [key: string]: any }): Observable<{ [key: string]: any }> {
+        let httpRequest = new HttpRequest();
+        httpRequest.url = url;
+        httpRequest.method = "GET";
+        httpRequest.headers = {};
+        if (method)
+            httpRequest.method = method;
+        if (data)
+            httpRequest.data = data;
+        if (headers)
+            httpRequest.headers = headers;
+        return ParseClientPlugins.instance.httpClient.execute(httpRequest);
+    }
+
+    static get instance(): ParseClientPlugins {
+        if (ParseClientPlugins._sdkPluginsInstance == null)
+            ParseClientPlugins._sdkPluginsInstance = new ParseClientPlugins(1);
+        return ParseClientPlugins._sdkPluginsInstance;
     }
 
     static set version(version: number) {
-        SDKPlugins._sdkPluginsInstance = new SDKPlugins(version);
+        ParseClientPlugins._sdkPluginsInstance = new ParseClientPlugins(version);
     }
+
 }

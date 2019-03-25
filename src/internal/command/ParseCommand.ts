@@ -51,4 +51,8 @@ export class ParseCommand extends HttpRequest {
         else
             return url;
     }
+
+    prepare() {
+
+    }
 }

@@ -2,9 +2,7 @@ node_modules/
 **/.vs
 **/.vscode
 .idea
+.bin/
 release/
 test/
 out/
-**/.leancloud
-.travis.yml
-build_notification.ps1

@@ -1,4 +1,7 @@
-import { ParseClient, RxParseObject, RxParseACL, RxParseUser, RxParseQuery } from '../RxParse';
+import { RxParseObject } from './RxParseObject';
+import { RxParseACL } from './RxParseACL';
+import { RxParseUser } from './RxParseUser';
+import { RxParseQuery } from './RxParseQuery';
 import { flatMap, map, filter } from 'rxjs/operators';
 import { Observable, from } from 'rxjs';
 
@@ -83,7 +86,7 @@ export class RxParseRole extends RxParseObject {
             throw new Error('can NOT set Role.ACL public write access in true.');
         }
 
-        if (!(this.ACL.findWriteAccess() && ParseClient.inLeanEngine)) {
+        if (!(this.ACL.findWriteAccess())) {
             throw new Error('can NOT set Role.ACL write access in closed.');
         }
 

@@ -1,5 +1,5 @@
 import { IParseFieldOperation } from './IParseFieldOperation';
-import { SDKPlugins } from '../ParseClientPlugins';
+import { ParseClientPlugins } from '../ParseClientPlugins';
 
 export class ParseSetOperation implements IParseFieldOperation {
     private value: any;
@@ -7,7 +7,7 @@ export class ParseSetOperation implements IParseFieldOperation {
         this.value = value;
     }
     encode(): object {
-        return SDKPlugins.instance.Encoder.encode(this.value);
+        return ParseClientPlugins.instance.Encoder.encode(this.value);
     }
     mergeWithPrevious(previous: IParseFieldOperation): IParseFieldOperation {
         return this;

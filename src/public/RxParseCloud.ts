@@ -1,5 +1,6 @@
-import { SDKPlugins } from '../internal/ParseClientPlugins';
-import { RxParseUser, ParseApp } from '../RxParse';
+import { ParseClientPlugins } from '../internal/ParseClientPlugins';
+import { RxParseUser } from './RxParseUser';
+import { ParseApp } from './ParseApp';
 import { IParseCloudController } from '../internal/cloud/controller/IParseCloudController';
 import { Observable } from 'rxjs';
 import { flatMap } from 'rxjs/operators';
@@ -21,7 +22,7 @@ export class RxParseCloud {
      * @memberof RxParseCloud
      */
     protected static get LeanEngineController(): IParseCloudController {
-        return SDKPlugins.instance.cloudController;
+        return ParseClientPlugins.instance.cloudController;
     }
 
     /**

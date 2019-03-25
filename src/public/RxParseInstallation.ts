@@ -1,6 +1,6 @@
 import { Observable, from } from 'rxjs';
-import { RxParseObject } from '../RxParse';
-import { SDKPlugins } from '../internal/ParseClientPlugins';
+import { RxParseObject } from './RxParseObject';
+import { ParseClientPlugins } from '../internal/ParseClientPlugins';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import * as jstz from 'jstz';
 import { flatMap, map } from 'rxjs/operators';
@@ -58,10 +58,10 @@ export class RxParseInstallation extends RxParseObject {
     }
 
     public static current(): Observable<RxParseInstallation> {
-        if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(RxParseInstallation.installationCacheKey).pipe(map(installationCache => {
+        if (ParseClientPlugins.instance.hasStorage) {
+            return ParseClientPlugins.instance.LocalStorageControllerInstance.get(RxParseInstallation.installationCacheKey).pipe(map(installationCache => {
                 if (installationCache) {
-                    let installationState = SDKPlugins.instance.ObjectDecoder.decode(installationCache, SDKPlugins.instance.Decoder);
+                    let installationState = ParseClientPlugins.instance.ObjectDecoder.decode(installationCache, ParseClientPlugins.instance.Decoder);
                     installationState = installationState.mutatedClone((s: IObjectState) => { });
                     let installation = RxParseObject.createSubclass(RxParseInstallation, '');
                     installation.handleFetchResult(installationState);

@@ -4,21 +4,19 @@ import { HttpRequest } from './HttpRequest';
 import { HttpResponse } from './HttpResponse';
 import { IRxHttpClient } from './IRxHttpClient';
 import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
-import { ParseClient } from '../../public/RxParseClient';
+// import { ParseClient } from '../../public/RxParseClient';
 
 export class AxiosRxHttpClient implements IRxHttpClient {
 
     execute(httpRequest: HttpRequest): Observable<HttpResponse> {
         let tuple: [number, any] = [200, ''];
-
         return from(this.RxExecuteAxios(httpRequest)).pipe(map(res => {
-
             tuple[0] = res.status;
             tuple[1] = res.data;
             let response = new HttpResponse(tuple);
             return response;
         }), catchError((err: any) => {
-            ParseClient.printLog('Meta Error:', err.response.data.message);
+            // ParseClient.printLog('Meta Error:', err.response.data.message);
             return Observable.throw(err);
         }));
     }
@@ -41,7 +39,5 @@ export class AxiosRxHttpClient implements IRxHttpClient {
                 reject(error);
             });
         });
-
     }
-
 }

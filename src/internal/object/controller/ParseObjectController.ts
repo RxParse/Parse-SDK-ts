@@ -1,11 +1,10 @@
-import { ParseClient } from '../../../RxParse';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { IObjectState } from '../state/IObjectState';
 import { IObjectController } from './IParseObjectController';
 import { ParseCommand } from '../../command/ParseCommand';
 import { IParseCommandRunner } from '../../command/IParseCommandRunner';
-import { SDKPlugins } from '../../ParseClientPlugins';
+import { ParseClientPlugins } from '../../ParseClientPlugins';
 import { IParseFieldOperation } from '../../../internal/operation/IParseFieldOperation';
 
 export class ObjectController implements IObjectController {
@@ -24,7 +23,7 @@ export class ObjectController implements IObjectController {
             sessionToken: sessionToken
         });
         return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
-            let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
+            let serverState = ParseClientPlugins.instance.ObjectDecoder.decode(res.body, ParseClientPlugins.instance.Decoder);
             return serverState;
         }));
     }
@@ -106,7 +105,7 @@ export class ObjectController implements IObjectController {
     save(state: IObjectState, operations: Map<string, IParseFieldOperation>, sessionToken: string): Observable<IObjectState> {
         let encoded = {};
         operations.forEach((v, k, m) => {
-            encoded[k] = SDKPlugins.instance.Encoder.encode(v);
+            encoded[k] = ParseClientPlugins.instance.Encoder.encode(v);
         });
         let cmd = new ParseCommand({
             app: state.app,
@@ -117,7 +116,7 @@ export class ObjectController implements IObjectController {
         });
 
         return this._commandRunner.runRxCommand(cmd).pipe(map(res => {
-            let serverState = SDKPlugins.instance.ObjectDecoder.decode(res.body, SDKPlugins.instance.Decoder);
+            let serverState = ParseClientPlugins.instance.ObjectDecoder.decode(res.body, ParseClientPlugins.instance.Decoder);
             state = state.mutatedClone(s => {
                 s.isNew = res.statusCode == 201;
                 if (serverState.updatedAt) {
@@ -141,11 +140,11 @@ export class ObjectController implements IObjectController {
         states.map((state, i, a) => {
             let encoded = {};
             operations[i].forEach((v, k, m) => {
-                encoded[k] = SDKPlugins.instance.Encoder.encode(v);
+                encoded[k] = ParseClientPlugins.instance.Encoder.encode(v);
             });
             let cmd = new ParseCommand({
                 app: state.app,
-                relativeUrl: state.objectId == null ? `/${state.app.mountPath}/classes/${state.className}` : `/${state.app.mountPath}/classes/${state.className}/${state.objectId}`,
+                relativeUrl: state.objectId == null ? `/classes/${state.className}` : `/classes/${state.className}/${state.objectId}`,
                 method: state.objectId == null ? 'POST' : 'PUT',
                 data: encoded,
                 sessionToken: sessionToken
@@ -156,7 +155,7 @@ export class ObjectController implements IObjectController {
 
         return this.executeBatchCommands(cmdArray, sessionToken).pipe(map(batchRes => {
             return batchRes.map(res => {
-                let serverState = SDKPlugins.instance.ObjectDecoder.decode(res, SDKPlugins.instance.Decoder);
+                let serverState = ParseClientPlugins.instance.ObjectDecoder.decode(res, ParseClientPlugins.instance.Decoder);
                 serverState = serverState.mutatedClone((s: IObjectState) => {
                     s.isNew = res['status'] == 201;
                 });
@@ -169,14 +168,14 @@ export class ObjectController implements IObjectController {
     executeBatchCommands(requests: Array<ParseCommand>, sessionToken: string): Observable<Array<{ [key: string]: any }>> {
         let batchSize = requests.length;
         let encodedRequests = requests.map((cmd, i, a) => {
-            let r: { [key: string]: any } = {
+            let request: { [key: string]: any } = {
                 method: cmd.method,
                 path: cmd.relativeUrl
             };
             if (cmd.data != null) {
-                r['body'] = cmd.data;
+                request['body'] = cmd.data;
             }
-            return r;
+            return request;
         });
 
         let batchRequest = new ParseCommand({

@@ -1,5 +1,10 @@
-import { SDKPlugins } from '../internal/ParseClientPlugins';
-import { ParseClient, RxParseObject, RxParseRole, RxParseQuery, RxParseInstallation } from '../RxParse';
+import { ParseApp } from './ParseApp';
+import { ParseClientPlugins } from '../internal/ParseClientPlugins';
+import { RxParseRole } from './RxParseRole';
+import { ParseClient } from './RxParseClient';
+import { RxParseObject } from './RxParseObject';
+import { RxParseInstallation } from './RxParseInstallation';
+import { RxParseQuery } from './RxParseQuery';
 import { IObjectState } from '../internal/object/state/IObjectState';
 import { IUserController } from '../internal/user/controller/IUserController';
 import { flatMap, map, filter } from 'rxjs/operators';
@@ -42,22 +47,15 @@ export class RxParseUser extends RxParseObject {
      */
     static current(options?: any): Observable<RxParseUser> {
         let rtn: RxParseUser = null;
-        let app = ParseClient.instance.take(options);
-        if (RxParseUser.usersMap.has(app.appId)) {
-            rtn = RxParseUser.usersMap.get(app.appId);
-        } else if (SDKPlugins.instance.hasStorage) {
-            return SDKPlugins.instance.LocalStorageControllerInstance.get(`${app.appId}_${RxParseUser.currentUserCacheKey}`).pipe(map(userCache => {
-                if (userCache) {
-                    let userState = SDKPlugins.instance.ObjectDecoder.decode(userCache, SDKPlugins.instance.Decoder);
-                    userState = userState.mutatedClone((s: IObjectState) => { });
-                    let user = RxParseUser.createWithoutData();
-                    user.handlerLogIn(userState);
-                    rtn = user;
-                }
-                return rtn;
-            }));
-        }
-        return from([rtn]);
+        let app: ParseApp = options.app;
+        return this.UserController.currentUser(app).pipe(map(cacheState => {
+            let userState = ParseClientPlugins.instance.ObjectDecoder.decode(cacheState, ParseClientPlugins.instance.Decoder);
+            userState = userState.mutatedClone((s: IObjectState) => { });
+            let user = RxParseUser.createWithoutData();
+            user.handlerLogIn(userState);
+            rtn = user;
+            return rtn;
+        }));
     }
 
     static currentSessionToken(): Observable<string> {
@@ -69,7 +67,7 @@ export class RxParseUser extends RxParseObject {
     }
 
     protected static get UserController(): IUserController {
-        return SDKPlugins.instance.userController;
+        return ParseClientPlugins.instance.userController;
     }
 
     /**
@@ -211,7 +209,7 @@ export class RxParseUser extends RxParseObject {
     }
 
     public static signUpByMobilePhone(mobilePhone: string, shortCode: string, newUser: RxParseUser): Observable<RxParseUser> {
-        let encoded = SDKPlugins.instance.Encoder.encode(newUser.estimatedData);
+        let encoded = ParseClientPlugins.instance.Encoder.encode(newUser.estimatedData);
         encoded['mobilePhoneNumber'] = mobilePhone;
         encoded['smsCode'] = shortCode;
 

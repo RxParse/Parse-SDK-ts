@@ -4,20 +4,22 @@ import { ParseCommand } from './ParseCommand';
 import { ParseCommandResponse } from './ParseCommandResponse';
 import { IParseCommandRunner } from './IParseCommandRunner';
 import { IRxHttpClient } from '../httpClient/IRxHttpClient';
-import { ParseClient } from '../../public/RxParseClient';
+import { ILogController } from '../tool/controller/ILogController'
 
 export class ParseCommandRunner implements IParseCommandRunner {
 
     private _IRxHttpClient: IRxHttpClient;
+    private _logger: ILogController;
 
-    constructor(rxHttpClient: IRxHttpClient) {
+    constructor(rxHttpClient: IRxHttpClient, logger: ILogController) {
         this._IRxHttpClient = rxHttpClient;
+        this._logger = logger;
     }
 
     runRxCommand(command: ParseCommand): Observable<ParseCommandResponse> {
-        ParseClient.printHttpLog(command);
+        this._logger.log(command, null);
         return this._IRxHttpClient.execute(command).pipe(map(res => {
-            ParseClient.printHttpLog(null, res);
+            this._logger.log(null, res);
             return new ParseCommandResponse(res);
         })).pipe(catchError((errorRes) => {
             return Observable.throw(errorRes);

@@ -1,4 +1,4 @@
-import { SDKPlugins } from '../internal/ParseClientPlugins';
+import { ParseClientPlugins } from '../internal/ParseClientPlugins';
 import { ParseCommand } from '../internal/command/ParseCommand';
 import { IStorage } from '../internal/storage/IStorage';
 import { IWebSocketClient } from '../internal/websocket/IWebSocketClient';
@@ -7,6 +7,10 @@ import { Observable } from 'rxjs';
 import { map, flatMap } from 'rxjs/operators';
 import { HttpRequest } from '../internal/httpClient/HttpRequest';
 import { HttpResponse } from '../internal/httpClient/HttpResponse';
+import { RxParseObject } from './RxParseObject'
+import { RxParseRole } from './RxParseRole';
+import { RxParseUser } from './RxParseUser';
+import { ParseApp, ParseAppConfig } from './ParseApp';
 
 var sdkInfo = require('../package.json');
 
@@ -93,10 +97,6 @@ export class ParseClient {
         return this.currentConfiguration.isNode;
     }
 
-    public static inLeanEngine() {
-        return false;
-    }
-
     protected printWelcome(app: ParseApp) {
         ParseClient.printLog('=== LeanCloud-Typescript-Rx-SDK ===');
         ParseClient.printLog(`pluginVersion:${this.currentConfiguration.pluginVersion}`);
@@ -106,25 +106,6 @@ export class ParseClient {
         ParseClient.printLog(`appKey:${app.appKey}`);
         ParseClient.printLog(`masterKey:${app.masterKey}`);
         ParseClient.printLog('=== Rx is great, Typescript is wonderful! ===');
-    }
-
-    public static printHttpLog(request?: HttpRequest, response?: HttpResponse) {
-        if (request) {
-            ParseClient.printLog("===HTTP-START===");
-            ParseClient.printLog("===Request-START===");
-            ParseClient.printLog("Url: ", request.url);
-            ParseClient.printLog("Method: ", request.method);
-            ParseClient.printLog("Headers: ", JSON.stringify(request.headers));
-            ParseClient.printLog("RequestBody: " + JSON.stringify(request.data));
-            ParseClient.printLog("===Request-END===");
-        }
-        if (response) {
-            ParseClient.printLog("===Response-START===");
-            ParseClient.printLog("StatusCode: ", response.statusCode);
-            ParseClient.printLog("ResponseBody: ", response.body);
-            ParseClient.printLog("===Response-END===");
-            ParseClient.printLog("===HTTP-END===");
-        }
     }
 
     public static printLog(message?: any, ...optionalParams: any[]) {
@@ -148,19 +129,19 @@ export class ParseClient {
 
     public rxRunCommandSuccess(relativeUrl: string, method: string, data?: { [key: string]: any }) {
         let cmd = ParseClient.generateParseCommand(relativeUrl, method, data);
-        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
-            return res.statusCode == 200;
+        return ParseClientPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
+            return res.statusCode == 200 || res.statusCode == 201;
         }));
     }
 
     public static runCommand(relativeUrl: string, method: string, data?: { [key: string]: any }, sessionToken?: string, app?: ParseApp): Observable<{ [key: string]: any }> {
         let cmd = ParseClient.generateParseCommand(relativeUrl, method, data, sessionToken, app);
-        return SDKPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
+        return ParseClientPlugins.instance.commandRunner.runRxCommand(cmd).pipe(map(res => {
             return res.body;
         }));
     }
 
-    private static _avClientInstance: ParseClient;
+    private static _parseClientInstance: ParseClient;
 
     /**
      *
@@ -171,9 +152,9 @@ export class ParseClient {
      * @memberof ParseClient
      */
     static get instance(): ParseClient {
-        if (ParseClient._avClientInstance == null)
-            ParseClient._avClientInstance = new ParseClient();
-        return ParseClient._avClientInstance;
+        if (ParseClient._parseClientInstance == null)
+            ParseClient._parseClientInstance = new ParseClient();
+        return ParseClient._parseClientInstance;
     }
 
     currentConfiguration: ParseClientConfig = {};
@@ -189,6 +170,8 @@ export class ParseClient {
         if (typeof config != 'undefined') {
             this.currentConfiguration = config;
 
+            RxParseObject.registerSubclass<RxParseUser>("_User", RxParseUser);
+            RxParseObject.registerSubclass<RxParseRole>("_Role", RxParseRole);
             if (typeof (process) !== 'undefined' && process.versions && process.versions.node) {
                 if (this.currentConfiguration.isNode == undefined)
                     this.currentConfiguration.isNode = true;
@@ -201,105 +184,19 @@ export class ParseClient {
                 });
             }
 
-            SDKPlugins.version = config.pluginVersion;
+            ParseClientPlugins.version = config.pluginVersion;
             if (config.plugins) {
                 if (config.plugins.storage) {
-                    SDKPlugins.instance.StorageProvider = config.plugins.storage;
-                    SDKPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
+                    ParseClientPlugins.instance.StorageProvider = config.plugins.storage;
+                    ParseClientPlugins.instance.LocalStorageControllerInstance = new StorageController(config.plugins.storage);
                 }
                 if (config.plugins.websocket) {
-                    SDKPlugins.instance.WebSocketProvider = config.plugins.websocket;
+                    ParseClientPlugins.instance.WebSocketProvider = config.plugins.websocket;
                 }
             }
         }
 
         return this as ParseClient;
     }
-
-    public request(url: string, method?: string, headers?: { [key: string]: any }, data?: { [key: string]: any }): Observable<{ [key: string]: any }> {
-        let httpRequest = new HttpRequest();
-        httpRequest.url = url;
-        httpRequest.method = "GET";
-        httpRequest.headers = {};
-        if (method)
-            httpRequest.method = method;
-        if (data)
-            httpRequest.data = data;
-        if (headers)
-            httpRequest.headers = headers;
-        return SDKPlugins.instance.httpClient.execute(httpRequest);
-    }
-
 }
 
-export class ParseAppConfig {
-    appId: string;
-    serverURL: string;
-    appKey?: string;
-    masterKey?: string;
-    shortName?: string;
-    additionalHeaders?: { [key: string]: any };
-}
-
-/**
- * 
- * 
- * @export
- * @class ParseApp
- */
-export class ParseApp {
-
-    constructor(options: ParseAppConfig) {
-        this.appId = options.appId;
-        this.serverURL = options.serverURL;
-        this.appKey = options.appKey;
-        this.masterKey = options.masterKey;
-        this.shortName = options.shortName;
-        this.additionalHeaders = options.additionalHeaders;
-    }
-    shortName: string;
-    appId: string;
-    appKey: string;
-    serverURL: string;
-    masterKey: string;
-    additionalHeaders?: { [key: string]: any };
-
-    get pureServerURL(): string {
-        return this.clearTailSlashes(this.serverURL);
-    }
-
-    get mountPath(): string {
-        return this.pureServerURL.replace(/^(?:\/\/|[^\/]+)*\//, "")
-    }
-
-    clearTailSlashes(url: string): string {
-        if (url.endsWith('/')) {
-            url = url.substring(0, url.length - 1);
-            return this.clearTailSlashes(url);
-        } else
-            return url;
-    }
-
-    get httpHeaders() {
-        let headers: { [key: string]: any } = {};
-        headers = {
-            'X-Parse-Application-Id': this.appId,
-            'Content-Type': 'application/json;charset=utf-8'
-        };
-        if (this.appKey) {
-            headers['X-Parse-Javascript-Key'] = this.appKey;
-        }
-        if (this.masterKey) {
-            headers['X-Parse-Master-Key'] = this.masterKey;
-        }
-        if (ParseClient.instance.isNode()) {
-            headers['User-Agent'] = 'ts-sdk/' + sdkInfo.version;
-        }
-        if (this.additionalHeaders) {
-            for (let key in this.additionalHeaders) {
-                headers[key] = this.additionalHeaders[key];
-            }
-        }
-        return headers;
-    }
-}

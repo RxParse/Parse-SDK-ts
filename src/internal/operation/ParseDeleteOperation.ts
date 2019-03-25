@@ -1,5 +1,5 @@
 import { IParseFieldOperation } from './IParseFieldOperation';
-import { SDKPlugins } from '../ParseClientPlugins';
+import { ParseClientPlugins } from '../ParseClientPlugins';
 
 export class ParseDeleteToken {
     public static sharedInstance = new ParseDeleteToken();
