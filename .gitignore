@@ -2,6 +2,7 @@ node_modules/
 **/.vs
 **/.vscode
 !**/.vscode/tasks.json
+!**/.vscode/launch.json
 .idea
 typings/
 release/
